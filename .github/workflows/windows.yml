@@ -53,22 +53,22 @@ jobs:
       - name: Configure
         run: |
           export PATH="$(cygpath -u "$JAVA_HOME")/bin:$PATH"
-          cmake -S . -B build-windows -G Ninja \
+          bash scripts/ci_run.sh cmake -S . -B build-windows -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DBUILD_TESTING=ON \
             -DENABLE_LTO=OFF \
             -DCMAKE_INSTALL_PREFIX="$PWD/install-windows"
       - name: Build
-        run: cmake --build build-windows --parallel 2
+        run: bash scripts/ci_run.sh cmake --build build-windows --parallel 2
       - name: Test
         env:
           QT_QPA_PLATFORM: offscreen
-        run: ctest --test-dir build-windows --output-on-failure
+        run: bash scripts/ci_run.sh ctest --test-dir build-windows --output-on-failure
       - name: Package portable application
         run: |
           # Upstream installation rules deploy Qt plugins and runtime DLLs.
-          cmake --install build-windows
-          cmake --install build-windows --component portable
+          bash scripts/ci_run.sh cmake --install build-windows
+          bash scripts/ci_run.sh cmake --install build-windows --component portable
           cp LICENSE COPYING.md install-windows/
           test -f install-windows/elysiumlauncher.exe
           test -f install-windows/platforms/qwindows.dll

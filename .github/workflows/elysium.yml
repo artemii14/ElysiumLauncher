@@ -29,15 +29,15 @@ jobs:
           modules: qtnetworkauth qtimageformats
           cache: true
       - name: Configure
-        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON -DENABLE_LTO=OFF -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/install
+        run: bash scripts/ci_run.sh cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON -DENABLE_LTO=OFF -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/install
       - name: Build
-        run: cmake --build build --parallel 2
+        run: bash scripts/ci_run.sh cmake --build build --parallel 2
       - name: Test
         env:
           QT_QPA_PLATFORM: offscreen
-        run: ctest --test-dir build --output-on-failure
+        run: bash scripts/ci_run.sh ctest --test-dir build --output-on-failure
       - name: Install
-        run: cmake --install build
+        run: bash scripts/ci_run.sh cmake --install build
       - uses: actions/upload-artifact@v4
         with:
           name: ElysiumLauncher-Linux-development
