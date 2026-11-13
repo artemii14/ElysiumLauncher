@@ -9,7 +9,7 @@ status=${PIPESTATUS[0]}
 if (( status != 0 )); then
     # GitHub truncates annotation messages at 4096 characters. Prioritize
     # actual diagnostics, and leave room for workflow-command escaping.
-    errors=$(grep -iE 'error:|fatal error|CMake Error|undefined reference' "$log" || true)
+    errors=$(grep -iE 'error:|fatal error|CMake Error|undefined reference|FAIL!|Actual |Expected |Loc:|process exit code' "$log" || true)
     if [[ -n "$errors" ]]; then
         details=$(printf '%s' "$errors" | tail -c 3000)
     else

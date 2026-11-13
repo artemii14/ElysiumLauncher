@@ -16,6 +16,9 @@ jobs:
     name: Windows x64 portable
     runs-on: windows-2022
     timeout-minutes: 60
+    env:
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
+      CCACHE_SLOPPINESS: pch_defines,time_macros
     defaults:
       run:
         shell: msys2 {0}
@@ -34,6 +37,7 @@ jobs:
           install: git
           pacboy: >-
             toolchain:p
+            ccache:p
             cmake:p
             ninja:p
             extra-cmake-modules:p
@@ -47,6 +51,12 @@ jobs:
             qrencode:p
             tomlplusplus:p
             libarchive:p
+      - name: Restore compiler cache
+        uses: actions/cache/restore@v4
+        with:
+          path: .ccache
+          key: windows-ucrt64-ccache-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: windows-ucrt64-ccache-
       - name: Check resources
         run: python scripts/check_elysium.py
       - name: Configure
@@ -56,13 +66,45 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release \
             -DBUILD_TESTING=ON \
             -DENABLE_LTO=OFF \
+            -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
             -DCMAKE_INSTALL_PREFIX="$PWD/install-windows"
       - name: Build
+        id: build
         run: bash scripts/ci_run.sh cmake --build build-windows --parallel 2
       - name: Test
+        id: tests
         env:
           QT_QPA_PLATFORM: offscreen
-        run: bash scripts/ci_run.sh ctest --test-dir build-windows --output-on-failure
+        run: bash scripts/ci_run.sh ctest --test-dir build-windows --output-on-failure --output-junit test-results.xml
+      - name: Diagnose failed filesystem test
+        if: failure() && steps.tests.outcome == 'failure'
+        run: |
+          # Write QtTest output to a file too: some Windows failures have no
+          # captured console output under CTest. Keep the original test failure.
+          bash scripts/ci_run.sh bash -c '
+            ./build-windows/FileSystem.exe -o FileSystem-test.txt,txt
+            status=$?
+            if test -f FileSystem-test.txt; then cat FileSystem-test.txt; fi
+            echo "FileSystem process exit code: $status"
+            exit "$status"
+          '
+      - name: Save test diagnostics
+        if: always() && steps.build.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Windows-test-diagnostics
+          path: |
+            FileSystem-test.txt
+            build-windows/test-results.xml
+            build-windows/Testing/Temporary/LastTest.log
+          if-no-files-found: warn
+      - name: Save compiler cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .ccache
+          key: windows-ucrt64-ccache-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Package portable application
         run: |
           # Upstream installation rules deploy Qt plugins and runtime DLLs.
