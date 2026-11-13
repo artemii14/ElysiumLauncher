@@ -1,6 +1,8 @@
 name: ElysiumLauncher Linux build
 on:
   push:
+    paths-ignore:
+      - .github/workflows/diagnostics.yml
   pull_request:
   workflow_dispatch:
 permissions:
