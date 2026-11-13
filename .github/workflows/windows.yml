@@ -1,0 +1,83 @@
+name: ElysiumLauncher Windows
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: elysium-windows-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  portable:
+    name: Windows x64 portable
+    runs-on: windows-2022
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: git
+          pacboy: >-
+            toolchain:p
+            cmake:p
+            ninja:p
+            extra-cmake-modules:p
+            pkgconf:p
+            python:p
+            qt6-base:p
+            qt6-svg:p
+            qt6-imageformats:p
+            qt6-networkauth:p
+            cmark:p
+            qrencode:p
+            tomlplusplus:p
+            libarchive:p
+      - name: Check resources
+        run: python scripts/check_elysium.py
+      - name: Configure
+        run: |
+          export PATH="$(cygpath -u "$JAVA_HOME")/bin:$PATH"
+          cmake -S . -B build-windows -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_TESTING=ON \
+            -DENABLE_LTO=OFF \
+            -DCMAKE_INSTALL_PREFIX="$PWD/install-windows"
+      - name: Build
+        run: cmake --build build-windows --parallel 2
+      - name: Test
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: ctest --test-dir build-windows --output-on-failure
+      - name: Package portable application
+        run: |
+          # Upstream installation rules deploy Qt plugins and runtime DLLs.
+          cmake --install build-windows
+          cmake --install build-windows --component portable
+          cp LICENSE COPYING.md install-windows/
+          test -f install-windows/elysiumlauncher.exe
+          test -f install-windows/platforms/qwindows.dll
+          test -f install-windows/portable.txt
+          test -f install-windows/jars/NewLaunch.jar
+      - name: Upload portable ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: ElysiumLauncher-Windows-x64-portable
+          path: install-windows/
+          if-no-files-found: error
+          retention-days: 14
