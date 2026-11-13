@@ -1350,9 +1350,9 @@ endif()
 
 add_executable(${Launcher_Name} MACOSX_BUNDLE WIN32 main.cpp ${LAUNCHER_RCS})
 
-if(${Launcher_USE_PCH})
-    target_precompile_headers(${Launcher_Name} REUSE_FROM Launcher_logic)
-endif()
+# Each executable has one entry-point translation unit. Do not reuse the
+# static library's PCH: Qt's Windows entry-point target adds QT_NEEDS_QMAIN
+# only to executables, making the library PCH incompatible under MinGW.
 
 target_link_libraries(${Launcher_Name} Launcher_logic)
 
@@ -1409,9 +1409,6 @@ if(Launcher_BUILD_UPDATER)
     target_sources("${Launcher_Name}_updater" PRIVATE updater/prismupdater/updater.exe.manifest)
     target_link_libraries("${Launcher_Name}_updater" prism_updater_logic)
 
-    if(${Launcher_USE_PCH})
-        target_precompile_headers("${Launcher_Name}_updater" REUSE_FROM prism_updater_logic)
-    endif()
 
     if(DEFINED Launcher_APP_BINARY_NAME)
         set_target_properties("${Launcher_Name}_updater" PROPERTIES OUTPUT_NAME "${Launcher_APP_BINARY_NAME}_updater")
@@ -1455,9 +1452,6 @@ if(WIN32 OR (DEFINED Launcher_BUILD_FILELINKER AND Launcher_BUILD_FILELINKER))
     add_executable("${Launcher_Name}_filelink" WIN32 filelink/filelink_main.cpp)
     target_sources("${Launcher_Name}_filelink" PRIVATE filelink/filelink.exe.manifest)
 
-    if(${Launcher_USE_PCH})
-        target_precompile_headers("${Launcher_Name}_filelink" REUSE_FROM filelink_logic)
-    endif()
 
     # HACK: Fix manifest issues with Ninja in release mode (and only release mode) and MSVC
     # I have no idea why this works or why it's needed. UPDATE THIS IF YOU EDIT THE MANIFEST!!! -@getchoo
