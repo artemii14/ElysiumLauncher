@@ -21,7 +21,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y ninja-build extra-cmake-modules pkg-config scdoc \
-            libarchive-dev libcmark-dev libqrencode-dev zlib1g-dev libtomlplusplus-dev \
+            cmark libarchive-dev libcmark-dev libqrencode-dev zlib1g-dev libtomlplusplus-dev \
             gamemode-dev libgl1-mesa-dev libxkbcommon-dev libxcb-cursor-dev
       - uses: jurplel/install-qt-action@v4
         with:

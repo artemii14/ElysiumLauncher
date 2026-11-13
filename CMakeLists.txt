@@ -84,10 +84,21 @@ else()
     if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
         add_link_options("$<$<COMPILE_LANGUAGE:C,CXX>:-Wl,--stack,8388608>")
 
-        # -ffunction-sections and -fdata-sections help reduce binary size
-        # -mguard=cf enables Control Flow Guard
+        # -ffunction-sections and -fdata-sections help reduce binary size.
+        # Control Flow Guard is supported by some MinGW compilers (e.g. Clang),
+        # but GCC rejects -mguard=cf. Probe each language before enabling it.
         # TODO: Look into -gc-sections to further reduce binary size
-        add_compile_options("$<$<AND:$<CONFIG:Release,RelWithDebInfo>,$<COMPILE_LANGUAGE:C,CXX>>:-ffunction-sections;-fdata-sections;-mguard=cf>")
+        add_compile_options("$<$<AND:$<CONFIG:Release,RelWithDebInfo>,$<COMPILE_LANGUAGE:C,CXX>>:-ffunction-sections;-fdata-sections>")
+        include(CheckCCompilerFlag)
+        include(CheckCXXCompilerFlag)
+        check_c_compiler_flag("-mguard=cf" Launcher_C_HAS_CFG)
+        check_cxx_compiler_flag("-mguard=cf" Launcher_CXX_HAS_CFG)
+        if(Launcher_C_HAS_CFG)
+            add_compile_options("$<$<AND:$<CONFIG:Release,RelWithDebInfo>,$<COMPILE_LANGUAGE:C>>:-mguard=cf>")
+        endif()
+        if(Launcher_CXX_HAS_CFG)
+            add_compile_options("$<$<AND:$<CONFIG:Release,RelWithDebInfo>,$<COMPILE_LANGUAGE:CXX>>:-mguard=cf>")
+        endif()
     endif()
 endif()
 
