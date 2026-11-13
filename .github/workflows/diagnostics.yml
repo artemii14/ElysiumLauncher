@@ -1,0 +1,26 @@
+name: Read previous compiler errors
+on:
+  push:
+    paths:
+      - .github/workflows/diagnostics.yml
+permissions:
+  actions: read
+  contents: read
+jobs:
+  previous-error:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Read failed Windows build log
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api repos/artemii14/ubiquitous-happiness/actions/jobs/132223124799/logs > previous.log
+          python3 - <<'PY'
+          from pathlib import Path
+          text = Path('previous.log').read_text()
+          lines = text.splitlines()
+          errors = [line for line in lines if 'error:' in line.lower() or 'fatal error' in line.lower()]
+          detail = '\n'.join(errors)[-3000:] if errors else text[-3000:]
+          detail = detail.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+          print('::notice title=Previous compiler errors::' + detail)
+          PY
