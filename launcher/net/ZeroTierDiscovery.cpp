@@ -123,6 +123,7 @@ bool ZeroTierDiscovery::send(const Link& link, const QHostAddress& destination, 
     bool present = false;
     for (const auto& entry : iface.addressEntries()) if (entry.ip() == link.address) present = true;
     if (!present || !(iface.flags() & QNetworkInterface::IsUp)) return false;
+    if (destination.isMulticast()) m_socket.setMulticastInterface(iface);
     QNetworkDatagram datagram(payload, destination, DiscoveryPort);
     datagram.setSender(link.address);
     datagram.setInterfaceIndex(link.interfaceIndex);
