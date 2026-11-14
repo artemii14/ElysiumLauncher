@@ -1,77 +1,144 @@
-# ElysiumLauncher
+<p align="center">
+  <img src="program_info/io.github.artemii14.ElysiumLauncher.svg" width="112" alt="Elysium Launcher logo">
+</p>
 
-Нативный Minecraft-лаунчер на C++ / Qt 6, основанный на [ElyPrismLauncher](https://github.com/ElyPrismLauncher/Launcher), который, в свою очередь, основан на Prism Launcher. Это независимый форк, не официальный продукт Ely.by, Prism Launcher или Mojang/Microsoft.
+<h1 align="center">Elysium Launcher</h1>
 
-## Новые режимы интерфейса (исходники, ещё не собраны)
+<p align="center">
+  Minecraft-лаунчер на C++ / Qt 6.<br>
+  Интерфейс Midnight, библиотека сборок и компактный режим запуска.
+</p>
 
-Добавлены **Modern** — библиотека с боковой навигацией в духе XMCL и функциями Elysium/Prism — и **Classic** — компактный выбор сборки и запуск в духе Legacy. Есть автоматическое именование/создание vanilla после выбора версии и локальный импорт LaunchWrapper-профиля OptiFine из официальной установки.
+<p align="center">
+  <a href="https://github.com/artemii14/ubiquitous-happiness/actions/workflows/windows.yml"><img src="https://github.com/artemii14/ubiquitous-happiness/actions/workflows/windows.yml/badge.svg?branch=arena%2F66b41468-ubiquitous-happiness" alt="Windows build"></a>
+  <a href="https://github.com/artemii14/ubiquitous-happiness/actions/workflows/elysium.yml"><img src="https://github.com/artemii14/ubiquitous-happiness/actions/workflows/elysium.yml/badge.svg?branch=arena%2F66b41468-ubiquitous-happiness" alt="Linux build"></a>
+</p>
 
-Это собственная Qt-реализация сценариев, не перенос ARR-кода Legacy и не встроенный Electron/XMCL. OptiFine не включён в комплект и не скачивается автоматически. Новые режимы не проверены native-сборкой; прежний Windows ZIP их не содержит. Исходники публикуются в рабочую ветку отдельно от main; статус native-сборки смотри в Actions для конкретного коммита.
+<p align="center">
+  <a href="#скачать">Скачать</a> ·
+  <a href="#возможности">Возможности</a> ·
+  <a href="https://github.com/artemii14/ubiquitous-happiness/issues">Сообщить об ошибке</a> ·
+  <a href="#сборка-из-исходников">Собрать самостоятельно</a>
+</p>
 
-Подробности, ограничения OptiFine и тестовые сценарии: [docs/INTERFACE-MODES.md](docs/INTERFACE-MODES.md).
+> [!NOTE]
+> Независимый форк [ElyPrismLauncher](https://github.com/ElyPrismLauncher/Launcher),
+> основанного на [Prism Launcher](https://github.com/PrismLauncher/PrismLauncher).
+> Не является официальным продуктом Prism Launcher, Ely.by или Mojang/Microsoft.
+> Minecraft не входит в комплект. Для игры через Microsoft-аккаунт требуется право на игру.
 
-## Что изменено в этой версии
+## Скачать
 
-- **Midnight** — новая тема по умолчанию: тёмные поверхности, фиолетовые акценты, скруглённые элементы, заметный фокус клавиатуры и более свободные отступы. Остальные темы сохранены.
-- Переработана верхняя часть библиотеки: приветственный блок, создание сборки, счётчик сборок и понятные пустые состояния.
-- Мгновенный поиск **по названию и группе**, без учёта регистра. `Ctrl+K` — фокус поиска, `Esc` в поле — очистка. Символы `[` и `*` ищутся буквально, а не как регулярные выражения.
-- Быстрое переключение сортировки: имя, последний запуск, время в игре. Выбор сохраняется через существующие настройки.
-- Название, исполняемый файл, desktop/app ID, переменная окружения и конфигурация отделены от исходного проекта. Новый значок Elysium.
-- Обновление исполняемого файла с сервера исходного форка отключено: оно не должно подменять Elysium другой программой.
+Сейчас распространяются **тестовые сборки GitHub Actions**, не стабильный подписанный релиз.
+Изменения Elysium разрабатываются в ветке [`arena/66b41468-ubiquitous-happiness`](https://github.com/artemii14/ubiquitous-happiness/tree/arena/66b41468-ubiquitous-happiness), отдельно от `main`.
 
-## Возможности, сохранённые из ElyPrism / Prism
+| Платформа | Сборка | Артефакт |
+|---|---|---|
+| Windows x64 | [Windows build](https://github.com/artemii14/ubiquitous-happiness/actions/workflows/windows.yml) | `ElysiumLauncher-Windows-x64-portable` — ZIP |
+| Linux x64 | [Linux build](https://github.com/artemii14/ubiquitous-happiness/actions/workflows/elysium.yml) | `ElysiumLauncher-Linux-x86_64-AppImage` |
 
-Это существующие возможности исходного кода, а не новые реализации Elysium:
+1. Откройте нужный workflow и выберите **успешный запуск нужной ветки и коммита**.
+2. Внизу страницы, в **Artifacts**, скачайте архив. Для скачивания GitHub может потребовать вход.
+3. Windows: распакуйте ZIP целиком и запустите `elysiumlauncher.exe`.
+4. Linux: извлеките AppImage, разрешите исполнение и запустите:
 
-- Ely.by и Microsoft-аккаунты;
-- отдельные сборки Minecraft, группы и собственные настройки для каждой сборки;
-- Fabric, Forge, NeoForge, Quilt и другие поддерживаемые исходником загрузчики;
-- поиск и установка модов и модпаков через интеграции Modrinth / CurseForge;
-- управление мирами, ресурс-паками, шейдерами и логами;
-- автоматическая загрузка и выбор Java, настройки памяти и JVM;
-- импорт, экспорт и копирование сборок, учёт времени игры.
+   ```sh
+   chmod +x ElysiumLauncher-Linux-x86_64.AppImage
+   ./ElysiumLauncher-Linux-x86_64.AppImage
+   ```
 
-Работоспособность сетевых интеграций зависит от API, ключей и доступности внешних сервисов. Minecraft не входит в комплект; для Microsoft-аккаунта требуется право на игру.
+Linux-сборка рассчитана на Ubuntu 24.04 / glibc 2.39 или новее.
+Артефакты хранятся 14 дней; старый архив не обновляется автоматически.
+[Подробнее о Windows-сборках](docs/WINDOWS-GITHUB.md).
 
-## Сборка
+> [!WARNING]
+> Перед тестированием сделайте резервную копию миров и сборок.
+> Бинарники не подписаны; успешный CI не является антивирусной проверкой.
+> Не отключайте защиту системы ради запуска. При блокировке сохраните точный текст предупреждения
+> и сообщите о нём в Issues без публикации персональных данных.
 
-Нужны CMake ≥ 3.25, компилятор C++20, Ninja, **Qt ≥ 6.8** (Core, Widgets, Concurrent, Network, Test, Xml, NetworkAuth, OpenGL), Extra CMake Modules, cmark, libarchive, libqrencode, zlib, toml++ ≥ 3.2; на Linux также development-пакет gamemode. Для `CMakePresets.json` нужен более новый CMake с поддержкой presets schema 8.
+## Возможности
 
-После клонирования **этого репозитория**:
+### Интерфейс Midnight
+
+- Тёмная тема с лавандовыми акцентами и собственным SVG-набором значков.
+- **Modern** — библиотека с поиском, сортировкой и правой панелью действий.
+- **Legacy** — компактный выбор сборки и запуск.
+- Выбор режима в настройках лаунчера; тему и набор значков можно менять независимо.
+- Поиск по имени и группе: `Ctrl+K`, очистка поля — `Esc`.
+- Смена иконки выбранной сборки нажатием на неё в правой панели.
+
+### Быстрая установка
+
+- **Vanilla** — выбор версии с автоматическим именем новой сборки.
+- **Sodium-сборки** для Fabric и NeoForge: актуальный каталог Modrinth,
+  Sodium, Iris, LambDynamicLights, Zoomify либо Ok Zoomer.
+- Fabric API обязателен для Fabric; Sodium Extra и Mod Menu добавляются по возможности.
+- Проверка зависимостей по метаданным Modrinth и SHA-512 скачанных модов.
+- Каждая установка Sodium создаёт отдельный экземпляр — существующие сборки не обновляются автоматически.
+- Локальный импорт подходящего LaunchWrapper-профиля OptiFine, **без раздачи или автоматического скачивания OptiFine**.
+
+[Режимы и OptiFine](docs/INTERFACE-MODES.md) · [Условия и ограничения Sodium-сборок](docs/SODIUM-PRESETS.md)
+
+### Сеть ZeroTier
+
+Встроенная панель управления **отдельно установленным ZeroTier One**: подключение по Network ID,
+статус сетей, копирование IP и отключение. Может требоваться настройка доступа к локальной службе.
+Установка необязательна и предлагается через официальный сайт.
+**Функции публикации/поиска хостов нет.** Для игры сообщите друзьям `ZT IP:порт` вручную.
+[Инструкция и безопасность](docs/ZEROTIER.md).
+
+### Возможности основы ElyPrism / Prism
+
+Аккаунты Ely.by и Microsoft, отдельные экземпляры Minecraft, загрузчики модов,
+интеграции Modrinth/CurseForge, управление Java, модами, мирами, ресурс-паками,
+шейдерами, логами, импорт и экспорт сборок.
+Доступность сервисов зависит от их API, регистраций приложения и условий использования.
+
+## Поддержка и предложения
+
+Нашли проблему или хотите предложить улучшение? [Создайте Issue](https://github.com/artemii14/ubiquitous-happiness/issues/new/choose).
+Можно писать **по-русски или по-английски**. Укажите ОС, коммит/сборку, шаги воспроизведения
+и ожидаемый результат. Перед отправкой логов удалите токены, пароли, адреса электронной почты
+и другие личные данные. Ошибки этого форка не следует отправлять разработчикам Prism/ElyPrism.
+
+[Участие в разработке](CONTRIBUTING.md) · [Правила сообщества](CODE_OF_CONDUCT.md)
+
+## Сборка из исходников
+
+Нужны CMake ≥ 3.25, C++20, Ninja, Qt ≥ 6.8 (Core, Widgets, Concurrent, Network,
+Test, Xml, NetworkAuth, OpenGL), Extra CMake Modules, cmark, libarchive,
+libqrencode, zlib, toml++ ≥ 3.2. На Linux также нужен development-пакет gamemode.
+Для `CMakePresets.json` требуется CMake с поддержкой presets schema 8.
+Точные наборы зависимостей CI: [Windows](.github/workflows/windows.yml) и [Linux](.github/workflows/elysium.yml).
 
 ```sh
-git submodule update --init --recursive
+git clone --recurse-submodules --branch arena/66b41468-ubiquitous-happiness https://github.com/artemii14/ubiquitous-happiness.git
+cd ubiquitous-happiness
 cmake -S . -B build -G Ninja \
-  -DCMAKE_BUILD_TYPE=Release \
-  -DBUILD_TESTING=ON \
+  -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON \
   -DCMAKE_INSTALL_PREFIX="$PWD/install"
 cmake --build build --parallel 2
 ctest --test-dir build --output-on-failure
 cmake --install build
 ```
 
-Если Qt установлен отдельно, передайте `-DCMAKE_PREFIX_PATH=/path/to/Qt/6.x/gcc_64` (либо соответствующий путь на Windows/macOS).
+При отдельной установке Qt передайте `-DCMAKE_PREFIX_PATH=/path/to/Qt/6.x/gcc_64`
+(либо путь к Qt для вашей платформы). На Linux установленный файл — `install/bin/elysiumlauncher`.
+Структурные проверки: `python3 scripts/check_elysium.py`.
+Нативные тесты и сборка не заменяют ручную проверку авторизации и запуска Minecraft.
 
-На Linux установленный файл запуска: `install/bin/elysiumlauncher`. До установки можно запускать `build/elysiumlauncher`. Не запускайте новую версию с `--dir`, указывающим на единственный экземпляр важных данных: сначала сделайте резервную копию.
+## Происхождение и лицензии
 
-### CI
+Спасибо разработчикам **ElyPrismLauncher, Prism Launcher и MultiMC**, а также авторам
+используемых библиотек и модов. Интерфейсы XMCL и Legacy использовались как ориентир
+сценариев; это собственная Qt-реализация, а не объединение их приложений.
 
-`.github/workflows/elysium.yml` собирает Linux Release, выполняет тесты и создаёт x86_64 AppImage с Qt-библиотеками. Целевая база — Ubuntu 24.04 / glibc 2.39 или новее. Упаковщик скачивается с GitHub с проверкой закреплённых SHA-256. Для старых дистрибутивов совместимость не обещается.
+Код лаунчера: **GPL-3.0-only** — [LICENSE](LICENSE).
+Лицензии и уведомления отдельных компонентов и ресурсов: [COPYING.md](COPYING.md),
+[program_info/LICENSE](program_info/LICENSE) и файлы библиотек.
+Авторские уведомления исходных проектов сохранены. Моды скачиваются из источника при установке
+и не включены в репозиторий; у них собственные лицензии.
 
-`.github/workflows/windows.yml` добавляет сборку Windows x64 через MSYS2/UCRT64, тесты и упаковку portable-каталога с Qt/DLL. После успешного запуска результат доступен в Artifacts как `ElysiumLauncher-Windows-x64-portable`. Workflow ещё не запускался в этой сессии. [Пошаговая инструкция для Windows через GitHub](docs/WINDOWS-GITHUB.md).
-
-Автоматическая публикация и подпись релизов исходного проекта не перенесены.
-
-### Статус проверки
-
-В среде разработки прошли 6 структурных проверок (`python3 scripts/check_elysium.py`) и отдельная CMake-конфигурация модуля брендинга; настроен pinned submodule libnbtplusplus. Попытка конфигурации CMake остановилась из-за отсутствующего Extra CMake Modules; Qt SDK здесь также не установлен. **Нативная сборка, Qt-тесты, вход в аккаунт и запуск Minecraft пока не проверены.** Готовый EXE / установщик в эту версию не входит.
-
-## Перед публичным релизом
-
-См. [docs/RELEASE-CHECKLIST.md](docs/RELEASE-CHECKLIST.md): собственные OAuth/API-регистрации, проверка сетевых сервисов, сборки и тесты на целевых ОС. Унаследованные публичные идентификаторы не являются разрешением использовать чужую регистрацию для нового продукта.
-
-## Происхождение и лицензия
-
-Исходная версия: ElyPrismLauncher/Launcher `1c8bdd4dd72da77024a5dbb8bd8ef863540e3364` (ветка develop). libnbtplusplus: `3538933614059f0f44388a2b16f3db25ce42285b`.
-
-GPL-3.0-only; сохранены `LICENSE`, `COPYING.md`, лицензии библиотек и исходные уведомления об авторах. При распространении бинарников необходимо предоставить соответствующий исходный код и выполнить условия лицензий. Оригинальное описание проекта находится в [docs/UPSTREAM-README.md](docs/UPSTREAM-README.md).
+Исходная ревизия ElyPrism: `1c8bdd4dd72da77024a5dbb8bd8ef863540e3364`.
+[Оригинальное описание проекта](docs/UPSTREAM-README.md) · [Чек-лист публичного релиза](docs/RELEASE-CHECKLIST.md)

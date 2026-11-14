@@ -1,3 +1,10 @@
+> **Elysium Launcher fork:** issues and pull requests for this fork belong in
+> [artemii14/ubiquitous-happiness](https://github.com/artemii14/ubiquitous-happiness).
+> Russian and English reports are welcome. Build instructions and the current
+> development branch are documented in [README.md](README.md).
+> The guidelines below are inherited from upstream; upstream backport/release
+> automation is not a promise that this fork runs the same infrastructure.
+
 # Contributions Guidelines
 
 ## Restrictions on Generative AI Usage (AI Policy)
