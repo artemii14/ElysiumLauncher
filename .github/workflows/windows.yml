@@ -17,6 +17,7 @@ jobs:
     runs-on: windows-2022
     timeout-minutes: 90
     env:
+      PYTHONUTF8: '1'
       CCACHE_DIR: ${{ github.workspace }}/.ccache
       CCACHE_SLOPPINESS: pch_defines,time_macros
     defaults:
@@ -58,7 +59,7 @@ jobs:
           key: windows-ucrt64-ccache-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: windows-ucrt64-ccache-
       - name: Check resources
-        run: python scripts/check_elysium.py
+        run: bash scripts/ci_run.sh python scripts/check_elysium.py
       - name: Configure
         run: |
           export PATH="$(cygpath -u "$JAVA_HOME")/bin:$PATH"
