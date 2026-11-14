@@ -20,9 +20,7 @@ private:
                  const QJsonDocument& body, std::function<void(QJsonDocument)> success);
     void updateButtons();
     void selectToken();
-    bool askName();
-    void startHosting();
-    void updateHosts();
+    void showError(const QString& message);
     QString selectedNetwork() const;
     QString tokenPath() const;
     QNetworkAccessManager* m_network;
@@ -33,10 +31,6 @@ private:
     QPushButton* m_leave;
     QPushButton* m_refresh;
     QPushButton* m_copy;
-    QPushButton* m_host;
-    QPushButton* m_stopHost;
-    QTableWidget* m_hosts;
-    QLabel* m_hostStatus;
     QString m_tokenOverride;
     bool m_busy = false;
 };

@@ -254,8 +254,6 @@ class MainWindow : public QMainWindow {
     QToolButton* m_sidebarInstanceIcon = nullptr;
     QLabel* m_sidebarInstanceName = nullptr;
     bool m_compactMode = false;
-    bool m_advancedInstanceToolbarVisible = true;
-    bool m_advancedMainToolbarVisible = true;
     InstanceProxyModel* proxymodel = nullptr;
     QToolButton* newsLabel = nullptr;
     QLabel* m_statusLeft = nullptr;

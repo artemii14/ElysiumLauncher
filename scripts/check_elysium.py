@@ -156,19 +156,16 @@ class ElysiumPackagingTests(unittest.TestCase):
         self.assertNotIn('qInfo', source)
         self.assertIn('ui/dialogs/ZeroTierDialog.cpp', (ROOT / "launcher/CMakeLists.txt").read_text(encoding="utf-8"))
 
-    def test_zerotier_host_discovery_boundaries(self):
-        source = (ROOT / "launcher/net/ZeroTierDiscovery.cpp").read_text(encoding="utf-8")
-        for guard in ('datagram.setInterfaceIndex', 'datagram.setSender', 'datagram.setHopLimit(1)',
-                      'receiveDatagram(1025)', 'm_hosts.size() >= 256',
-                      'joinMulticastGroup', 'elysium-zt-query/1', 'QNetworkProxy::NoProxy',
-                      'datagram.senderAddress().isInSubnet', 'ExpiryMs = 12000'):
-            self.assertIn(guard, source)
-        ui = (ROOT / "launcher/ui/dialogs/ZeroTierDialog.cpp").read_text(encoding="utf-8")
-        self.assertIn('askName(); refresh();', ui)
-        self.assertIn('ZeroTierDisplayName', ui)
-        self.assertIn('Стать хостом', ui)
-        self.assertIn('Перестать быть хостом', ui)
-        self.assertIn('TEST_NAME ZeroTierDiscovery', (ROOT / "tests/CMakeLists.txt").read_text(encoding="utf-8"))
+    def test_zerotier_host_feature_removed(self):
+        self.assertFalse((ROOT / "launcher/net/ZeroTierDiscovery.cpp").exists())
+        source = (ROOT / "launcher/ui/dialogs/ZeroTierDialog.cpp").read_text(encoding="utf-8")
+        for retired in ('ZeroTierDiscovery', 'Стать хостом', '46931', 'askName', 'updateHosts'):
+            self.assertNotIn(retired, source)
+        self.assertIn('showError(', source)
+        self.assertIn('QInputDialog::getItem', source)
+        self.assertIn('reply->setReadBufferSize', source)
+        cmake = (ROOT / "launcher/CMakeLists.txt").read_text(encoding="utf-8")
+        self.assertNotIn('ZeroTierDiscovery', cmake)
 
     def test_optifine_test_is_registered(self):
         self.assertTrue((ROOT / "tests/OptiFineProfile_test.cpp").is_file())

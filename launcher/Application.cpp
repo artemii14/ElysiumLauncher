@@ -658,7 +658,6 @@ Application::Application(int& argc, char** argv) : QApplication(argc, argv)
             m_settings->set("ElysiumMidnightIconsMigrated", true);
         }
         m_settings->registerSetting("ElysiumInterfaceMode", QStringLiteral("modern"));
-        m_settings->registerSetting("ZeroTierDisplayName", QString());
         m_settings->registerSetting("BackgroundCat", QString("kitteh"));
         m_settings->registerSetting("CatButtonVisible", true);
 
