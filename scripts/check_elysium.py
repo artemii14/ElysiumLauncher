@@ -115,6 +115,27 @@ class ElysiumPackagingTests(unittest.TestCase):
         settings = (ROOT / "launcher/ui/pages/global/LauncherPage.cpp").read_text(encoding="utf-8")
         self.assertIn('ui->interfaceModeCombo->currentIndex() == 1 ? "classic" : "modern"', settings)
 
+    def test_midnight_icon_pack(self):
+        import re
+        pack = ROOT / "launcher/resources/midnight"
+        assets = {p.stem for p in (pack / "scalable").glob("*.svg")}
+        self.assertGreaterEqual(len(assets), 70)
+        self.assertIn("resources/midnight/midnight.qrc", (ROOT / "launcher/CMakeLists.txt").read_text(encoding="utf-8"))
+        self.assertIn('"midnight"', (ROOT / "launcher/ui/themes/ThemeManager.h").read_text(encoding="utf-8"))
+        self.assertIn('registerSetting("IconTheme", QStringLiteral("midnight"))', (ROOT / "launcher/Application.cpp").read_text(encoding="utf-8"))
+        brands = {"atlauncher", "atlauncher-placeholder", "discord", "flame", "ftb_logo", "matrix", "modrinth", "reddit-alien", "technic"}
+        referenced = set()
+        for path in (ROOT / "launcher").rglob("*"):
+            if path.suffix in (".cpp", ".h", ".ui"):
+                text = path.read_text(encoding="utf-8")
+                referenced.update(re.findall(r'fromTheme\("([^" :]+)"', text))
+                referenced.update(re.findall(r'<iconset theme="([^"]+)"', text))
+        self.assertFalse(referenced - assets - brands, referenced - assets - brands)
+        for svg in (pack / "scalable").glob("*.svg"):
+            root = ET.parse(svg).getroot()
+            self.assertEqual(root.attrib["viewBox"], "0 0 24 24")
+            self.assertNotIn("<image", svg.read_text(encoding="utf-8"))
+
     def test_optifine_test_is_registered(self):
         self.assertTrue((ROOT / "tests/OptiFineProfile_test.cpp").is_file())
         self.assertIn("TEST_NAME OptiFineProfile", (ROOT / "tests/CMakeLists.txt").read_text(encoding="utf-8"))

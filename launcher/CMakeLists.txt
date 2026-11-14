@@ -1239,6 +1239,7 @@ qt_add_resources(LAUNCHER_RESOURCES
     resources/breeze_light/breeze_light.qrc
     resources/OSX/OSX.qrc
     resources/iOS/iOS.qrc
+    resources/midnight/midnight.qrc
     resources/flat/flat.qrc
     resources/flat_white/flat_white.qrc
     resources/documents/documents.qrc

@@ -646,8 +646,17 @@ Application::Application(int& argc, char** argv) : QApplication(argc, argv)
             new INISettingsObject({ BuildConfig.LAUNCHER_CONFIGFILE, "prismlauncher.cfg", "polymc.cfg", "multimc.cfg" }, this));
 
         // Theming
-        m_settings->registerSetting("IconTheme", QString());
+        m_settings->registerSetting("IconTheme", QStringLiteral("midnight"));
         m_settings->registerSetting("ApplicationTheme", QStringLiteral("elysium"));
+        m_settings->registerSetting("ElysiumMidnightIconsMigrated", false);
+        if (!m_settings->get("ElysiumMidnightIconsMigrated").toBool()) {
+            // Upgrade the old default only; preserve explicitly chosen packs.
+            const auto previous = m_settings->get("IconTheme").toString();
+            if (m_settings->get("ApplicationTheme").toString() == "elysium" &&
+                (previous.isEmpty() || previous == "pe_colored"))
+                m_settings->set("IconTheme", QStringLiteral("midnight"));
+            m_settings->set("ElysiumMidnightIconsMigrated", true);
+        }
         m_settings->registerSetting("ElysiumInterfaceMode", QStringLiteral("modern"));
         m_settings->registerSetting("BackgroundCat", QString("kitteh"));
         m_settings->registerSetting("CatButtonVisible", true);
@@ -1254,7 +1263,7 @@ bool Application::createSetupWizard()
     if (wizardRequired) {
         // set default theme after going into theme wizard
         if (!validIcons)
-            settings()->set("IconTheme", QString("pe_colored"));
+            settings()->set("IconTheme", QStringLiteral("midnight"));
         if (!validWidgets) {
 #if defined(Q_OS_WIN32) && QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
             const QString style =

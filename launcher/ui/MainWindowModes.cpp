@@ -31,8 +31,6 @@
 #include <QMessageBox>
 #include <QMenu>
 #include <QPushButton>
-#include <QPainter>
-#include <QPainterPath>
 #include <QSignalBlocker>
 #include <QScrollArea>
 #include <QTemporaryDir>
@@ -41,40 +39,15 @@
 #include <QVBoxLayout>
 
 namespace {
-// Resolution-independent, original outline glyphs shared by navigation actions.
+// Share the same vector artwork with menus, settings and instance dialogs.
 QIcon navigationIcon(const QString& name)
 {
-    QIcon icon;
-    for (int size : {20, 40, 60}) {
-        QPixmap pixmap(size, size);
-        pixmap.fill(Qt::transparent);
-        QPainter p(&pixmap);
-        p.setRenderHint(QPainter::Antialiasing);
-        p.scale(size / 24.0, size / 24.0);
-        p.setPen(QPen(QColor("#b7a8ff"), 1.7, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-        if (name == "add") {
-            p.drawRoundedRect(QRectF(4, 4, 16, 16), 4, 4);
-            p.drawLine(12, 8, 12, 16); p.drawLine(8, 12, 16, 12);
-        } else if (name == "play") {
-            QPainterPath path; path.moveTo(8, 5); path.lineTo(19, 12); path.lineTo(8, 19); path.closeSubpath(); p.drawPath(path);
-        } else if (name == "account") {
-            p.drawEllipse(QRectF(8, 3, 8, 8)); p.drawArc(QRectF(4, 13, 16, 14), 0, 180 * 16);
-        } else if (name == "folder") {
-            QPainterPath path; path.moveTo(3, 7); path.lineTo(3, 20); path.lineTo(21, 20); path.lineTo(21, 7); path.lineTo(12, 7); path.lineTo(10, 4); path.lineTo(3, 4); path.closeSubpath(); p.drawPath(path);
-        } else if (name == "help") {
-            p.drawEllipse(QRectF(3, 3, 18, 18)); p.drawArc(QRectF(9, 6, 6, 6), -90 * 16, 270 * 16); p.drawLine(12, 12, 12, 14); p.drawPoint(12, 17);
-        } else if (name == "import") {
-            p.drawLine(12, 3, 12, 15); p.drawLine(8, 11, 12, 15); p.drawLine(16, 11, 12, 15);
-            p.drawLine(4, 16, 4, 21); p.drawLine(4, 21, 20, 21); p.drawLine(20, 21, 20, 16);
-        } else {
-            for (int y : {6, 12, 18}) { p.drawLine(3, y, 21, y); }
-            p.setBrush(QColor("#151824"));
-            p.drawEllipse(QPointF(8, 6), 2, 2); p.drawEllipse(QPointF(16, 12), 2, 2); p.drawEllipse(QPointF(10, 18), 2, 2);
-        }
-        p.end();
-        icon.addPixmap(pixmap);
-    }
-    return icon;
+    QString glyph = name;
+    if (name == "add") glyph = "new";
+    else if (name == "play") glyph = "launch";
+    else if (name == "account") glyph = "accounts";
+    else if (name == "folder") glyph = "viewfolder";
+    return QIcon::fromTheme(glyph, QIcon(QStringLiteral(":/icons/midnight/scalable/%1.svg").arg(glyph)));
 }
 QByteArray fileHash(const QString& path)
 {

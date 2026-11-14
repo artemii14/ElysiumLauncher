@@ -14,7 +14,7 @@
    <string>Network error</string>
   </property>
   <property name="windowIcon">
-   <iconset theme="QIcon::ThemeIcon::DialogWarning"/>
+   <iconset theme="dialog-warning"/>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
