@@ -253,8 +253,6 @@ class MainWindow : public QMainWindow {
     QLabel* m_compactDetails = nullptr;
     QLabel* m_sidebarInstanceIcon = nullptr;
     QLabel* m_sidebarInstanceName = nullptr;
-    QToolButton* m_modernModeButton = nullptr;
-    QToolButton* m_legacyModeButton = nullptr;
     bool m_compactMode = false;
     bool m_advancedInstanceToolbarVisible = true;
     bool m_advancedMainToolbarVisible = true;

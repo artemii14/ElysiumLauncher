@@ -1440,6 +1440,7 @@ void MainWindow::on_actionSettings_triggered()
 
 void MainWindow::globalSettingsClosed()
 {
+    applyLaunchMode(APPLICATION->settings()->get("ElysiumInterfaceMode").toString() == "classic");
     // FIXME: quick HACK to make this work. improve, optimize.
     APPLICATION->instances()->loadList();
     proxymodel->invalidate();

@@ -103,6 +103,18 @@ class ElysiumPackagingTests(unittest.TestCase):
         self.assertIn('m_sidebarInstanceName->setTextFormat(Qt::PlainText)', source)
         self.assertIn('artwork.setDevicePixelRatio(dpr)', source)
 
+    def test_interface_mode_in_settings(self):
+        source = (ROOT / "launcher/ui/MainWindowModes.cpp").read_text(encoding="utf-8")
+        self.assertNotIn("m_modernModeButton", source)
+        self.assertNotIn("elysiumModeBar", source)
+        self.assertNotIn("Готово к запуску через обычную проверку", source)
+        ui = (ROOT / "launcher/ui/pages/global/LauncherPage.ui").read_text(encoding="utf-8")
+        self.assertIn('name="interfaceModeCombo"', ui)
+        self.assertIn('>Modern</string>', ui)
+        self.assertIn('>Legacy</string>', ui)
+        settings = (ROOT / "launcher/ui/pages/global/LauncherPage.cpp").read_text(encoding="utf-8")
+        self.assertIn('ui->interfaceModeCombo->currentIndex() == 1 ? "classic" : "modern"', settings)
+
     def test_optifine_test_is_registered(self):
         self.assertTrue((ROOT / "tests/OptiFineProfile_test.cpp").is_file())
         self.assertIn("TEST_NAME OptiFineProfile", (ROOT / "tests/CMakeLists.txt").read_text(encoding="utf-8"))

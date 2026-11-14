@@ -195,6 +195,8 @@ void LauncherPage::on_metadataEnableBtn_clicked()
 void LauncherPage::applySettings()
 {
     auto* s = APPLICATION->settings();
+    // Preserve the existing stored key/value for users of the former Classic UI.
+    s->set("ElysiumInterfaceMode", ui->interfaceModeCombo->currentIndex() == 1 ? "classic" : "modern");
 
     // Updates
     if (APPLICATION->updater()) {
@@ -257,6 +259,7 @@ void LauncherPage::applySettings()
 void LauncherPage::loadSettings()
 {
     auto* s = APPLICATION->settings();
+    ui->interfaceModeCombo->setCurrentIndex(s->get("ElysiumInterfaceMode").toString() == "classic" ? 1 : 0);
     // Updates
     if (APPLICATION->updater()) {
         ui->autoUpdateCheckBox->setChecked(APPLICATION->updater()->getAutomaticallyChecksForUpdates());

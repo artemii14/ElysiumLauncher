@@ -97,27 +97,6 @@ QByteArray MainWindow::interfaceWindowState()
 
 void MainWindow::setupLaunchModes()
 {
-    auto modeBar = new QWidget(this);
-    modeBar->setObjectName(QStringLiteral("elysiumModeBar"));
-    auto modeLayout = new QHBoxLayout(modeBar);
-    modeLayout->setContentsMargins(20, 8, 20, 8);
-    modeLayout->addWidget(new QLabel(QStringLiteral("ELYSIUM"), modeBar));
-    modeLayout->addStretch();
-    m_modernModeButton = new QToolButton(modeBar);
-    m_modernModeButton->setText(tr("Библиотека · Modern"));
-    m_legacyModeButton = new QToolButton(modeBar);
-    m_legacyModeButton->setText(tr("Быстрый запуск · Classic"));
-    auto modes = new QButtonGroup(this);
-    modes->setExclusive(true);
-    for (auto button : {m_modernModeButton, m_legacyModeButton}) {
-        button->setCheckable(true);
-        modes->addButton(button);
-        modeLayout->addWidget(button);
-    }
-    connect(m_modernModeButton, &QToolButton::clicked, this, [this] { applyLaunchMode(false); });
-    connect(m_legacyModeButton, &QToolButton::clicked, this, [this] { applyLaunchMode(true); });
-    ui->horizontalLayout->insertWidget(0, modeBar);
-
     // XMCL-inspired workspace rail; every destination uses a Prism/Elysium action.
     m_modernHome = new QWidget(this);
     auto workspace = new QHBoxLayout(m_modernHome);
@@ -226,11 +205,11 @@ void MainWindow::setupLaunchModes()
     layout->setContentsMargins(40, 28, 40, 32);
     layout->setSpacing(16);
     layout->addStretch();
-    auto title = new QLabel(tr("Твой Minecraft. Просто играй."), m_compactHome);
+    auto title = new QLabel(tr("Запуск Minecraft"), m_compactHome);
     title->setObjectName(QStringLiteral("elysiumTitle"));
     title->setWordWrap(true);
     layout->addWidget(title);
-    auto description = new QLabel(tr("Выбери готовую сборку или создай чистую vanilla.\nМоды, Java и настройки остаются общими с библиотекой."), m_compactHome);
+    auto description = new QLabel(tr("Выберите сборку для запуска или установите новую версию Minecraft."), m_compactHome);
     description->setWordWrap(true);
     layout->addWidget(description);
     m_compactInstances = new QComboBox(m_compactHome);
@@ -338,8 +317,6 @@ void MainWindow::applyLaunchMode(bool compact)
         toolbar->toggleViewAction()->setVisible(false);
     }
     m_compactMode = compact;
-    m_modernModeButton->setChecked(!compact);
-    m_legacyModeButton->setChecked(compact);
     m_compactHome->setVisible(compact);
     m_modernHome->setVisible(!compact);
     m_libraryHeader->setVisible(!compact);
@@ -376,13 +353,13 @@ void MainWindow::updateCompactControls()
         }
     }
     if (!instance) {
-        m_compactDetails->setText(tr("Выбери сборку в списке. Если список пуст — создай vanilla."));
+        m_compactDetails->setText(tr("Нет выбранной сборки. Установите Minecraft или добавьте сборку."));
         return;
     }
     auto minecraft = dynamic_cast<MinecraftInstance*>(instance);
     const auto version = minecraft ? minecraft->getPackProfile()->getComponentVersion("net.minecraft") : QString();
-    m_compactDetails->setText(tr("%1 · Minecraft %2\n%3").arg(instance->name(), version,
-        instance->isRunning() ? tr("Игра запущена") : tr("Готово к запуску через обычную проверку аккаунта и Java")));
+    m_compactDetails->setText(tr("Minecraft %1 · %2").arg(version.isEmpty() ? tr("версия не указана") : version,
+        instance->isRunning() ? tr("Игра запущена") : tr("Готово к запуску")));
 }
 
 void MainWindow::createQuickVanilla()

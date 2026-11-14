@@ -57,6 +57,19 @@
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <item>
+           <widget class="QLabel" name="interfaceModeLabel">
+            <property name="text"><string>Режим интерфейса</string></property>
+            <property name="buddy"><cstring>interfaceModeCombo</cstring></property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="interfaceModeCombo">
+            <property name="toolTip"><string>Modern — библиотека сборок. Legacy — компактный экран запуска. Изменение применяется после сохранения настроек.</string></property>
+            <item><property name="text"><string notr="true">Modern</string></property></item>
+            <item><property name="text"><string notr="true">Legacy</string></property></item>
+           </widget>
+          </item>
+          <item>
            <widget class="QLabel" name="instanceSortingLabel">
             <property name="text">
              <string>Instance Sorting</string>
