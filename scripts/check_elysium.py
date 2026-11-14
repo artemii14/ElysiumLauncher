@@ -167,6 +167,17 @@ class ElysiumPackagingTests(unittest.TestCase):
         cmake = (ROOT / "launcher/CMakeLists.txt").read_text(encoding="utf-8")
         self.assertNotIn('ZeroTierDiscovery', cmake)
 
+    def test_sodium_presets_are_create_only(self):
+        source = (ROOT / "launcher/ui/dialogs/SodiumPresetDialog.cpp").read_text(encoding="utf-8")
+        self.assertIn('loader == "fabric" && !exists("fabric-api")', source)
+        self.assertIn('resolver.addOptional("sodium-extra", selected)', source)
+        self.assertIn('resolver.addOptional("modmenu", selected)', source)
+        self.assertIn('withZoom << "ok-zoomer"', source)
+        importer = (ROOT / "launcher/modplatform/modrinth/ModrinthInstanceCreationTask.cpp").read_text(encoding="utf-8")
+        self.assertIn('if (!m_generatedManifest.isEmpty()) return false;', importer)
+        self.assertIn('QSaveFile manifest', importer)
+        self.assertIn('TEST_NAME SodiumPreset', (ROOT / "tests/CMakeLists.txt").read_text(encoding="utf-8"))
+
     def test_optifine_test_is_registered(self):
         self.assertTrue((ROOT / "tests/OptiFineProfile_test.cpp").is_file())
         self.assertIn("TEST_NAME OptiFineProfile", (ROOT / "tests/CMakeLists.txt").read_text(encoding="utf-8"))

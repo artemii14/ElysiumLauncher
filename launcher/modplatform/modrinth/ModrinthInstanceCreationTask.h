@@ -3,6 +3,7 @@
 #include <optional>
 
 #include <QByteArray>
+#include <QJsonObject>
 #include <QCryptographicHash>
 #include <QQueue>
 #include <QString>
@@ -38,6 +39,8 @@ class ModrinthCreationTask final : public InstanceCreationTask {
         m_original_instance_id = std::move(originalInstanceId);
     }
 
+    // Generated presets are create-only: never look up or overwrite an existing pack.
+    void setGeneratedManifest(const QJsonObject& manifest) { m_generatedManifest = manifest; }
     bool abort() override;
 
     bool updateInstance() override;
@@ -47,6 +50,7 @@ class ModrinthCreationTask final : public InstanceCreationTask {
     bool parseManifest(const QString&, std::vector<File>&, bool setInternalData = true, bool showOptionalDialog = true);
 
    private:
+    QJsonObject m_generatedManifest;
     QWidget* m_parent = nullptr;
 
     QString m_minecraft_version, m_fabric_version, m_quilt_version, m_forge_version, m_neoForge_version;

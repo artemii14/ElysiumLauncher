@@ -852,6 +852,9 @@ SET(LAUNCHER_SOURCES
     ui/MainWindowModes.cpp
     ui/dialogs/ZeroTierDialog.h
     ui/dialogs/ZeroTierDialog.cpp
+    ui/dialogs/SodiumPresetDialog.h
+    ui/dialogs/SodiumPresetDialog.cpp
+    modplatform/modrinth/SodiumPreset.h
     minecraft/OptiFineProfile.h
     ui/InstanceWindow.h
     ui/InstanceWindow.cpp

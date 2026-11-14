@@ -9,8 +9,8 @@ from pathlib import Path
 import re
 import urllib.request
 
-PROJECTS = ('sodium', 'sodium-extra', 'iris', 'lambdynamiclights', 'zoomify', 'ok-zoomer', 'modmenu')
-REQUIRED = ('sodium', 'iris', 'lambdynamiclights', 'modmenu')
+PROJECTS = ('sodium', 'sodium-extra', 'iris', 'lambdynamiclights', 'zoomify', 'ok-zoomer', 'modmenu', 'fabric-api')
+REQUIRED = ('sodium', 'iris', 'lambdynamiclights')
 BASE = 'https://api.modrinth.com/v2/'
 
 
@@ -49,21 +49,24 @@ def run():
                         'dependencies': version['dependencies'],
                     }
             available[slug] = by_game
-        eligible = set.intersection(*(set(available[s]) for s in REQUIRED))
+        required = REQUIRED + (('fabric-api',) if loader == 'fabric' else ())
+        eligible = set.intersection(*(set(available[s]) for s in required))
         eligible &= set(available['zoomify']) | set(available['ok-zoomer'])
         rows = []
         for game in sorted(eligible, key=lambda s: tuple(map(int, s.split('.')))):
             zoom = 'zoomify' if game in available['zoomify'] else 'ok-zoomer'
-            mods = {s: available[s][game] for s in REQUIRED + (zoom,)}
+            mods = {s: available[s][game] for s in required + (zoom,)}
             if game in available['sodium-extra']:
                 mods['sodium-extra'] = available['sodium-extra'][game]
+            if game in available['modmenu']:
+                mods['modmenu'] = available['modmenu'][game]
             rows.append({'minecraft': game, 'zoom': zoom, 'extra': 'sodium-extra' in mods, 'mods': mods})
         report['loaders'][loader] = {'rows': rows, 'coverage': {s: sorted(v) for s, v in available.items()}}
         if os.environ.get('GITHUB_ACTIONS'):
             # Check annotations can be read without downloading redirected Azure logs.
             text = '; '.join(r['minecraft'] + ':' + r['zoom'] + ('+extra' if r['extra'] else '') for r in rows)
             print(f'::notice title=Sodium catalog {loader}::{text or "NONE"}')
-            for slug in REQUIRED:
+            for slug in required:
                 if not available[slug]:
                     print(f'::notice title=Missing {loader}::{slug} has no matching files')
         print(loader + ': ' + ', '.join(r['minecraft'] for r in rows))

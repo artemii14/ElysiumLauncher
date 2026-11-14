@@ -227,6 +227,7 @@ class MainWindow : public QMainWindow {
     void applyLaunchMode(bool compact);
     void updateCompactControls();
     void createQuickVanilla();
+    void createSodiumPreset();
     void importOptiFineProfile();
 
     void addInstance(const QString& url = QString(), const QMap<QString, QString>& extra_info = {});

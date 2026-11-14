@@ -16,6 +16,8 @@
 #include "minecraft/VanillaInstanceCreationTask.h"
 #include "ui/dialogs/VersionSelectDialog.h"
 #include "ui/dialogs/ZeroTierDialog.h"
+#include "ui/dialogs/SodiumPresetDialog.h"
+#include "modplatform/modrinth/ModrinthInstanceCreationTask.h"
 #include "ui/instanceview/InstanceProxyModel.h"
 #include "ui/instanceview/InstanceView.h"
 
@@ -139,6 +141,10 @@ void MainWindow::setupLaunchModes()
     decorate(quickVanilla, "import");
     connect(quickVanilla, &QPushButton::clicked, this, &MainWindow::createQuickVanilla);
     navigation->addWidget(quickVanilla);
+    auto sodium = new QPushButton(tr("Установить Sodium…"), rail);
+    decorate(sodium, "quickmods");
+    connect(sodium, &QPushButton::clicked, this, &MainWindow::createSodiumPreset);
+    navigation->addWidget(sodium);
     section(tr("ВЫБРАННАЯ СБОРКА"));
     railAction(ui->actionLaunchInstance, tr("Играть"), "play");
     railAction(ui->actionEditInstance, tr("Настроить сборку…"), "settings");
@@ -238,6 +244,9 @@ void MainWindow::setupLaunchModes()
     connect(optiFine, &QPushButton::clicked, this, &MainWindow::importOptiFineProfile);
     install->addWidget(vanilla);
     install->addWidget(optiFine);
+    auto sodiumCompact = new QPushButton(tr("Sodium-сборка…"), m_compactHome);
+    connect(sodiumCompact, &QPushButton::clicked, this, &MainWindow::createSodiumPreset);
+    install->addWidget(sodiumCompact);
     layout->addLayout(install);
     auto extras = new QHBoxLayout();
     auto create = new QPushButton(tr("Модпаки / Forge / Fabric…"), m_compactHome);
@@ -488,4 +497,16 @@ void MainWindow::importOptiFineProfile()
     profile->saveNow();
     updateCompactControls();
     QMessageBox::information(this, tr("OptiFine"), tr("Профиль импортирован. Совместимость конкретной версии проверь запуском игры."));
+}
+
+void MainWindow::createSodiumPreset()
+{
+    SodiumPresetDialog dialog(this);
+    if (dialog.exec() != QDialog::Accepted || dialog.manifest().isEmpty()) return;
+    auto task = new ModrinthCreationTask({}, APPLICATION->settings(), this, {});
+    task->setGeneratedManifest(dialog.manifest());
+    task->setName(dialog.instanceName());
+    task->setGroup(QStringLiteral("Elysium Sodium"));
+    task->setIcon(QStringLiteral("grass"));
+    instanceFromInstanceTask(task);
 }

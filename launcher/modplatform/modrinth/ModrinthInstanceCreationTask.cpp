@@ -27,6 +27,7 @@
 
 #include <QAbstractButton>
 #include <QFileInfo>
+#include <QSaveFile>
 #include <QHash>
 #include <vector>
 
@@ -44,6 +45,7 @@ bool ModrinthCreationTask::abort()
 
 bool ModrinthCreationTask::updateInstance()
 {
+    if (!m_generatedManifest.isEmpty()) return false;
     auto* instanceList = APPLICATION->instances();
 
     // FIXME: How to handle situations when there's more than one install already for a given modpack?
@@ -164,6 +166,14 @@ bool ModrinthCreationTask::updateInstance()
 // https://docs.modrinth.com/docs/modpacks/format_definition/
 std::unique_ptr<MinecraftInstance> ModrinthCreationTask::createInstance()
 {
+    if (!m_generatedManifest.isEmpty()) {
+        QSaveFile manifest(FS::PathCombine(m_stagingPath, "modrinth.index.json"));
+        const auto bytes = QJsonDocument(m_generatedManifest).toJson();
+        if (!manifest.open(QIODevice::WriteOnly) || manifest.write(bytes) != bytes.size() || !manifest.commit()) {
+            setError(tr("Could not save generated preset manifest."));
+            return nullptr;
+        }
+    }
     QEventLoop loop;
 
     QString parentFolder(FS::PathCombine(m_stagingPath, "mrpack"));

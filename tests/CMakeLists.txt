@@ -72,3 +72,6 @@ ecm_add_test(OptiFineProfile_test.cpp LINK_LIBRARIES Launcher_logic Qt${QT_VERSI
 
 ecm_add_test(ZeroTierDialog_test.cpp LINK_LIBRARIES Launcher_logic Qt${QT_VERSION_MAJOR}::Test
     TEST_NAME ZeroTierDialog)
+
+ecm_add_test(SodiumPreset_test.cpp LINK_LIBRARIES Launcher_logic Qt${QT_VERSION_MAJOR}::Test
+    TEST_NAME SodiumPreset)
