@@ -658,6 +658,10 @@ Application::Application(int& argc, char** argv) : QApplication(argc, argv)
             m_settings->set("ElysiumMidnightIconsMigrated", true);
         }
         m_settings->registerSetting("ElysiumInterfaceMode", QStringLiteral("modern"));
+        m_settings->registerSetting("ElysiumAccentColor", QStringLiteral("#a997ff"));
+        m_settings->registerSetting("ElysiumAnimatedBackground", true);
+        m_settings->registerSetting("ElysiumMoveButtons", false);
+        m_settings->registerSetting("ElysiumHomeButtonOrder", QString());
         m_settings->registerSetting("BackgroundCat", QString("kitteh"));
         m_settings->registerSetting("CatButtonVisible", true);
 

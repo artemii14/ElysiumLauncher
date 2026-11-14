@@ -1180,6 +1180,8 @@ SET(LAUNCHER_SOURCES
     ui/widgets/WideBar.h
     ui/widgets/WideBar.cpp
     ui/widgets/AppearanceWidget.h
+    ui/widgets/HomeCustomization.cpp
+    ui/widgets/HomeCustomization.h
     ui/widgets/AppearanceWidget.cpp
     ui/widgets/MinecraftSettingsWidget.h
     ui/widgets/MinecraftSettingsWidget.cpp

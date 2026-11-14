@@ -25,6 +25,9 @@
 #include <QTextCursor>
 
 class QTextCharFormat;
+class QCheckBox;
+class QPushButton;
+class QGroupBox;
 class SettingsObject;
 
 namespace Ui {
@@ -55,4 +58,11 @@ class AppearanceWidget : public QWidget {
     Ui::AppearanceWidget* m_ui;
     QTextCharFormat m_defaultFormat;
     bool m_themesOnly;
+    QCheckBox* m_animation;
+    QCheckBox* m_moveButtons;
+    QPushButton* m_accent;
+    QPushButton* m_resetOrder;
+    QGroupBox* m_homeAppearance;
+    QString m_accentColor;
+    bool m_resetHomeOrder = false;
 };

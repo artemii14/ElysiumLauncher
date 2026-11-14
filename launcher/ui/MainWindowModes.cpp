@@ -1,3 +1,4 @@
+#include "ui/widgets/HomeCustomization.h"
 // SPDX-License-Identifier: GPL-3.0-only
 // Independent native UI, inspired by the workflows of XMCL and Legacy Launcher.
 #include "MainWindow.h"
@@ -78,7 +79,7 @@ void MainWindow::setupLaunchModes()
     auto workspace = new QHBoxLayout(m_modernHome);
     workspace->setContentsMargins(0, 0, 0, 0);
     workspace->setSpacing(0);
-    auto rail = new QWidget(m_modernHome);
+    auto rail = new MidnightSurface(m_modernHome);
     rail->setObjectName(QStringLiteral("elysiumRail"));
     rail->setAttribute(Qt::WA_StyledBackground, true);
     rail->setMinimumWidth(200);
@@ -191,7 +192,7 @@ void MainWindow::setupLaunchModes()
     workspace->addWidget(railScroll);
     ui->horizontalLayout->addWidget(m_modernHome, 1);
 
-    m_compactHome = new QWidget(this);
+    m_compactHome = new MidnightSurface(this);
     m_compactHome->setObjectName(QStringLiteral("elysiumCompactHome"));
     auto layout = new QVBoxLayout(m_compactHome);
     layout->setContentsMargins(40, 28, 40, 32);
@@ -292,6 +293,8 @@ void MainWindow::setupLaunchModes()
     connect(m_compactModel, &QAbstractItemModel::rowsRemoved, this, &MainWindow::updateCompactControls);
     connect(m_compactModel, &QAbstractItemModel::dataChanged, this, &MainWindow::updateCompactControls);
     connect(APPLICATION->icons(), &IconList::iconUpdated, this, [this] { updateCompactControls(); });
+    new HomeButtonOrder(rail, QStringLiteral("modern-v1"));
+    new HomeButtonOrder(m_compactHome, QStringLiteral("legacy-v1"));
     applyLaunchMode(APPLICATION->settings()->get("ElysiumInterfaceMode").toString() == "classic");
     updateCompactControls();
 }

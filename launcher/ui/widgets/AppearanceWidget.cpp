@@ -38,6 +38,10 @@
 #include "ui_AppearanceWidget.h"
 
 #include <DesktopServices.h>
+#include <QCheckBox>
+#include <QColorDialog>
+#include <QGroupBox>
+#include <QVBoxLayout>
 #include <QGraphicsOpacityEffect>
 #include "BuildConfig.h"
 #include "ui/themes/ITheme.h"
@@ -50,6 +54,36 @@ AppearanceWidget::AppearanceWidget(bool themesOnly, QWidget* parent)
     : QWidget(parent), m_ui(new Ui::AppearanceWidget), m_themesOnly(themesOnly)
 {
     m_ui->setupUi(this);
+    m_homeAppearance = new QGroupBox(this);
+    auto homeLayout = new QVBoxLayout(m_homeAppearance);
+    m_animation = new QCheckBox(m_homeAppearance);
+    m_moveButtons = new QCheckBox(m_homeAppearance);
+    m_accent = new QPushButton(m_homeAppearance);
+    m_resetOrder = new QPushButton(m_homeAppearance);
+    homeLayout->addWidget(m_animation);
+    homeLayout->addWidget(m_moveButtons);
+    homeLayout->addWidget(m_accent);
+    homeLayout->addWidget(m_resetOrder);
+    m_ui->verticalLayout->insertWidget(1, m_homeAppearance);
+    m_homeAppearance->setVisible(!themesOnly);
+    connect(m_accent, &QPushButton::clicked, this, [this] {
+        const auto color = QColorDialog::getColor(QColor(m_accentColor), this, tr("Accent color"));
+        if (color.isValid()) {
+            m_accentColor = color.name();
+            m_accent->setIcon(QIcon());
+            m_accent->setText(tr("Accent color (Midnight): %1").arg(m_accentColor));
+        }
+    });
+    connect(m_resetOrder, &QPushButton::clicked, this, [this] {
+        m_resetHomeOrder = true;
+        m_resetOrder->setEnabled(false);
+    });
+    m_homeAppearance->setTitle(tr("Home screen"));
+    m_animation->setText(tr("Animated background"));
+    m_moveButtons->setText(tr("Allow moving buttons"));
+    m_moveButtons->setToolTip(tr("Drag buttons onto each other to reorder. Turn this off to use them normally."));
+    m_resetOrder->setText(tr("Reset button order"));
+
 
     m_ui->catPreview->setGraphicsEffect(new QGraphicsOpacityEffect(this));
 
@@ -96,6 +130,14 @@ AppearanceWidget::~AppearanceWidget()
 void AppearanceWidget::applySettings()
 {
     SettingsObject* settings = APPLICATION->settings();
+    if (!m_themesOnly) {
+        settings->set("ElysiumAccentColor", m_accentColor);
+        settings->set("ElysiumAnimatedBackground", m_animation->isChecked());
+        settings->set("ElysiumMoveButtons", m_moveButtons->isChecked());
+        if (m_resetHomeOrder) settings->set("ElysiumHomeButtonOrder", QString());
+        APPLICATION->themeManager()->applyCurrentlySelectedTheme();
+    }
+
     QString consoleFontFamily = m_ui->consoleFont->currentFont().family();
     settings->set("ConsoleFont", consoleFontFamily);
     settings->set("ConsoleFontSize", m_ui->fontSizeBox->value());
@@ -108,6 +150,11 @@ void AppearanceWidget::applySettings()
 void AppearanceWidget::loadSettings()
 {
     SettingsObject* settings = APPLICATION->settings();
+    m_accentColor = settings->get("ElysiumAccentColor").toString();
+    m_accent->setText(tr("Accent color (Midnight): %1").arg(m_accentColor));
+    m_animation->setChecked(settings->get("ElysiumAnimatedBackground").toBool());
+    m_moveButtons->setChecked(settings->get("ElysiumMoveButtons").toBool());
+
     QString fontFamily = settings->get("ConsoleFont").toString();
     QFont consoleFont(fontFamily);
     m_ui->consoleFont->setCurrentFont(consoleFont);

@@ -12,6 +12,31 @@ APP_ID = "io.github.artemii14.ElysiumLauncher"
 
 
 class ElysiumPackagingTests(unittest.TestCase):
+    def test_home_customization_contract(self):
+        application = (ROOT / "launcher/Application.cpp").read_text()
+        for setting in ("ElysiumAccentColor", "ElysiumAnimatedBackground", "ElysiumMoveButtons", "ElysiumHomeButtonOrder"):
+            self.assertIn('registerSetting("' + setting + '"', application)
+        self.assertIn('registerSetting("ElysiumMoveButtons", false)', application)
+        source = (ROOT / "launcher/ui/widgets/HomeCustomization.cpp").read_text()
+        self.assertIn('!button || !unlocked()', source)
+        self.assertIn('data.startsWith(m_session + ":")', source)
+        self.assertIn('group.buttons.contains(button)', source)
+        self.assertIn('m_timer.stop()', source)
+        self.assertIn('Qt::ApplicationActive', source)
+        self.assertIn('ElysiumHomeButtonOrder', source)
+        modes = (ROOT / "launcher/ui/MainWindowModes.cpp").read_text()
+        self.assertIn('new HomeButtonOrder(rail, QStringLiteral("modern-v1"))', modes)
+        self.assertIn('new HomeButtonOrder(m_compactHome, QStringLiteral("legacy-v1"))', modes)
+        cmake = (ROOT / "launcher/CMakeLists.txt").read_text()
+        self.assertIn('ui/widgets/HomeCustomization.cpp', cmake)
+
+    def test_supplemental_translation_fallback(self):
+        source = (ROOT / "launcher/translations/ElysiumTranslator.h").read_text()
+        self.assertIn('return english.value(text)', source)
+        self.assertIn('return russian.value(text)', source)
+        model = (ROOT / "launcher/translations/TranslationsModel.cpp").read_text()
+        self.assertLess(model.index('installTranslator(supplement)'), model.index('// uninstall existing translators'))
+
     def test_branding_inputs_exist(self):
         for name in (
             f"{APP_ID}.svg", f"{APP_ID}_256.png", f"{APP_ID}.desktop.in",

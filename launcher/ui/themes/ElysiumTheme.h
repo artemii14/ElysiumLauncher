@@ -4,9 +4,15 @@
 
 #include "DarkTheme.h"
 #include <QObject>
+#include "Application.h"
+#include "settings/SettingsObject.h"
 
 class ElysiumTheme final : public DarkTheme {
 public:
+    static QColor accent() {
+        const QColor color(APPLICATION->settings()->get("ElysiumAccentColor").toString());
+        return color.isValid() ? color : QColor("#a997ff");
+    }
     QString id() override { return QStringLiteral("elysium"); }
     QString name() override { return QObject::tr("Elysium • Midnight"); }
     QString tooltip() override { return QObject::tr("Midnight surfaces, violet accents and comfortable spacing."); }
@@ -22,9 +28,9 @@ public:
         palette.setColor(QPalette::Text, QColor("#edeef7"));
         palette.setColor(QPalette::Button, QColor("#252a40"));
         palette.setColor(QPalette::ButtonText, QColor("#edeef7"));
-        palette.setColor(QPalette::Highlight, QColor("#a997ff"));
+        palette.setColor(QPalette::Highlight, accent());
         palette.setColor(QPalette::HighlightedText, QColor("#11131d"));
-        palette.setColor(QPalette::Link, QColor("#b7a8ff"));
+        palette.setColor(QPalette::Link, accent().lighter(115));
         palette.setColor(QPalette::PlaceholderText, QColor("#9ca3bd"));
         palette.setColor(QPalette::ToolTipBase, QColor("#252a40"));
         palette.setColor(QPalette::ToolTipText, QColor("#edeef7"));
@@ -59,19 +65,21 @@ QLabel#elysiumEyebrow { color: #b7a8ff; font-size: 11px; font-weight: bold; }
 QLabel#elysiumTitle { font-size: 26px; font-weight: bold; }
 QLabel#elysiumSubtitle, QLabel#elysiumCount { color: #a5adc7; }
 QLabel#elysiumEmpty { color: #a5adc7; font-size: 16px; padding: 32px; }
-QWidget#elysiumRail { background: #151824; border-left: 1px solid #292d43; }
+QWidget#elysiumRail { background: transparent; border-left: 1px solid #292d43; }
 QWidget#elysiumRail QPushButton, QWidget#elysiumRail QToolButton { text-align: left; padding: 8px 10px; background: transparent; border: 1px solid transparent; border-radius: 7px; }
 QWidget#elysiumRail QPushButton:hover, QWidget#elysiumRail QToolButton:hover { background: #252a40; border-color: #3b415c; }
 QWidget#elysiumRail QPushButton:disabled { color: #72798f; }
 QWidget#elysiumRail QToolButton::menu-indicator { subcontrol-position: right center; right: 8px; }
 QWidget#elysiumModeBar { background: #11131d; border-bottom: 1px solid #292d43; }
-QWidget#elysiumCompactHome { background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #151b2d, stop:0.65 #20203b, stop:1 #171a27); }
+QWidget#elysiumCompactHome { background: transparent; }
 QWidget#elysiumCompactHome QPushButton { padding: 12px 16px; }
 QWidget#elysiumHeader { background: #171a27; border-bottom: 1px solid #292d43; }
 QProgressBar { border: none; background: #252a40; border-radius: 4px; text-align: center; }
 QProgressBar::chunk { background: #a997ff; border-radius: 4px; }
 QTabBar::tab { padding: 9px 14px; }
 QTabBar::tab:selected { color: #c2b5ff; }
-)QSS");
+)QSS").replace(QStringLiteral("#a997ff"), accent().name())
+              .replace(QStringLiteral("#b7a8ff"), accent().lighter(115).name())
+              .replace(QStringLiteral("#c2b5ff"), accent().lighter(125).name());
     }
 };

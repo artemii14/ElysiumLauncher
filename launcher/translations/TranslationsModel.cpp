@@ -35,6 +35,7 @@
  */
 
 #include "TranslationsModel.h"
+#include "ElysiumTranslator.h"
 
 #include <QDebug>
 #include <memory>
@@ -459,6 +460,12 @@ bool TranslationsModel::selectLanguage(QString key) const
     } else {
         langCode = langPtr->key;
     }
+
+    // Install before the upstream translator so complete upstream catalogs win.
+    static auto supplement = new ElysiumTranslator(QCoreApplication::instance());
+    QCoreApplication::removeTranslator(supplement);
+    supplement->language = langCode;
+    QCoreApplication::installTranslator(supplement);
 
     // uninstall existing translators if there are any
     if (d->m_appTranslator) {
