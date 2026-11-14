@@ -72,6 +72,17 @@ private slots:
         QVERIFY(!solver.addOptional("missing", selected));
         QCOMPARE(selected.size(), 1);
     }
+    void rejectsIncorrectPinnedResponse()
+    {
+        auto sodium = mod("sodium", "v1");
+        auto iris = mod("iris", "iris1");
+        iris["dependencies"] = QJsonArray{QJsonObject{{"project_id", "sodium"}, {"version_id", "expected"}, {"dependency_type", "required"}}};
+        Resolver solver("1.21.1", "fabric", [&](const QString& p) { return p == "iris" ? QJsonArray{iris} : QJsonArray{sodium}; },
+            [&](const QString&) { return sodium; });
+        Resolver::Selection selected;
+        QVERIFY(!solver.resolve({"iris"}, selected));
+        QVERIFY(selected.isEmpty());
+    }
     void missingRequiredFails()
     {
         auto sodium = mod("sodium", "v1");

@@ -3,6 +3,7 @@
 #include "Application.h"
 #include "meta/Index.h"
 #include "meta/VersionList.h"
+#include "tasks/Task.h"
 #include "modplatform/modrinth/SodiumPreset.h"
 #include <QDialogButtonBox>
 #include <QDateTime>
@@ -42,7 +43,7 @@ SodiumPresetDialog::SodiumPresetDialog(QWidget* parent) : QDialog(parent), m_net
     m_status->setTextFormat(Qt::PlainText);
     layout->addWidget(m_status);
     m_table = new QTableWidget(0, 3, this);
-    m_table->setHorizontalHeaderLabels({tr("Minecraft"), tr("Загрузчик"), tr("Приближение")});
+    m_table->setHorizontalHeaderLabels({tr("Minecraft"), tr("Загрузчик"), tr("Мод на зум")});
     m_table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     m_table->setSelectionMode(QAbstractItemView::SingleSelection);
     m_table->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -55,7 +56,7 @@ SodiumPresetDialog::SodiumPresetDialog(QWidget* parent) : QDialog(parent), m_net
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
     connect(m_reload, &QPushButton::clicked, this, &SodiumPresetDialog::reload);
     connect(m_install, &QPushButton::clicked, this, &SodiumPresetDialog::prepare);
-    connect(m_table, &QTableWidget::itemSelectionChanged, this, [this] { m_install->setEnabled(m_table->currentRow() >= 0); });
+    connect(m_table, &QTableWidget::itemSelectionChanged, this, [this] { m_install->setEnabled(!m_progress && m_table->currentRow() >= 0); });
     layout->addWidget(buttons);
     QTimer::singleShot(0, this, [this] { reload(); });
 }
@@ -76,6 +77,10 @@ QJsonDocument SodiumPresetDialog::fetch(const QString& path)
     QEventLoop loop;
     connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
     connect(reply, &QNetworkReply::readyRead, reply, [reply] { if (reply->bytesAvailable() > Limit) reply->abort(); });
+    QTimer deadline;
+    deadline.setSingleShot(true);
+    connect(&deadline, &QTimer::timeout, reply, &QNetworkReply::abort);
+    deadline.start(30000);
     const auto cancel = connect(m_progress, &QProgressDialog::canceled, reply, &QNetworkReply::abort);
     if (!reply->isFinished()) loop.exec();
     disconnect(cancel);
@@ -88,12 +93,15 @@ QJsonDocument SodiumPresetDialog::fetch(const QString& path)
     QJsonParseError error;
     const auto json = QJsonDocument::fromJson(bytes, &error);
     if (error.error != QJsonParseError::NoError) fail(tr("Некорректный ответ Modrinth."));
+    if (m_cacheBytes + bytes.size() > 96 * 1024 * 1024) fail(tr("Каталог Modrinth слишком большой. Попробуйте повторить загрузку позже."));
+    m_cacheBytes += bytes.size();
     m_cache[path] = json;
     return json;
 }
 
 void SodiumPresetDialog::reload()
 {
+    if (m_progress) return;
     QProgressDialog progress(tr("Проверка каталога…"), tr("Отмена"), 0, 0, this);
     progress.setWindowModality(Qt::WindowModal);
     progress.setMinimumDuration(0);
@@ -103,6 +111,7 @@ void SodiumPresetDialog::reload()
     m_install->setEnabled(false);
     m_table->setRowCount(0);
     m_cache.clear();
+    m_cacheBytes = 0;
     m_projects.clear();
     try {
         QSet<QString> releases;
@@ -134,7 +143,7 @@ void SodiumPresetDialog::reload()
                 m_table->insertRow(row);
                 m_table->setItem(row, 0, new QTableWidgetItem(game));
                 m_table->setItem(row, 1, new QTableWidgetItem(loader));
-                m_table->setItem(row, 2, new QTableWidgetItem(zoom));
+                m_table->setItem(row, 2, new QTableWidgetItem(zoom == "zoomify" ? QString("Zoomify") : QString("Ok Zoomer")));
             }
         }
         m_status->setText(tr("Доступно вариантов: %1. Перед установкой проверяются зависимости. Файлы модов могут быть beta/alpha; каталог не означает проверку запуска каждого набора.").arg(m_table->rowCount()));
@@ -150,6 +159,7 @@ void SodiumPresetDialog::reload()
 
 void SodiumPresetDialog::prepare()
 {
+    if (m_progress) return;
     const auto row = m_table->currentRow();
     if (row < 0) return;
     const auto game = m_table->item(row, 0)->text();
@@ -161,14 +171,24 @@ void SodiumPresetDialog::prepare()
     m_install->setEnabled(false);
     m_reload->setEnabled(false);
     m_table->setEnabled(false);
+    // Recheck at installation time even when the catalog window stayed open.
+    m_cache.clear();
+    m_cacheBytes = 0;
+    m_projects.clear();
+    m_manifest = {};
     try {
         auto versions = [this](const QString& project) {
             if (!QRegularExpression("^[A-Za-z0-9_-]+$").match(project).hasMatch()) fail(tr("Некорректный ID проекта."));
             if (m_projects.contains(project)) return m_projects.value(project);
             const auto doc = fetch("project/" + project + "/version");
             if (!doc.isArray()) fail(tr("Некорректные зависимости Modrinth."));
-            m_projects[project] = newestFirst(doc.array());
-            return m_projects.value(project);
+            const auto sorted = newestFirst(doc.array());
+            m_projects[project] = sorted;
+            if (!sorted.isEmpty()) {
+                const auto canonical = sorted.first().toObject()["project_id"].toString();
+                if (!canonical.isEmpty()) m_projects[canonical] = sorted;
+            }
+            return sorted;
         };
         auto version = [this](const QString& id) {
             if (!QRegularExpression("^[A-Za-z0-9]+$").match(id).hasMatch()) fail(tr("Некорректный ID версии."));
@@ -180,18 +200,38 @@ void SodiumPresetDialog::prepare()
         if (loader == "fabric") roots << "fabric-api";
         auto withZoom = roots;
         withZoom << "zoomify";
+        QString zoomTitle = "Zoomify";
         if (!resolver.resolve(withZoom, selected)) {
             selected.clear();
             withZoom = roots;
             withZoom << "ok-zoomer";
+            zoomTitle = "Ok Zoomer";
             if (!resolver.resolve(withZoom, selected)) fail(tr("Нет полного набора модов с разрешимыми зависимостями для этой версии."));
         }
+        m_table->item(row, 2)->setText(zoomTitle);
         resolver.addOptional("sodium-extra", selected);
         resolver.addOptional("modmenu", selected);
         const auto uid = loader == "fabric" ? QString("net.fabricmc.fabric-loader") : QString("net.neoforged");
         auto loaders = APPLICATION->metadataIndex()->get(uid);
         progress.setLabelText(tr("Проверка версии загрузчика…"));
-        loaders->waitToLoad();
+        if (!loaders->isLoaded()) {
+            auto loadTask = loaders->getLoadTask();
+            if (!loadTask) fail(tr("Не удалось начать загрузку метаданных загрузчика."));
+            QEventLoop loop;
+            QTimer deadline;
+            deadline.setSingleShot(true);
+            connect(loadTask.get(), &Task::finished, &loop, &QEventLoop::quit);
+            connect(&progress, &QProgressDialog::canceled, &loop, &QEventLoop::quit);
+            connect(&deadline, &QTimer::timeout, &loop, &QEventLoop::quit);
+            deadline.start(30000);
+            loadTask->start();
+            if (!loadTask->isFinished() && !progress.wasCanceled()) loop.exec();
+            if (progress.wasCanceled() || !loadTask->isFinished()) {
+                loadTask->abort();
+                fail(progress.wasCanceled() ? tr("Операция отменена.") : tr("Истекло время ожидания метаданных загрузчика."));
+            }
+            if (!loadTask->wasSuccessful()) fail(tr("Не удалось загрузить метаданные загрузчика. Повторите попытку позже."));
+        }
         if (progress.wasCanceled()) fail(tr("Операция отменена."));
         auto chosen = loaders->getLatestForParent("net.minecraft", game);
         if (!chosen && loader == "fabric") {

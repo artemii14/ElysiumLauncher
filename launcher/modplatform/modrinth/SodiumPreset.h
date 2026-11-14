@@ -106,7 +106,8 @@ private:
         const auto choices = need.pin.isEmpty() ? newestFirst(versions(need.project)) : QJsonArray{version(need.pin)};
         for (const auto& choice : choices) {
             const auto candidate = choice.toObject();
-            if (candidate["project_id"].toString() != need.project || !supports(candidate, game, loader)) continue;
+            if (candidate["project_id"].toString() != need.project ||
+                (!need.pin.isEmpty() && candidate["id"].toString() != need.pin) || !supports(candidate, game, loader)) continue;
             auto trial = selected;
             trial[need.project] = candidate;
             auto next = pending;

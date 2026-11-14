@@ -27,6 +27,7 @@ private:
     QLabel* m_status;
     QProgressDialog* m_progress = nullptr;
     QMap<QString, QJsonDocument> m_cache;
+    qint64 m_cacheBytes = 0;
     QMap<QString, QJsonArray> m_projects;
     QJsonObject m_manifest;
     QString m_name;
