@@ -251,6 +251,8 @@ class MainWindow : public QMainWindow {
     QComboBox* m_compactInstances = nullptr;
     QSortFilterProxyModel* m_compactModel = nullptr;
     QLabel* m_compactDetails = nullptr;
+    QLabel* m_sidebarInstanceIcon = nullptr;
+    QLabel* m_sidebarInstanceName = nullptr;
     QToolButton* m_modernModeButton = nullptr;
     QToolButton* m_legacyModeButton = nullptr;
     bool m_compactMode = false;

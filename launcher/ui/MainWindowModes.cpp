@@ -6,6 +6,7 @@
 #include "Application.h"
 #include "Exception.h"
 #include "InstanceList.h"
+#include "icons/IconList.h"
 #include "meta/Index.h"
 #include "meta/VersionList.h"
 #include "minecraft/MinecraftInstance.h"
@@ -162,6 +163,19 @@ void MainWindow::setupLaunchModes()
         button->setMinimumHeight(42);
         navigation->addWidget(button);
     };
+    // Selected pack identity: actual instance artwork, not a launcher glyph.
+    m_sidebarInstanceIcon = new QLabel(rail);
+    m_sidebarInstanceIcon->setObjectName(QStringLiteral("elysiumSelectedIcon"));
+    m_sidebarInstanceIcon->setAlignment(Qt::AlignCenter);
+    m_sidebarInstanceIcon->setFixedHeight(88);
+    m_sidebarInstanceName = new QLabel(rail);
+    m_sidebarInstanceName->setObjectName(QStringLiteral("elysiumSelectedName"));
+    m_sidebarInstanceName->setTextFormat(Qt::PlainText);
+    m_sidebarInstanceName->setAlignment(Qt::AlignCenter);
+    m_sidebarInstanceName->setWordWrap(true);
+    m_sidebarInstanceName->setContentsMargins(6, 0, 6, 12);
+    navigation->addWidget(m_sidebarInstanceIcon);
+    navigation->addWidget(m_sidebarInstanceName);
     section(tr("БИБЛИОТЕКА"));
     railAction(ui->actionAddInstance, tr("Создать сборку…"), "add");
     auto quickVanilla = new QPushButton(tr("Установить vanilla…"), rail);
@@ -301,6 +315,7 @@ void MainWindow::setupLaunchModes()
     connect(m_compactModel, &QAbstractItemModel::rowsInserted, this, &MainWindow::updateCompactControls);
     connect(m_compactModel, &QAbstractItemModel::rowsRemoved, this, &MainWindow::updateCompactControls);
     connect(m_compactModel, &QAbstractItemModel::dataChanged, this, &MainWindow::updateCompactControls);
+    connect(APPLICATION->icons(), &IconList::iconUpdated, this, [this] { updateCompactControls(); });
     applyLaunchMode(APPLICATION->settings()->get("ElysiumInterfaceMode").toString() == "classic");
     updateCompactControls();
 }
@@ -343,6 +358,23 @@ void MainWindow::updateCompactControls()
     const int row = m_compactInstances->findData(id, InstanceList::InstanceIDRole);
     m_compactInstances->setCurrentIndex(row);
     auto instance = APPLICATION->instances()->getInstanceById(id);
+    if (m_sidebarInstanceIcon && m_sidebarInstanceName) {
+        m_sidebarInstanceIcon->setVisible(instance != nullptr);
+        m_sidebarInstanceName->setVisible(instance != nullptr);
+        if (instance) {
+            const auto icon = APPLICATION->icons()->getIcon(instance->iconKey());
+            const auto dpr = devicePixelRatioF();
+            auto artwork = icon.pixmap(QSize(qRound(80 * dpr), qRound(80 * dpr)));
+            artwork.setDevicePixelRatio(dpr);
+            m_sidebarInstanceIcon->setPixmap(artwork);
+            m_sidebarInstanceIcon->setAccessibleName(tr("Иконка сборки %1").arg(instance->name()));
+            m_sidebarInstanceName->setText(instance->name());
+            m_sidebarInstanceName->setToolTip(instance->name());
+        } else {
+            m_sidebarInstanceIcon->clear();
+            m_sidebarInstanceName->clear();
+        }
+    }
     if (!instance) {
         m_compactDetails->setText(tr("Выбери сборку в списке. Если список пуст — создай vanilla."));
         return;

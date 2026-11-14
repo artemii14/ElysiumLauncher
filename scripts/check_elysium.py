@@ -94,6 +94,15 @@ class ElysiumPackagingTests(unittest.TestCase):
         self.assertIn('navigationIcon', source)
         self.assertIn('new QScrollArea', source)
 
+    def test_sidebar_selected_pack_identity(self):
+        source = (ROOT / "launcher/ui/MainWindowModes.cpp").read_text(encoding="utf-8")
+        self.assertIn('navigation->addWidget(m_sidebarInstanceIcon)', source)
+        self.assertIn('navigation->addWidget(m_sidebarInstanceName)', source)
+        self.assertIn('getIcon(instance->iconKey())', source)
+        self.assertIn('m_sidebarInstanceName->setText(instance->name())', source)
+        self.assertIn('m_sidebarInstanceName->setTextFormat(Qt::PlainText)', source)
+        self.assertIn('artwork.setDevicePixelRatio(dpr)', source)
+
     def test_optifine_test_is_registered(self):
         self.assertTrue((ROOT / "tests/OptiFineProfile_test.cpp").is_file())
         self.assertIn("TEST_NAME OptiFineProfile", (ROOT / "tests/CMakeLists.txt").read_text(encoding="utf-8"))
