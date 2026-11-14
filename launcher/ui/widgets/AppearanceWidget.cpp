@@ -134,7 +134,11 @@ void AppearanceWidget::applySettings()
         settings->set("ElysiumAccentColor", m_accentColor);
         settings->set("ElysiumAnimatedBackground", m_animation->isChecked());
         settings->set("ElysiumMoveButtons", m_moveButtons->isChecked());
-        if (m_resetHomeOrder) settings->set("ElysiumHomeButtonOrder", QString());
+        if (m_resetHomeOrder) {
+            settings->set("ElysiumHomeButtonOrder", QString());
+            m_resetHomeOrder = false;
+            m_resetOrder->setEnabled(true);
+        }
         APPLICATION->themeManager()->applyCurrentlySelectedTheme();
     }
 

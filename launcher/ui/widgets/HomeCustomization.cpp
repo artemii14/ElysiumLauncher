@@ -81,7 +81,7 @@ void HomeButtonOrder::collect(QLayout* layout)
                 if (box && button->objectName() != "elysiumSelectedIcon") {
                     button->setProperty("elysiumOrderId", QString::number(m_counter++));
                     group.buttons << button;
-                    group.slots << i;
+                    group.positions << i;
                     button->installEventFilter(this);
                     button->setAcceptDrops(true);
                 }
@@ -98,7 +98,7 @@ void HomeButtonOrder::arrange(Group& group, const QStringList& ids)
             if (button->property("elysiumOrderId").toString() == id && !ordered.contains(button)) ordered << button;
     for (auto button : group.buttons) if (!ordered.contains(button)) ordered << button;
     for (auto button : group.buttons) group.layout->removeWidget(button);
-    for (int i = 0; i < ordered.size(); ++i) group.layout->insertWidget(group.slots[i], ordered[i]);
+    for (int i = 0; i < ordered.size(); ++i) group.layout->insertWidget(group.positions[i], ordered[i]);
     group.buttons = ordered;
 }
 void HomeButtonOrder::restore()
@@ -137,7 +137,8 @@ bool HomeButtonOrder::eventFilter(QObject* object, QEvent* event)
     }
     if (event->type() == QEvent::MouseMove && m_pressed == button) {
         auto mouse = static_cast<QMouseEvent*>(event);
-        if ((mouse->position().toPoint() - m_start).manhattanLength() >= QApplication::startDragDistance()) {
+        if ((mouse->buttons() & Qt::LeftButton) &&
+            (mouse->position().toPoint() - m_start).manhattanLength() >= QApplication::startDragDistance()) {
             auto mime = new QMimeData;
             mime->setData(Mime, (m_session + ":" + button->property("elysiumOrderId").toString()).toUtf8());
             QDrag drag(button); drag.setMimeData(mime); drag.setPixmap(button->grab());

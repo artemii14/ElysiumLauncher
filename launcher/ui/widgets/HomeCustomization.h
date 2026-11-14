@@ -32,7 +32,7 @@ public:
 protected:
     bool eventFilter(QObject* object, QEvent* event) override;
 private:
-    struct Group { QString key; QBoxLayout* layout; QList<QAbstractButton*> buttons; QList<int> slots; };
+    struct Group { QString key; QBoxLayout* layout; QList<QAbstractButton*> buttons; QList<int> positions; };
     void collect(QLayout* layout);
     void arrange(Group& group, const QStringList& ids);
     void save();
