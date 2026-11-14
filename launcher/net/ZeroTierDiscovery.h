@@ -32,12 +32,19 @@ public:
     QList<Host> hosts(const QString& network) const;
     bool hosting() const { return m_port != 0; }
     QString hostNetwork() const { return m_hostLink.network; }
-    QString error() const { return m_error; }
+    QString error() const { return m_error.isEmpty() ? m_sendError : m_error; }
+    bool probe(const QString& network, const QHostAddress& address);
     void removeNetwork(const QString& network);
 private:
     explicit ZeroTierDiscovery(QObject* parent);
     void announce(bool goodbye = false);
     void receive();
+    void query();
+    bool send(const Link& link, const QHostAddress& destination, const QByteArray& payload);
+    QByteArray announcement(bool goodbye = false) const;
+    QMap<QString, QList<QHostAddress>> m_probes;
+    QMap<QString, QPair<QHostAddress, qint64>> m_subscribers;
+    QString m_sendError;
     QUdpSocket m_socket;
     QTimer m_timer;
     QList<Link> m_links;

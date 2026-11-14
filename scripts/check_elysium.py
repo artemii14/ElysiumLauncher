@@ -101,7 +101,8 @@ class ElysiumPackagingTests(unittest.TestCase):
         self.assertIn('getIcon(instance->iconKey())', source)
         self.assertIn('m_sidebarInstanceName->setText(instance->name())', source)
         self.assertIn('m_sidebarInstanceName->setTextFormat(Qt::PlainText)', source)
-        self.assertIn('artwork.setDevicePixelRatio(dpr)', source)
+        self.assertIn('m_sidebarInstanceIcon->setIcon(icon)', source)
+        self.assertIn('&MainWindow::on_actionChangeInstIcon_triggered', source)
 
     def test_interface_mode_in_settings(self):
         source = (ROOT / "launcher/ui/MainWindowModes.cpp").read_text(encoding="utf-8")
@@ -159,6 +160,7 @@ class ElysiumPackagingTests(unittest.TestCase):
         source = (ROOT / "launcher/net/ZeroTierDiscovery.cpp").read_text(encoding="utf-8")
         for guard in ('datagram.setInterfaceIndex', 'datagram.setSender', 'datagram.setHopLimit(1)',
                       'receiveDatagram(1025)', 'm_hosts.size() >= 256',
+                      'joinMulticastGroup', 'elysium-zt-query/1', 'QNetworkProxy::NoProxy',
                       'datagram.senderAddress().isInSubnet', 'ExpiryMs = 12000'):
             self.assertIn(guard, source)
         ui = (ROOT / "launcher/ui/dialogs/ZeroTierDialog.cpp").read_text(encoding="utf-8")

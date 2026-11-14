@@ -74,6 +74,22 @@ ZeroTierDialog::ZeroTierDialog(QWidget* parent) : QDialog(parent), m_network(new
     hostActions->addWidget(m_host);
     hostActions->addWidget(m_stopHost);
     hostActions->addWidget(rename);
+    auto findHost = new QPushButton(tr("Найти по ZT IP…"), this);
+    hostActions->addWidget(findHost);
+    connect(findHost, &QPushButton::clicked, this, [this] {
+        if (selectedNetwork().isEmpty()) {
+            QMessageBox::information(this, tr("Поиск хоста"), tr("Сначала выберите подключённую сеть и нажмите «Обновить»."));
+            return;
+        }
+        bool ok = false;
+        const auto ip = QInputDialog::getText(this, tr("Прямой поиск хоста"),
+            tr("Введите ZT IPv4 хоста. Этот способ не требует broadcast/multicast, но на обоих компьютерах должен быть разрешён UDP 46931."),
+            QLineEdit::Normal, {}, &ok).trimmed();
+        if (!ok) return;
+        if (!ZeroTierDiscovery::instance()->probe(selectedNetwork(), QHostAddress(ip)))
+            QMessageBox::warning(this, tr("Поиск хоста"), tr("Нужен IPv4 другого участника в подсети выбранной сети ZeroTier."));
+        else QMessageBox::information(this, tr("Поиск хоста"), tr("Запрос отправлен. Если хост включён и UDP 46931 разрешён, адрес появится в списке. Ping проверяет ICMP, а не этот UDP-порт."));
+    });
     layout->addLayout(hostActions);
     m_hostStatus = new QLabel(this);
     m_hostStatus->setWordWrap(true);
@@ -359,7 +375,7 @@ void ZeroTierDialog::updateHosts()
         if (host.endpoint == selectedEndpoint) m_hosts->selectRow(row);
     }
     m_hostStatus->setText(!service->error().isEmpty() ? service->error() :
-        service->hosting() ? tr("Вы публикуете адрес в сети %1. Другим нужен открытый ElysiumLauncher и доступный UDP-порт 46931.").arg(service->hostNetwork()) :
-        tr("Выберите сеть, чтобы увидеть хостов. Объявления работают при разрешённой широковещательной связи ZeroTier. Адреса не проверяют личность участников."));
+        service->hosting() ? tr("Вы публикуете адрес в сети %1. Другим нужен открытый эмулятор сети ElysiumLauncher и доступный UDP-порт 46931.").arg(service->hostNetwork()) :
+        tr("Выберите сеть, чтобы увидеть хостов. Поиск использует multicast и broadcast. Если список пуст, нажмите «Найти по ZT IP…». Адреса не проверяют личность участников."));
     m_stopHost->setEnabled(service->hosting());
 }

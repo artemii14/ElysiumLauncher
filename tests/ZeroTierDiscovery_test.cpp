@@ -32,6 +32,17 @@ private slots:
         QVERIFY(!service->hosting());
         QVERIFY(service->hosts("0123456789abcdef").isEmpty());
     }
+    void validatesDirectProbe()
+    {
+        auto service = ZeroTierDiscovery::instance();
+        service->setLinks({{"0123456789abcdef", QHostAddress("192.0.2.2"), 24, 0}});
+        QVERIFY(!service->probe("fedcba9876543210", QHostAddress("192.0.2.3")));
+        QVERIFY(!service->probe("0123456789abcdef", QHostAddress("198.51.100.1")));
+        QVERIFY(!service->probe("0123456789abcdef", QHostAddress("192.0.2.2")));
+        QVERIFY(!service->probe("0123456789abcdef", QHostAddress("192.0.2.255")));
+        QVERIFY(!service->probe("0123456789abcdef", QHostAddress("239.255.46.93")));
+        QVERIFY(service->probe("0123456789abcdef", QHostAddress("192.0.2.3")));
+    }
     void stopHosting()
     {
         auto service = ZeroTierDiscovery::instance();

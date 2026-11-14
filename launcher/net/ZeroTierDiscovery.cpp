@@ -6,12 +6,14 @@
 #include <QJsonObject>
 #include <QNetworkDatagram>
 #include <QNetworkInterface>
+#include <QNetworkProxy>
 #include <QRegularExpression>
 #include <QUuid>
 
 namespace {
 constexpr quint16 DiscoveryPort = 46931;
 constexpr qint64 ExpiryMs = 12000;
+const QHostAddress MulticastGroup("239.255.46.93");
 bool sameLink(const ZeroTierDiscovery::Link& a, const ZeroTierDiscovery::Link& b)
 {
     return a.network == b.network && a.address == b.address && a.interfaceIndex == b.interfaceIndex;
@@ -26,6 +28,7 @@ ZeroTierDiscovery* ZeroTierDiscovery::instance()
 
 ZeroTierDiscovery::ZeroTierDiscovery(QObject* parent) : QObject(parent), m_id(QUuid::createUuid().toString(QUuid::WithoutBraces))
 {
+    m_socket.setProxy(QNetworkProxy::NoProxy);
     if (!m_socket.bind(QHostAddress::AnyIPv4, DiscoveryPort, QUdpSocket::ShareAddress | QUdpSocket::ReuseAddressHint))
         m_error = tr("Не удалось открыть UDP-порт 46931 для поиска хостов.");
     connect(&m_socket, &QUdpSocket::readyRead, this, [this] { receive(); });
@@ -35,6 +38,11 @@ ZeroTierDiscovery::ZeroTierDiscovery(QObject* parent) : QObject(parent), m_id(QU
             if (now - it->seen > ExpiryMs) it = m_hosts.erase(it);
             else ++it;
         }
+        for (auto it = m_subscribers.begin(); it != m_subscribers.end();) {
+            if (now - it->second > 60000) it = m_subscribers.erase(it);
+            else ++it;
+        }
+        query();
         announce();
     });
     m_timer.start(3000);
@@ -48,7 +56,24 @@ void ZeroTierDiscovery::setLinks(const QList<Link>& links)
         for (const auto& link : links) if (sameLink(link, m_hostLink)) found = true;
         if (!found) stopHost();
     }
+    for (const auto& link : m_links) {
+        bool retained = false;
+        for (const auto& next : links) if (sameLink(link, next)) retained = true;
+        if (!retained) m_socket.leaveMulticastGroup(MulticastGroup, QNetworkInterface::interfaceFromIndex(link.interfaceIndex));
+    }
+    for (const auto& link : links) {
+        bool existed = false;
+        for (const auto& old : m_links) if (sameLink(link, old)) existed = true;
+        if (!existed && link.interfaceIndex)
+            m_socket.joinMulticastGroup(MulticastGroup, QNetworkInterface::interfaceFromIndex(link.interfaceIndex));
+    }
     m_links = links;
+    for (auto it = m_probes.begin(); it != m_probes.end();) {
+        bool retained = false;
+        for (const auto& link : links) if (link.network == it.key()) retained = true;
+        if (!retained) it = m_probes.erase(it); else ++it;
+    }
+    query();
     for (auto it = m_hosts.begin(); it != m_hosts.end();) {
         bool present = false;
         for (const auto& link : links) if (it->network == link.network) present = true;
@@ -89,28 +114,69 @@ void ZeroTierDiscovery::stopHost()
 {
     if (hosting()) announce(true);
     m_port = 0;
+    m_subscribers.clear();
+}
+
+bool ZeroTierDiscovery::send(const Link& link, const QHostAddress& destination, const QByteArray& payload)
+{
+    const auto iface = QNetworkInterface::interfaceFromIndex(link.interfaceIndex);
+    bool present = false;
+    for (const auto& entry : iface.addressEntries()) if (entry.ip() == link.address) present = true;
+    if (!present || !(iface.flags() & QNetworkInterface::IsUp)) return false;
+    QNetworkDatagram datagram(payload, destination, DiscoveryPort);
+    datagram.setSender(link.address);
+    datagram.setInterfaceIndex(link.interfaceIndex);
+    datagram.setHopLimit(1);
+    const bool sent = m_socket.writeDatagram(datagram) == payload.size();
+    if (!sent) m_sendError = tr("Ошибка отправки UDP 46931: %1. Проверьте интерфейс ZeroTier и правила брандмауэра.").arg(m_socket.errorString());
+    return sent;
+}
+
+QByteArray ZeroTierDiscovery::announcement(bool goodbye) const
+{
+    return QJsonDocument(QJsonObject{{"protocol", "elysium-zt-host/1"}, {"id", m_id},
+        {"network", m_hostLink.network}, {"name", m_name}, {"port", int(m_port)}, {"bye", goodbye}}).toJson(QJsonDocument::Compact);
 }
 
 void ZeroTierDiscovery::announce(bool goodbye)
 {
     if (!hosting()) return;
-    // Check that the OS still has this specific ZeroTier address before sending.
-    // A disconnected link must not fall back to a physical/default interface.
-    const auto iface = QNetworkInterface::interfaceFromIndex(m_hostLink.interfaceIndex);
-    bool present = false;
-    for (const auto& entry : iface.addressEntries()) if (entry.ip() == m_hostLink.address) present = true;
-    if (!present || !(iface.flags() & QNetworkInterface::IsUp)) return;
-    const auto json = QJsonObject{{"protocol", "elysium-zt-host/1"}, {"id", m_id},
-        {"network", m_hostLink.network}, {"name", m_name}, {"port", int(m_port)}, {"bye", goodbye}};
     const auto prefix = m_hostLink.prefix;
     if (prefix < 1 || prefix > 30) return;
+    m_sendError.clear();
+    const auto payload = announcement(goodbye);
     const quint32 mask = 0xffffffffu << (32 - prefix);
     const QHostAddress broadcast((m_hostLink.address.toIPv4Address() & mask) | ~mask);
-    QNetworkDatagram datagram(QJsonDocument(json).toJson(QJsonDocument::Compact), broadcast, DiscoveryPort);
-    datagram.setSender(m_hostLink.address);
-    datagram.setInterfaceIndex(m_hostLink.interfaceIndex);
-    datagram.setHopLimit(1);
-    m_socket.writeDatagram(datagram);
+    const bool multicastSent = send(m_hostLink, MulticastGroup, payload);
+    const bool broadcastSent = send(m_hostLink, broadcast, payload);
+    bool unicastSent = false;
+    for (const auto& subscriber : m_subscribers) unicastSent |= send(m_hostLink, subscriber.first, payload);
+    if (multicastSent || broadcastSent || unicastSent) m_sendError.clear();
+}
+
+void ZeroTierDiscovery::query()
+{
+    for (const auto& link : m_links) {
+        const auto payload = QJsonDocument(QJsonObject{{"protocol", "elysium-zt-query/1"},
+            {"network", link.network}, {"id", m_id}}).toJson(QJsonDocument::Compact);
+        send(link, MulticastGroup, payload);
+        for (const auto& address : m_probes.value(link.network)) send(link, address, payload);
+    }
+}
+
+bool ZeroTierDiscovery::probe(const QString& network, const QHostAddress& address)
+{
+    if (address.protocol() != QAbstractSocket::IPv4Protocol || address.isMulticast() || address.isNull()) return false;
+    for (const auto& link : m_links) {
+        if (link.prefix < 1 || link.prefix > 30 || link.network != network || address == link.address || !address.isInSubnet(link.address, link.prefix)) continue;
+        const quint32 mask = 0xffffffffu << (32 - link.prefix);
+        if ((address.toIPv4Address() & ~mask) == ~mask || (address.toIPv4Address() & ~mask) == 0) return false;
+        auto& probes = m_probes[network];
+        if (!probes.contains(address) && probes.size() < 16) probes << address;
+        query();
+        return true;
+    }
+    return false;
 }
 
 void ZeroTierDiscovery::receive()
@@ -121,7 +187,8 @@ void ZeroTierDiscovery::receive()
         const auto datagram = m_socket.receiveDatagram(1025);
         if (datagram.data().size() > 1024) continue;
         const auto json = QJsonDocument::fromJson(datagram.data()).object();
-        if (json.value("protocol").toString() != "elysium-zt-host/1") continue;
+        const auto protocol = json.value("protocol").toString();
+        if (protocol != "elysium-zt-host/1" && protocol != "elysium-zt-query/1") continue;
         const auto id = json.value("id").toString();
         const auto network = json.value("network").toString();
         if (id == m_id || !QRegularExpression("^[a-fA-F0-9-]{36}$").match(id).hasMatch()) continue;
@@ -131,6 +198,15 @@ void ZeroTierDiscovery::receive()
                 (!datagram.interfaceIndex() || datagram.interfaceIndex() == link.interfaceIndex)) allowed = true;
         }
         if (!allowed) continue;
+        if (protocol == "elysium-zt-query/1") {
+            if (hosting() && m_hostLink.network == network) {
+                const auto key = datagram.senderAddress().toString();
+                if (m_subscribers.contains(key) || m_subscribers.size() < 256)
+                    m_subscribers[key] = {datagram.senderAddress(), QDateTime::currentMSecsSinceEpoch()};
+                send(m_hostLink, datagram.senderAddress(), announcement());
+            }
+            continue;
+        }
         // Derive IP from the actual sender, never from a claimed JSON address.
         const auto key = network + "/" + datagram.senderAddress().toString() + "/" + id;
         if (json.value("bye").toBool()) { m_hosts.remove(key); continue; }

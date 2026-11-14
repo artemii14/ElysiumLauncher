@@ -117,9 +117,13 @@ void MainWindow::setupLaunchModes()
         navigation->addWidget(button);
     };
     // Selected pack identity: actual instance artwork, not a launcher glyph.
-    m_sidebarInstanceIcon = new QLabel(rail);
+    m_sidebarInstanceIcon = new QToolButton(rail);
     m_sidebarInstanceIcon->setObjectName(QStringLiteral("elysiumSelectedIcon"));
-    m_sidebarInstanceIcon->setAlignment(Qt::AlignCenter);
+    m_sidebarInstanceIcon->setIconSize(QSize(80, 80));
+    m_sidebarInstanceIcon->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    m_sidebarInstanceIcon->setCursor(Qt::PointingHandCursor);
+    m_sidebarInstanceIcon->setToolTip(tr("Изменить иконку сборки"));
+    connect(m_sidebarInstanceIcon, &QToolButton::clicked, this, &MainWindow::on_actionChangeInstIcon_triggered);
     m_sidebarInstanceIcon->setFixedHeight(88);
     m_sidebarInstanceName = new QLabel(rail);
     m_sidebarInstanceName->setObjectName(QStringLiteral("elysiumSelectedName"));
@@ -324,15 +328,13 @@ void MainWindow::updateCompactControls()
         m_sidebarInstanceName->setVisible(instance != nullptr);
         if (instance) {
             const auto icon = APPLICATION->icons()->getIcon(instance->iconKey());
-            const auto dpr = devicePixelRatioF();
-            auto artwork = icon.pixmap(QSize(qRound(80 * dpr), qRound(80 * dpr)));
-            artwork.setDevicePixelRatio(dpr);
-            m_sidebarInstanceIcon->setPixmap(artwork);
+            m_sidebarInstanceIcon->setIcon(icon);
+            m_sidebarInstanceIcon->setEnabled(ui->actionChangeInstIcon->isEnabled());
             m_sidebarInstanceIcon->setAccessibleName(tr("Иконка сборки %1").arg(instance->name()));
             m_sidebarInstanceName->setText(instance->name());
             m_sidebarInstanceName->setToolTip(instance->name());
         } else {
-            m_sidebarInstanceIcon->clear();
+            m_sidebarInstanceIcon->setIcon(QIcon());
             m_sidebarInstanceName->clear();
         }
     }

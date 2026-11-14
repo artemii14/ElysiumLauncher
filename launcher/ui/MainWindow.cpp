@@ -1274,6 +1274,7 @@ void MainWindow::on_actionChangeInstIcon_triggered()
     dlg.execWithSelection(m_selectedInstance->iconKey());
     if (dlg.result() == QDialog::Accepted) {
         m_selectedInstance->setIconKey(dlg.selectedIconKey);
+        updateCompactControls();
         auto icon = APPLICATION->icons()->getIcon(dlg.selectedIconKey);
         ui->actionChangeInstIcon->setIcon(icon);
         changeIconButton->setIcon(icon);
