@@ -120,6 +120,10 @@ class ElysiumPackagingTests(unittest.TestCase):
         pack = ROOT / "launcher/resources/midnight"
         assets = {p.stem for p in (pack / "scalable").glob("*.svg")}
         self.assertGreaterEqual(len(assets), 70)
+        appearance = (ROOT / "launcher/ui/widgets/AppearanceWidget.cpp").read_text(encoding="utf-8")
+        self.assertIn('theme->path() + "/scalable/settings.svg"', appearance)
+        self.assertIn('theme->id() == "midnight"', appearance)
+        self.assertIn('settings->set("IconTheme", newIconTheme)', appearance)
         self.assertIn("resources/midnight/midnight.qrc", (ROOT / "launcher/CMakeLists.txt").read_text(encoding="utf-8"))
         self.assertIn('"midnight"', (ROOT / "launcher/ui/themes/ThemeManager.h").read_text(encoding="utf-8"))
         self.assertIn('registerSetting("IconTheme", QStringLiteral("midnight"))', (ROOT / "launcher/Application.cpp").read_text(encoding="utf-8"))

@@ -188,8 +188,13 @@ void AppearanceWidget::loadThemeSettings()
     for (int i = 0; i < iconThemes.count(); ++i) {
         const IconTheme* theme = iconThemes[i];
 
-        QIcon iconForComboBox = QIcon(theme->path() + "/scalable/settings");
+        QIcon iconForComboBox = QIcon(theme->path() + "/scalable/settings.svg");
         m_ui->iconsComboBox->addItem(iconForComboBox, theme->name(), theme->id());
+        if (theme->id() == "midnight") {
+            m_ui->iconsComboBox->setItemData(i,
+                tr("Иконки Elysium Midnight. Для стандартных значков Prism выберите Simple (Colored), Breeze или другой набор из списка."),
+                Qt::ToolTipRole);
+        }
 
         if (currentIconTheme == theme->id())
             m_ui->iconsComboBox->setCurrentIndex(i);
