@@ -852,6 +852,8 @@ SET(LAUNCHER_SOURCES
     ui/MainWindowModes.cpp
     ui/dialogs/ZeroTierDialog.h
     ui/dialogs/ZeroTierDialog.cpp
+    net/ZeroTierDiscovery.h
+    net/ZeroTierDiscovery.cpp
     minecraft/OptiFineProfile.h
     ui/InstanceWindow.h
     ui/InstanceWindow.cpp

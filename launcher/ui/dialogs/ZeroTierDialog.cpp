@@ -1,6 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-only
 #include "ZeroTierDialog.h"
 #include "DesktopServices.h"
+#include "Application.h"
+#include "settings/SettingsObject.h"
+#include "net/ZeroTierDiscovery.h"
+#include <QInputDialog>
+#include <QNetworkInterface>
 #include <QApplication>
 #include <QClipboard>
 #include <QDialogButtonBox>
@@ -27,7 +32,7 @@
 ZeroTierDialog::ZeroTierDialog(QWidget* parent) : QDialog(parent), m_network(new QNetworkAccessManager(this))
 {
     setWindowTitle(tr("Эмулятор локальной сети · ZeroTier"));
-    resize(780, 520);
+    resize(820, 740);
     m_network->setProxy(QNetworkProxy::NoProxy);
     auto layout = new QVBoxLayout(this);
     auto description = new QLabel(tr("Подключитесь с друзьями к одной сети ZeroTier. Владелец закрытой сети должен разрешить доступ каждому участнику."), this);
@@ -62,6 +67,47 @@ ZeroTierDialog::ZeroTierDialog(QWidget* parent) : QDialog(parent), m_network(new
     actions->addWidget(m_copy);
     actions->addWidget(m_leave);
     layout->addLayout(actions);
+    auto hostActions = new QHBoxLayout;
+    m_host = new QPushButton(tr("Стать хостом…"), this);
+    m_stopHost = new QPushButton(tr("Перестать быть хостом"), this);
+    auto rename = new QPushButton(tr("Изменить имя…"), this);
+    hostActions->addWidget(m_host);
+    hostActions->addWidget(m_stopHost);
+    hostActions->addWidget(rename);
+    layout->addLayout(hostActions);
+    m_hostStatus = new QLabel(this);
+    m_hostStatus->setWordWrap(true);
+    m_hostStatus->setTextFormat(Qt::PlainText);
+    layout->addWidget(m_hostStatus);
+    m_hosts = new QTableWidget(0, 2, this);
+    m_hosts->setHorizontalHeaderLabels({tr("Хосты в выбранной сети"), tr("IP:порт")});
+    m_hosts->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    m_hosts->setSelectionBehavior(QAbstractItemView::SelectRows);
+    m_hosts->setSelectionMode(QAbstractItemView::SingleSelection);
+    m_hosts->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    layout->addWidget(m_hosts, 1);
+    auto copyHost = new QPushButton(tr("Копировать адрес хоста"), this);
+    copyHost->setEnabled(false);
+    layout->addWidget(copyHost);
+    connect(m_hosts, &QTableWidget::itemSelectionChanged, this, [this, copyHost] {
+        copyHost->setEnabled(m_hosts->currentRow() >= 0);
+    });
+    connect(copyHost, &QPushButton::clicked, this, [this] {
+        if (const auto item = m_hosts->item(m_hosts->currentRow(), 1))
+            QApplication::clipboard()->setText(item->text());
+    });
+    connect(m_host, &QPushButton::clicked, this, &ZeroTierDialog::startHosting);
+    connect(m_stopHost, &QPushButton::clicked, this, [this] {
+        ZeroTierDiscovery::instance()->stopHost();
+        updateHosts();
+    });
+    connect(rename, &QPushButton::clicked, this, [this] { askName(); updateHosts(); });
+    auto discoveryTimer = new QTimer(this);
+    connect(discoveryTimer, &QTimer::timeout, this, &ZeroTierDialog::updateHosts);
+    discoveryTimer->start(2000);
+    auto refreshTimer = new QTimer(this);
+    connect(refreshTimer, &QTimer::timeout, this, [this] { if (!m_busy) refresh(); });
+    refreshTimer->start(15000);
     auto note = new QLabel(tr("В Minecraft откройте мир для сети и сообщите друзьям IP ZeroTier и порт игры. Автоматическое обнаружение LAN-мира не гарантируется. Подключайтесь только к доверенным сетям."), this);
     note->setWordWrap(true);
     layout->addWidget(note);
@@ -85,7 +131,7 @@ ZeroTierDialog::ZeroTierDialog(QWidget* parent) : QDialog(parent), m_network(new
     connect(token, &QPushButton::clicked, this, &ZeroTierDialog::selectToken);
     connect(m_refresh, &QPushButton::clicked, this, &ZeroTierDialog::refresh);
     connect(m_id, &QLineEdit::textChanged, this, [this] { updateButtons(); });
-    connect(m_table, &QTableWidget::itemSelectionChanged, this, [this] { updateButtons(); });
+    connect(m_table, &QTableWidget::itemSelectionChanged, this, [this] { updateButtons(); updateHosts(); });
     connect(m_copy, &QPushButton::clicked, this, [this] {
         const auto item = m_table->item(m_table->currentRow(), 3);
         if (!item) return;
@@ -99,15 +145,16 @@ ZeroTierDialog::ZeroTierDialog(QWidget* parent) : QDialog(parent), m_network(new
             tr("Подключиться к сети %1? Участники сети смогут обращаться к вашему компьютеру в пределах правил брандмауэра. Маршруты по умолчанию, глобальные маршруты и DNS ZeroTier будут отключены.").arg(id)) != QMessageBox::Yes) return;
         request("/network/" + id, "POST", QJsonDocument(QJsonObject{
             {"allowManaged", true}, {"allowGlobal", false}, {"allowDefault", false}, {"allowDNS", false}}),
-            [this](QJsonDocument) { refresh(); });
+            [this](QJsonDocument) { askName(); refresh(); });
     });
     connect(m_leave, &QPushButton::clicked, this, [this] {
         const auto id = selectedNetwork();
         if (id.isEmpty()) return;
         if (QMessageBox::question(this, tr("Отключение"), tr("Отключиться от сети %1? Текущие игровые соединения через неё будут прерваны.").arg(id)) != QMessageBox::Yes) return;
-        request("/network/" + id, "DELETE", {}, [this](QJsonDocument) { refresh(); });
+        request("/network/" + id, "DELETE", {}, [this, id](QJsonDocument) { ZeroTierDiscovery::instance()->removeNetwork(id); refresh(); });
     });
     updateButtons();
+    updateHosts();
     QTimer::singleShot(0, this, [this] { refresh(); });
 }
 
@@ -139,6 +186,7 @@ void ZeroTierDialog::request(const QString& path, const QByteArray& method,
     if (m_busy) return;
     QFile token(tokenPath());
     if (!token.open(QIODevice::ReadOnly)) {
+        ZeroTierDiscovery::instance()->setLinks({});
         m_table->setRowCount(0);
         m_status->setText(tr("Нет доступа к ZeroTier. Установите ZeroTier One и запустите его службу. Если он уже установлен, выберите доступный вам файл authtoken.secret. Системные права доступа могут требовать отдельной настройки; не запускайте весь лаунчер от администратора."));
         updateButtons();
@@ -166,6 +214,7 @@ void ZeroTierDialog::request(const QString& path, const QByteArray& method,
         reply->deleteLater();
         updateButtons();
         if (!ok) {
+            ZeroTierDiscovery::instance()->setLinks({});
             m_status->setText(code == 401 || code == 403
                 ? tr("Служба ZeroTier отклонила файл доступа. Выберите authtoken.secret этой службы.")
                 : tr("Служба ZeroTier недоступна или запрос отклонён (HTTP %1). Проверьте установку и состояние службы, затем нажмите «Обновить».").arg(code));
@@ -189,6 +238,8 @@ void ZeroTierDialog::refresh()
         request("/network", "GET", {}, [this](QJsonDocument doc) {
             if (!doc.isArray()) { m_status->setText(tr("Не удалось прочитать список сетей ZeroTier.")); return; }
             const auto networks = doc.array();
+            const auto previousNetwork = selectedNetwork();
+            QList<ZeroTierDiscovery::Link> links;
             m_table->setRowCount(0);
             for (const auto& entry : networks) {
                 const auto net = entry.toObject();
@@ -196,6 +247,19 @@ void ZeroTierDialog::refresh()
                 if (!QRegularExpression("^[0-9a-fA-F]{16}$").match(id).hasMatch()) continue;
                 QStringList ips;
                 for (const auto& ip : net.value("assignedAddresses").toArray()) ips << ip.toString();
+                if (net.value("status").toString() == "OK") {
+                    for (const auto& assigned : net.value("assignedAddresses").toArray()) {
+                        const auto cidr = QHostAddress::parseSubnet(assigned.toString());
+                        const QHostAddress address(assigned.toString().section('/', 0, 0));
+                        if (address.protocol() != QAbstractSocket::IPv4Protocol || cidr.second < 1 || cidr.second > 30) continue;
+                        for (const auto& iface : QNetworkInterface::allInterfaces()) {
+                            if (!(iface.flags() & QNetworkInterface::IsUp)) continue;
+                            for (const auto& entry : iface.addressEntries()) {
+                                if (entry.ip() == address) links << ZeroTierDiscovery::Link{id, address, cidr.second, uint(iface.index())};
+                            }
+                        }
+                    }
+                }
                 QString state = net.value("status").toString();
                 if (state == "OK") state = tr("Подключено");
                 else if (state == "ACCESS_DENIED") state = tr("Ожидает разрешения владельца / доступ запрещён");
@@ -204,8 +268,12 @@ void ZeroTierDialog::refresh()
                 m_table->insertRow(row);
                 const QStringList values{id, net.value("name").toString(), state, ips.join(", ")};
                 for (int col = 0; col < values.size(); ++col) m_table->setItem(row, col, new QTableWidgetItem(values[col]));
+                if (id == previousNetwork) m_table->selectRow(row);
             }
+            ZeroTierDiscovery::instance()->setLinks(links);
+            if (m_table->currentRow() < 0 && m_table->rowCount()) m_table->selectRow(0);
             updateButtons();
+            updateHosts();
         });
     });
 }
@@ -223,4 +291,75 @@ void ZeroTierDialog::updateButtons()
     m_refresh->setEnabled(!m_busy);
     const auto ip = m_table->item(m_table->currentRow(), 3);
     m_copy->setEnabled(!m_busy && ip && !ip->text().isEmpty());
+    m_host->setEnabled(!m_busy && ip && !ip->text().isEmpty());
+    m_stopHost->setEnabled(ZeroTierDiscovery::instance()->hosting());
+}
+
+bool ZeroTierDialog::askName()
+{
+    bool ok = false;
+    const auto name = QInputDialog::getText(this, tr("Имя в сети"),
+        tr("Как вас будут видеть другие пользователи лаунчера? (до 48 символов)"),
+        QLineEdit::Normal, APPLICATION->settings()->get("ZeroTierDisplayName").toString(), &ok).trimmed();
+    if (!ok) return false;
+    if (name.isEmpty() || name.size() > 48 || name.contains(QRegularExpression("[\\x00-\\x1f\\x7f]"))) {
+        QMessageBox::warning(this, tr("Имя в сети"), tr("Введите имя от 1 до 48 символов без управляющих символов."));
+        return false;
+    }
+    APPLICATION->settings()->set("ZeroTierDisplayName", name);
+    ZeroTierDiscovery::instance()->setName(name);
+    return true;
+}
+
+void ZeroTierDialog::startHosting()
+{
+    const auto network = selectedNetwork();
+    const auto ips = m_table->item(m_table->currentRow(), 3);
+    if (network.isEmpty() || !ips) return;
+    auto name = APPLICATION->settings()->get("ZeroTierDisplayName").toString();
+    if (name.isEmpty()) {
+        if (!askName()) return;
+        name = APPLICATION->settings()->get("ZeroTierDisplayName").toString();
+    }
+    QString suggested;
+    const auto addresses = ips->text().split(", ");
+    for (const auto& ip : addresses) {
+        const auto plain = ip.section('/', 0, 0);
+        if (QHostAddress(plain).protocol() == QAbstractSocket::IPv4Protocol) { suggested = plain; break; }
+    }
+    bool ok = false;
+    const auto ip = QInputDialog::getText(this, tr("Стать хостом"),
+        tr("Ваш IPv4 в выбранной сети ZeroTier (подставлен автоматически):"), QLineEdit::Normal, suggested, &ok).trimmed();
+    if (!ok) return;
+    const int port = QInputDialog::getInt(this, tr("Порт Minecraft"),
+        tr("Откройте мир для сети и введите порт, показанный Minecraft. Лаунчер не запускает сервер и не открывает порт в брандмауэре."),
+        25565, 1, 65535, 1, &ok);
+    if (!ok) return;
+    if (QMessageBox::question(this, tr("Публикация адреса"),
+        tr("Показать ваше имя и %1:%2 участникам этой сети? Объявления не подтверждают личность хоста. Закрытие этого окна не остановит публикацию: используйте «Перестать быть хостом» или закройте лаунчер.").arg(ip).arg(port)) != QMessageBox::Yes) return;
+    if (!ZeroTierDiscovery::instance()->startHost(network, name, QHostAddress(ip), quint16(port))) {
+        QMessageBox::warning(this, tr("Не удалось стать хостом"),
+            tr("Нужен назначенный локальный IPv4 выбранной подключённой сети ZeroTier и доступный UDP-порт 46931. Нажмите «Обновить» и проверьте выбранный IP."));
+    }
+    updateHosts();
+}
+
+void ZeroTierDialog::updateHosts()
+{
+    auto service = ZeroTierDiscovery::instance();
+    QString selectedEndpoint;
+    if (const auto item = m_hosts->item(m_hosts->currentRow(), 1)) selectedEndpoint = item->text();
+    const auto hosts = service->hosts(selectedNetwork());
+    m_hosts->setRowCount(0);
+    for (const auto& host : hosts) {
+        const auto row = m_hosts->rowCount();
+        m_hosts->insertRow(row);
+        m_hosts->setItem(row, 0, new QTableWidgetItem(host.name));
+        m_hosts->setItem(row, 1, new QTableWidgetItem(host.endpoint));
+        if (host.endpoint == selectedEndpoint) m_hosts->selectRow(row);
+    }
+    m_hostStatus->setText(!service->error().isEmpty() ? service->error() :
+        service->hosting() ? tr("Вы публикуете адрес в сети %1. Другим нужен открытый ElysiumLauncher и доступный UDP-порт 46931.").arg(service->hostNetwork()) :
+        tr("Выберите сеть, чтобы увидеть хостов. Объявления работают при разрешённой широковещательной связи ZeroTier. Адреса не проверяют личность участников."));
+    m_stopHost->setEnabled(service->hosting());
 }

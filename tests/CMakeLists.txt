@@ -69,3 +69,6 @@ ecm_add_test(InstanceSearch_test.cpp LINK_LIBRARIES Launcher_logic Qt${QT_VERSIO
 
 ecm_add_test(OptiFineProfile_test.cpp LINK_LIBRARIES Launcher_logic Qt${QT_VERSION_MAJOR}::Test
     TEST_NAME OptiFineProfile)
+
+ecm_add_test(ZeroTierDiscovery_test.cpp LINK_LIBRARIES Launcher_logic Qt${QT_VERSION_MAJOR}::Test
+    TEST_NAME ZeroTierDiscovery)
