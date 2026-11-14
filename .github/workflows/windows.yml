@@ -119,14 +119,25 @@ jobs:
       - name: Check packaged startup without MSYS2 on PATH
         shell: pwsh
         env:
-          QT_QPA_PLATFORM: offscreen
+          QT_QPA_PLATFORM: windows
         run: |
+          # Do not hang the runner on an interactive Windows loader-error box.
+          Add-Type -Namespace ElysiumCI -Name ErrorMode -MemberDefinition '[System.Runtime.InteropServices.DllImport("kernel32.dll")] public static extern uint SetErrorMode(uint mode);'
+          [ElysiumCI.ErrorMode]::SetErrorMode(0x8003) | Out-Null
           $env:PATH = "$env:SystemRoot\System32;$env:SystemRoot"
           $exe = Join-Path $env:GITHUB_WORKSPACE "install-windows/elysiumlauncher.exe"
-          $process = Start-Process -FilePath $exe -ArgumentList "--version" -Wait -PassThru
+          $process = Start-Process -FilePath $exe -ArgumentList "--version" -PassThru -RedirectStandardOutput package.stdout.log -RedirectStandardError package.stderr.log
+          if (-not $process.WaitForExit(60000)) {
+            $process.Kill($true)
+            Get-Content package.stderr.log -ErrorAction SilentlyContinue
+            throw "Packaged launcher did not exit within 60 seconds"
+          }
+          $process.Refresh()
+          Get-Content package.stdout.log -ErrorAction SilentlyContinue
+          Get-Content package.stderr.log -ErrorAction SilentlyContinue
           if ($process.ExitCode -ne 0) { throw "Packaged launcher failed: $($process.ExitCode)" }
           $root = (Resolve-Path "install-windows").Path
-          Get-ChildItem $root -File -Recurse | Sort-Object FullName | ForEach-Object {
+          Get-ChildItem $root -File -Recurse | Where-Object { $_.Name -ne "SHA256SUMS.txt" } | Sort-Object FullName | ForEach-Object {
             $relative = $_.FullName.Substring($root.Length + 1).Replace('\', '/')
             "$( (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower() )  $relative"
           } | Set-Content -Encoding utf8 "install-windows/SHA256SUMS.txt"

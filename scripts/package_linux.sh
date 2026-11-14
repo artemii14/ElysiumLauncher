@@ -23,6 +23,27 @@ fetch_tool linuxdeploy/linuxdeploy-plugin-qt 525032210 "$tools/linuxdeploy-plugi
 export PATH="$tools:$PATH"
 export APPIMAGE_EXTRACT_AND_RUN=1
 export QMAKE="${QT_ROOT_DIR:?Qt SDK path is required}/bin/qmake"
+# The SDK's optional TIFF/MNG codecs depend on old system libraries that
+# Ubuntu 24.04 no longer provides. Curate only the packaging plugin tree;
+# do not mutate the cached SDK or disguise a libtiff ABI mismatch with a symlink.
+export ELYSIUM_REAL_QMAKE="$QMAKE"
+export ELYSIUM_QT_PLUGINS="$tools/qt-plugins"
+mkdir -p "$ELYSIUM_QT_PLUGINS"
+cp -a "$("$QMAKE" -query QT_INSTALL_PLUGINS)/." "$ELYSIUM_QT_PLUGINS/"
+rm -f "$ELYSIUM_QT_PLUGINS/imageformats/libqtiff.so" "$ELYSIUM_QT_PLUGINS/imageformats/libqmng.so"
+cat > "$tools/qmake-for-packaging" <<'QMAKE_WRAPPER'
+#!/usr/bin/env bash
+set -euo pipefail
+if [[ "$#" == 1 && "$1" == -query ]]; then
+    "$ELYSIUM_REAL_QMAKE" -query | sed "s|^QT_INSTALL_PLUGINS:.*$|QT_INSTALL_PLUGINS:$ELYSIUM_QT_PLUGINS|"
+elif [[ "$#" == 2 && "$1" == -query && "$2" == QT_INSTALL_PLUGINS ]]; then
+    printf '%s\n' "$ELYSIUM_QT_PLUGINS"
+else
+    exec "$ELYSIUM_REAL_QMAKE" "$@"
+fi
+QMAKE_WRAPPER
+chmod +x "$tools/qmake-for-packaging"
+export QMAKE="$tools/qmake-for-packaging"
 export EXTRA_PLATFORM_PLUGINS="libqoffscreen.so"
 export EXTRA_QT_MODULES="svg"
 export OUTPUT=ElysiumLauncher-Linux-x86_64.AppImage

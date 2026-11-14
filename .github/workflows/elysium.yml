@@ -25,7 +25,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y ninja-build extra-cmake-modules pkg-config scdoc ccache patchelf file \
             cmark libarchive-dev libcmark-dev libqrencode-dev zlib1g-dev libtomlplusplus-dev \
-            gamemode-dev libgl1-mesa-dev libxkbcommon-dev libxcb-cursor-dev
+            gamemode-dev libgl1-mesa-dev libxkbcommon-dev libxcb-cursor-dev \
+            libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0 \
+            libxcb-xinerama0 libxcb-xkb1 libxkbcommon-x11-0
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
