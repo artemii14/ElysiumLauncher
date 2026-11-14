@@ -294,8 +294,8 @@ void MainWindow::setupLaunchModes()
     connect(m_compactModel, &QAbstractItemModel::rowsRemoved, this, &MainWindow::updateCompactControls);
     connect(m_compactModel, &QAbstractItemModel::dataChanged, this, &MainWindow::updateCompactControls);
     connect(APPLICATION->icons(), &IconList::iconUpdated, this, [this] { updateCompactControls(); });
-    new HomeButtonOrder(rail, QStringLiteral("modern-v1"));
-    new HomeButtonOrder(m_compactHome, QStringLiteral("legacy-v1"));
+    new HomeButtonOrder(rail, QStringLiteral("modern-v2"));
+    new HomeButtonOrder(m_compactHome, QStringLiteral("legacy-v2"));
     applyLaunchMode(APPLICATION->settings()->get("ElysiumInterfaceMode").toString() == "classic");
     updateCompactControls();
 }

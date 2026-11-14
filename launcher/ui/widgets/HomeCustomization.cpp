@@ -134,14 +134,17 @@ void HomeButtonOrder::collect(QLayout* layout)
 {
     if (!layout) return;
     auto box = qobject_cast<QBoxLayout*>(layout);
-    Group group{QString::number(m_counter), box, {}, {}};
+    const auto panelId = layout->parentWidget() ? layout->parentWidget()->property("elysiumPanelId").toString() : QString();
+    Group group{panelId.isEmpty() ? QString::number(m_counter) : panelId, box, {}, {}};
     for (int i = 0; i < layout->count(); ++i) {
         const auto item = layout->itemAt(i);
         if (auto child = item->layout()) collect(child);
         if (auto widget = item->widget()) {
             if (auto button = qobject_cast<QAbstractButton*>(widget)) {
                 if (box && button->objectName() != "elysiumSelectedIcon") {
-                    button->setProperty("elysiumOrderId", QString::number(m_counter++));
+                    // Panel order must not change a button's persisted identity.
+                    button->setProperty("elysiumOrderId", QString::number(i));
+                    ++m_counter;
                     group.buttons << button;
                     group.positions << i;
                     button->installEventFilter(this);
@@ -243,6 +246,7 @@ QBoxLayout* HomePanelOrder::addPanel(const QString& id, const QString& title)
 {
     auto panel = new QWidget(m_layout->parentWidget());
     panel->setObjectName(QStringLiteral("elysiumActionPanel"));
+    panel->setProperty("elysiumPanelId", id);
     auto content = new QVBoxLayout(panel);
     content->setContentsMargins(4, 4, 4, 8);
     content->setSpacing(6);

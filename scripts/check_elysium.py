@@ -25,8 +25,8 @@ class ElysiumPackagingTests(unittest.TestCase):
         self.assertIn('Qt::ApplicationActive', source)
         self.assertIn('ElysiumHomeButtonOrder', source)
         modes = (ROOT / "launcher/ui/MainWindowModes.cpp").read_text()
-        self.assertIn('new HomeButtonOrder(rail, QStringLiteral("modern-v1"))', modes)
-        self.assertIn('new HomeButtonOrder(m_compactHome, QStringLiteral("legacy-v1"))', modes)
+        self.assertIn('new HomeButtonOrder(rail, QStringLiteral("modern-v2"))', modes)
+        self.assertIn('new HomeButtonOrder(m_compactHome, QStringLiteral("legacy-v2"))', modes)
         cmake = (ROOT / "launcher/CMakeLists.txt").read_text()
         self.assertIn('ui/widgets/HomeCustomization.cpp', cmake)
 
