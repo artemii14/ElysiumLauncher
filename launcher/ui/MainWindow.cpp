@@ -339,6 +339,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
         connect(view, &InstanceView::groupStateChanged, APPLICATION->instances(), &InstanceList::on_GroupStateChanged);
         // A native library header: all actions use the existing launcher's flows.
         auto header = new QWidget(this);
+        m_libraryHeader = header;
         header->setObjectName(QStringLiteral("elysiumHeader"));
         auto headerLayout = new QVBoxLayout(header);
         headerLayout->setContentsMargins(24, 20, 24, 20);
@@ -357,12 +358,15 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
 
         auto controls = new QHBoxLayout();
         auto search = new QLineEdit(header);
+        search->setObjectName(QStringLiteral("elysiumSearch"));
         search->setPlaceholderText(tr("Search instances or groups…  Ctrl+K"));
         search->setAccessibleName(tr("Search instances or groups"));
         search->setClearButtonEnabled(true);
         connect(search, &QLineEdit::textChanged, proxymodel, &InstanceProxyModel::setSearchText);
         auto searchShortcut = new QShortcut(QKeySequence(QStringLiteral("Ctrl+K")), this);
-        connect(searchShortcut, &QShortcut::activated, search, [search] {
+        connect(searchShortcut, &QShortcut::activated, search, [this, search] {
+            if (m_compactMode)
+                applyLaunchMode(false);
             search->setFocus();
             search->selectAll();
         });
@@ -394,6 +398,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
         ui->horizontalLayout->addWidget(view, 1);
 
         auto empty = new QLabel(this);
+        m_libraryEmpty = empty;
         empty->setObjectName(QStringLiteral("elysiumEmpty"));
         empty->setWordWrap(true);
         empty->setAlignment(Qt::AlignCenter);
@@ -405,8 +410,8 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
             empty->setText(total == 0
                 ? tr("Make room for a new world.\nCreate your first instance to install Minecraft or a modpack.")
                 : tr("No matching instances.\nTry another name or clear the search."));
-            empty->setVisible(visible == 0);
-            view->setVisible(visible != 0);
+            empty->setVisible(!m_compactMode && visible == 0);
+            view->setVisible(!m_compactMode && visible != 0);
         };
         connect(proxymodel, &QAbstractItemModel::rowsInserted, this, updateLibrary);
         connect(proxymodel, &QAbstractItemModel::rowsRemoved, this, updateLibrary);
@@ -517,6 +522,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
     view->setFocus();
 
     retranslateUi();
+    setupLaunchModes();
 }
 
 // macOS always has a native menu bar, so these fixes are not applicable
@@ -1460,7 +1466,7 @@ void MainWindow::globalSettingsClosed()
     updateStatusCenter();
     // This needs to be done to prevent UI elements disappearing in the event the config is changed
     // but Prism Launcher exits abnormally, causing the window state to never be saved:
-    APPLICATION->settings()->set("MainWindowState", QString::fromUtf8(saveState().toBase64()));
+    APPLICATION->settings()->set("MainWindowState", QString::fromUtf8(interfaceWindowState().toBase64()));
     update();
 }
 
@@ -1665,7 +1671,7 @@ void MainWindow::on_actionViewSelectedInstFolder_triggered()
 void MainWindow::closeEvent(QCloseEvent* event)
 {
     // Save the window state and geometry.
-    APPLICATION->settings()->set("MainWindowState", QString::fromUtf8(saveState().toBase64()));
+    APPLICATION->settings()->set("MainWindowState", QString::fromUtf8(interfaceWindowState().toBase64()));
     APPLICATION->settings()->set("MainWindowGeometry", QString::fromUtf8(saveGeometry().toBase64()));
     instanceToolbarSetting->set(QString::fromUtf8(ui->instanceToolBar->getVisibilityState().toBase64()));
     event->accept();

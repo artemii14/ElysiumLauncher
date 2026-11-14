@@ -15,7 +15,7 @@ jobs:
   portable:
     name: Windows x64 portable
     runs-on: windows-2022
-    timeout-minutes: 60
+    timeout-minutes: 90
     env:
       CCACHE_DIR: ${{ github.workspace }}/.ccache
       CCACHE_SLOPPINESS: pch_defines,time_macros
@@ -115,6 +115,20 @@ jobs:
           test -f install-windows/platforms/qwindows.dll
           test -f install-windows/portable.txt
           test -f install-windows/jars/NewLaunch.jar
+      - name: Check packaged startup without MSYS2 on PATH
+        shell: pwsh
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          $env:PATH = "$env:SystemRoot\System32;$env:SystemRoot"
+          $exe = Join-Path $env:GITHUB_WORKSPACE "install-windows/elysiumlauncher.exe"
+          $process = Start-Process -FilePath $exe -ArgumentList "--version" -Wait -PassThru
+          if ($process.ExitCode -ne 0) { throw "Packaged launcher failed: $($process.ExitCode)" }
+          $root = (Resolve-Path "install-windows").Path
+          Get-ChildItem $root -File -Recurse | Sort-Object FullName | ForEach-Object {
+            $relative = $_.FullName.Substring($root.Length + 1).Replace('\', '/')
+            "$( (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower() )  $relative"
+          } | Set-Content -Encoding utf8 "install-windows/SHA256SUMS.txt"
       - name: Upload portable ZIP
         uses: actions/upload-artifact@v4
         with:

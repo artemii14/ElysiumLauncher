@@ -6,10 +6,14 @@ permissions:
   contents: read
 concurrency:
   group: elysium-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 jobs:
   linux:
     runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
+      CCACHE_SLOPPINESS: pch_defines,time_macros
     steps:
       - uses: actions/checkout@v4
         with:
@@ -19,26 +23,61 @@ jobs:
       - name: Install native dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y ninja-build extra-cmake-modules pkg-config scdoc \
+          sudo apt-get install -y ninja-build extra-cmake-modules pkg-config scdoc ccache patchelf file \
             cmark libarchive-dev libcmark-dev libqrencode-dev zlib1g-dev libtomlplusplus-dev \
             gamemode-dev libgl1-mesa-dev libxkbcommon-dev libxcb-cursor-dev
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
       - uses: jurplel/install-qt-action@v4
         with:
           version: '6.10.2'
           modules: qtnetworkauth qtimageformats
           cache: true
+      - name: Restore compiler cache
+        uses: actions/cache/restore@v4
+        with:
+          path: .ccache
+          key: linux-qt610-ccache-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: linux-qt610-ccache-
       - name: Configure
-        run: bash scripts/ci_run.sh cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON -DENABLE_LTO=OFF -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/install
+        run: bash scripts/ci_run.sh cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON -DENABLE_LTO=OFF -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/install
       - name: Build
+        id: build
         run: bash scripts/ci_run.sh cmake --build build --parallel 2
       - name: Test
+        id: tests
         env:
           QT_QPA_PLATFORM: offscreen
-        run: bash scripts/ci_run.sh ctest --test-dir build --output-on-failure
+        run: bash scripts/ci_run.sh ctest --test-dir build --output-on-failure --output-junit test-results.xml
+      - name: Save test diagnostics
+        if: always() && steps.build.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Linux-test-diagnostics
+          path: |
+            build/test-results.xml
+            build/Testing/Temporary/LastTest.log
+          if-no-files-found: warn
+      - name: Save compiler cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .ccache
+          key: linux-qt610-ccache-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Install
         run: bash scripts/ci_run.sh cmake --install build
-      - uses: actions/upload-artifact@v4
+      - name: Package AppImage and check startup
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/ci_run.sh bash scripts/package_linux.sh "$PWD/install"
+      - name: Upload Linux AppImage
+        uses: actions/upload-artifact@v4
         with:
-          name: ElysiumLauncher-Linux-development
-          path: install/
+          name: ElysiumLauncher-Linux-x86_64-AppImage
+          path: |
+            ElysiumLauncher-Linux-x86_64.AppImage
+            ElysiumLauncher-Linux-x86_64.AppImage.sha256
           if-no-files-found: error
+          retention-days: 14

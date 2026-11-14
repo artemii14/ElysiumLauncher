@@ -61,6 +61,29 @@ class ElysiumPackagingTests(unittest.TestCase):
         layout = ui.find('.//layout[@name="horizontalLayout"]')
         self.assertEqual(layout.attrib["class"], "QVBoxLayout")
 
+    def test_dual_mode_sources_are_wired(self):
+        cmake = (ROOT / "launcher/CMakeLists.txt").read_text()
+        self.assertIn("ui/MainWindowModes.cpp", cmake)
+        self.assertIn("minecraft/OptiFineProfile.h", cmake)
+        header = (ROOT / "launcher/ui/MainWindow.h").read_text()
+        implementation = (ROOT / "launcher/ui/MainWindowModes.cpp").read_text()
+        main = (ROOT / "launcher/ui/MainWindow.cpp").read_text()
+        for method in ("setupLaunchModes", "applyLaunchMode", "updateCompactControls",
+                       "createQuickVanilla", "importOptiFineProfile", "interfaceWindowState"):
+            self.assertIn(method, header)
+            self.assertIn("MainWindow::" + method, implementation)
+        self.assertIn("setupLaunchModes();", main)
+        self.assertIn('registerSetting("ElysiumInterfaceMode"', (ROOT / "launcher/Application.cpp").read_text())
+        self.assertNotIn("saveState().toBase64()", main)
+
+    def test_optifine_test_is_registered(self):
+        self.assertTrue((ROOT / "tests/OptiFineProfile_test.cpp").is_file())
+        self.assertIn("TEST_NAME OptiFineProfile", (ROOT / "tests/CMakeLists.txt").read_text())
+        implementation = (ROOT / "launcher/ui/MainWindowModes.cpp").read_text()
+        self.assertIn("Elysium::planOptiFineImport", implementation)
+        self.assertIn("VanillaCreationTask", implementation)
+        self.assertNotIn("QProcess::startDetached", implementation)
+
     def test_theme_is_in_cmake_and_qss_balances(self):
         self.assertIn("ui/themes/ElysiumTheme.h", (ROOT / "launcher/CMakeLists.txt").read_text())
         theme = (ROOT / "launcher/ui/themes/ElysiumTheme.h").read_text()

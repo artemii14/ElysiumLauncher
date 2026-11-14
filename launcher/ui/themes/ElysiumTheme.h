@@ -59,6 +59,11 @@ QLabel#elysiumEyebrow { color: #b7a8ff; font-size: 11px; font-weight: bold; }
 QLabel#elysiumTitle { font-size: 26px; font-weight: bold; }
 QLabel#elysiumSubtitle, QLabel#elysiumCount { color: #a5adc7; }
 QLabel#elysiumEmpty { color: #a5adc7; font-size: 16px; padding: 32px; }
+QWidget#elysiumRail { background: #151824; border-right: 1px solid #292d43; }
+QWidget#elysiumRail QPushButton { text-align: left; padding: 10px; }
+QWidget#elysiumModeBar { background: #11131d; border-bottom: 1px solid #292d43; }
+QWidget#elysiumCompactHome { background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #151b2d, stop:0.65 #20203b, stop:1 #171a27); }
+QWidget#elysiumCompactHome QPushButton { padding: 12px 16px; }
 QWidget#elysiumHeader { background: #171a27; border-bottom: 1px solid #292d43; }
 QProgressBar { border: none; background: #252a40; border-radius: 4px; text-align: center; }
 QProgressBar::chunk { background: #a997ff; border-radius: 4px; }

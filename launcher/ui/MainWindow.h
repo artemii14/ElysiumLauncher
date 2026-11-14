@@ -52,6 +52,8 @@
 class LaunchController;
 class NewsChecker;
 class QToolButton;
+class QComboBox;
+class QPushButton;
 class InstanceProxyModel;
 class LabeledToolButton;
 class QLabel;
@@ -220,6 +222,12 @@ class MainWindow : public QMainWindow {
 
    private:
     void retranslateUi();
+    QByteArray interfaceWindowState();
+    void setupLaunchModes();
+    void applyLaunchMode(bool compact);
+    void updateCompactControls();
+    void createQuickVanilla();
+    void importOptiFineProfile();
 
     void addInstance(const QString& url = QString(), const QMap<QString, QString>& extra_info = {});
     void activateInstance(BaseInstance* instance);
@@ -236,6 +244,18 @@ class MainWindow : public QMainWindow {
     Ui::MainWindow* ui;
     // these are managed by Qt's memory management model!
     InstanceView* view = nullptr;
+    QWidget* m_libraryHeader = nullptr;
+    QLabel* m_libraryEmpty = nullptr;
+    QWidget* m_compactHome = nullptr;
+    QWidget* m_modernHome = nullptr;
+    QComboBox* m_compactInstances = nullptr;
+    QSortFilterProxyModel* m_compactModel = nullptr;
+    QLabel* m_compactDetails = nullptr;
+    QToolButton* m_modernModeButton = nullptr;
+    QToolButton* m_legacyModeButton = nullptr;
+    bool m_compactMode = false;
+    bool m_advancedInstanceToolbarVisible = true;
+    bool m_advancedMainToolbarVisible = true;
     InstanceProxyModel* proxymodel = nullptr;
     QToolButton* newsLabel = nullptr;
     QLabel* m_statusLeft = nullptr;
