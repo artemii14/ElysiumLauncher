@@ -59,7 +59,7 @@ QLabel#elysiumEyebrow { color: #b7a8ff; font-size: 11px; font-weight: bold; }
 QLabel#elysiumTitle { font-size: 26px; font-weight: bold; }
 QLabel#elysiumSubtitle, QLabel#elysiumCount { color: #a5adc7; }
 QLabel#elysiumEmpty { color: #a5adc7; font-size: 16px; padding: 32px; }
-QWidget#elysiumRail { background: #151824; border-right: 1px solid #292d43; }
+QWidget#elysiumRail { background: #151824; border-left: 1px solid #292d43; }
 QWidget#elysiumRail QPushButton, QWidget#elysiumRail QToolButton { text-align: left; padding: 8px 10px; background: transparent; border: 1px solid transparent; border-radius: 7px; }
 QWidget#elysiumRail QPushButton:hover, QWidget#elysiumRail QToolButton:hover { background: #252a40; border-color: #3b415c; }
 QWidget#elysiumRail QPushButton:disabled { color: #72798f; }

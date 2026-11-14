@@ -1686,7 +1686,9 @@ MainWindow* Application::showMainWindow(bool minimized)
         m_mainWindow->activateWindow();
     } else {
         m_mainWindow = new MainWindow();
-        m_mainWindow->restoreState(QByteArray::fromBase64(APPLICATION->settings()->get("MainWindowState").toString().toUtf8()));
+        // The Modern/Classic workspace replaces the old docked toolbars.
+        // Restoring their saved Qt state would resurrect the retired panels.
+        // Keep window geometry restoration below, but not the obsolete layout.
         m_mainWindow->restoreGeometry(QByteArray::fromBase64(APPLICATION->settings()->get("MainWindowGeometry").toString().toUtf8()));
 
         if (minimized) {

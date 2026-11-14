@@ -342,20 +342,8 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
         m_libraryHeader = header;
         header->setObjectName(QStringLiteral("elysiumHeader"));
         auto headerLayout = new QVBoxLayout(header);
-        headerLayout->setContentsMargins(24, 20, 24, 20);
-        headerLayout->setSpacing(12);
-        auto eyebrow = new QLabel(QStringLiteral("ELYSIUM / MINECRAFT LAUNCHER"), header);
-        eyebrow->setObjectName(QStringLiteral("elysiumEyebrow"));
-        auto title = new QLabel(tr("Your next adventure starts here."), header);
-        title->setObjectName(QStringLiteral("elysiumTitle"));
-        title->setWordWrap(true);
-        auto subtitle = new QLabel(tr("Your worlds, modpacks and accounts. One place to play."), header);
-        subtitle->setObjectName(QStringLiteral("elysiumSubtitle"));
-        subtitle->setWordWrap(true);
-        headerLayout->addWidget(eyebrow);
-        headerLayout->addWidget(title);
-        headerLayout->addWidget(subtitle);
-
+        headerLayout->setContentsMargins(16, 10, 16, 10);
+        headerLayout->setSpacing(6);
         auto controls = new QHBoxLayout();
         auto search = new QLineEdit(header);
         search->setObjectName(QStringLiteral("elysiumSearch"));
@@ -384,16 +372,12 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
             proxymodel->invalidate();
             proxymodel->sort(0);
         });
-        auto create = new QPushButton(tr("+ Create instance"), header);
-        create->setObjectName(QStringLiteral("elysiumCreate"));
-        connect(create, &QPushButton::clicked, ui->actionAddInstance, &QAction::trigger);
         controls->addWidget(search, 1);
         controls->addWidget(sort);
-        controls->addWidget(create);
         headerLayout->addLayout(controls);
         auto count = new QLabel(header);
         count->setObjectName(QStringLiteral("elysiumCount"));
-        headerLayout->addWidget(count);
+        controls->addWidget(count);
         ui->horizontalLayout->addWidget(header);
         ui->horizontalLayout->addWidget(view, 1);
 

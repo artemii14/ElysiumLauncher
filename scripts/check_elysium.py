@@ -78,7 +78,13 @@ class ElysiumPackagingTests(unittest.TestCase):
 
     def test_navigation_replaces_top_toolbar(self):
         source = (ROOT / "launcher/ui/MainWindowModes.cpp").read_text(encoding="utf-8")
-        self.assertIn('ui->mainToolBar->toggleViewAction()->setVisible(false)', source)
+        self.assertIn('toolbar->toggleViewAction()->setVisible(false)', source)
+        self.assertIn('removeToolBar(toolbar)', source)
+        self.assertLess(source.index('workspace->addWidget(collection, 1)'), source.index('workspace->addWidget(railScroll)'))
+        main = (ROOT / 'launcher/ui/MainWindow.cpp').read_text(encoding='utf-8')
+        self.assertNotIn('Your next adventure starts here.', main)
+        app = (ROOT / 'launcher/Application.cpp').read_text(encoding='utf-8')
+        self.assertNotIn('m_mainWindow->restoreState(', app)
         self.assertNotIn('ui->mainToolBar->setVisible(m_advancedMainToolbarVisible)', source)
         self.assertNotIn('Компоненты / Java', source)
         self.assertNotIn('railPage(', source)

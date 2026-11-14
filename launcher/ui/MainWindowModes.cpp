@@ -36,6 +36,7 @@
 #include <QScrollArea>
 #include <QTemporaryDir>
 #include <QToolButton>
+#include <QToolBar>
 #include <QVBoxLayout>
 
 namespace {
@@ -86,16 +87,11 @@ QByteArray fileHash(const QString& path)
 
 QByteArray MainWindow::interfaceWindowState()
 {
-    // Save the advanced layout, not the toolbar hiding used by Classic mode.
-    // Otherwise reopening in Classic would permanently hide Modern toolbars.
-    if (!m_compactMode)
-        return saveState();
+    // Legacy toolbars are retired; never persist their restored visibility.
     ui->mainToolBar->hide();
-    ui->instanceToolBar->setVisible(m_advancedInstanceToolbarVisible);
-    const auto state = saveState();
-    ui->mainToolBar->hide();
+    ui->newsToolBar->hide();
     ui->instanceToolBar->hide();
-    return state;
+    return saveState();
 }
 
 void MainWindow::setupLaunchModes()
@@ -197,7 +193,7 @@ void MainWindow::setupLaunchModes()
     railScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     railScroll->setFixedWidth(236);
     railScroll->setWidget(rail);
-    workspace->addWidget(railScroll);
+    // Navigation follows the library, on the right (see workspace order below).
     auto collection = new QWidget(m_modernHome);
     auto collectionLayout = new QVBoxLayout(collection);
     collectionLayout->setContentsMargins(0, 0, 0, 0);
@@ -207,6 +203,7 @@ void MainWindow::setupLaunchModes()
         collectionLayout->addWidget(widget, widget == m_libraryHeader ? 0 : 1);
     }
     workspace->addWidget(collection, 1);
+    workspace->addWidget(railScroll);
     ui->horizontalLayout->addWidget(m_modernHome, 1);
 
     m_compactHome = new QWidget(this);
@@ -312,16 +309,19 @@ void MainWindow::applyLaunchMode(bool compact)
 {
     if (!m_compactHome)
         return;
-    if (compact && !m_compactMode) {
-        m_advancedInstanceToolbarVisible = !ui->instanceToolBar->isHidden();
-        m_advancedMainToolbarVisible = !ui->mainToolBar->isHidden();
+    if (compact) {
         if (auto search = findChild<QLineEdit*>(QStringLiteral("elysiumSearch")))
             search->clear();
     }
-    const bool wasCompact = m_compactMode;
-    // The old top toolbar is replaced by navigation in both interfaces.
-    ui->mainToolBar->hide();
-    ui->mainToolBar->toggleViewAction()->setVisible(false);
+    // Detach retired toolbars as well as hiding them. Old saved Qt layouts must
+    // not bring back the top bar, news strip or duplicate instance actions.
+    for (QToolBar* toolbar : {static_cast<QToolBar*>(ui->mainToolBar),
+                              static_cast<QToolBar*>(ui->newsToolBar),
+                              static_cast<QToolBar*>(ui->instanceToolBar)}) {
+        removeToolBar(toolbar);
+        toolbar->hide();
+        toolbar->toggleViewAction()->setVisible(false);
+    }
     m_compactMode = compact;
     m_modernModeButton->setChecked(!compact);
     m_legacyModeButton->setChecked(compact);
@@ -330,13 +330,6 @@ void MainWindow::applyLaunchMode(bool compact)
     m_libraryHeader->setVisible(!compact);
     view->setVisible(!compact && proxymodel->rowCount() > 0);
     m_libraryEmpty->setVisible(!compact && proxymodel->rowCount() == 0);
-    if (compact) {
-        ui->mainToolBar->hide();
-        ui->instanceToolBar->hide();
-    } else if (wasCompact) {
-        ui->mainToolBar->hide();
-        ui->instanceToolBar->setVisible(m_advancedInstanceToolbarVisible);
-    }
     APPLICATION->settings()->set("ElysiumInterfaceMode", compact ? "classic" : "modern");
 }
 
