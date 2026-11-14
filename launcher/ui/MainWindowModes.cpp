@@ -28,13 +28,52 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QMessageBox>
+#include <QMenu>
 #include <QPushButton>
+#include <QPainter>
+#include <QPainterPath>
 #include <QSignalBlocker>
+#include <QScrollArea>
 #include <QTemporaryDir>
 #include <QToolButton>
 #include <QVBoxLayout>
 
 namespace {
+// Resolution-independent, original outline glyphs shared by navigation actions.
+QIcon navigationIcon(const QString& name)
+{
+    QIcon icon;
+    for (int size : {20, 40, 60}) {
+        QPixmap pixmap(size, size);
+        pixmap.fill(Qt::transparent);
+        QPainter p(&pixmap);
+        p.setRenderHint(QPainter::Antialiasing);
+        p.scale(size / 24.0, size / 24.0);
+        p.setPen(QPen(QColor("#b7a8ff"), 1.7, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+        if (name == "add") {
+            p.drawRoundedRect(QRectF(4, 4, 16, 16), 4, 4);
+            p.drawLine(12, 8, 12, 16); p.drawLine(8, 12, 16, 12);
+        } else if (name == "play") {
+            QPainterPath path; path.moveTo(8, 5); path.lineTo(19, 12); path.lineTo(8, 19); path.closeSubpath(); p.drawPath(path);
+        } else if (name == "account") {
+            p.drawEllipse(QRectF(8, 3, 8, 8)); p.drawArc(QRectF(4, 13, 16, 14), 0, 180 * 16);
+        } else if (name == "folder") {
+            QPainterPath path; path.moveTo(3, 7); path.lineTo(3, 20); path.lineTo(21, 20); path.lineTo(21, 7); path.lineTo(12, 7); path.lineTo(10, 4); path.lineTo(3, 4); path.closeSubpath(); p.drawPath(path);
+        } else if (name == "help") {
+            p.drawEllipse(QRectF(3, 3, 18, 18)); p.drawArc(QRectF(9, 6, 6, 6), -90 * 16, 270 * 16); p.drawLine(12, 12, 12, 14); p.drawPoint(12, 17);
+        } else if (name == "import") {
+            p.drawLine(12, 3, 12, 15); p.drawLine(8, 11, 12, 15); p.drawLine(16, 11, 12, 15);
+            p.drawLine(4, 16, 4, 21); p.drawLine(4, 21, 20, 21); p.drawLine(20, 21, 20, 16);
+        } else {
+            for (int y : {6, 12, 18}) { p.drawLine(3, y, 21, y); }
+            p.setBrush(QColor("#151824"));
+            p.drawEllipse(QPointF(8, 6), 2, 2); p.drawEllipse(QPointF(16, 12), 2, 2); p.drawEllipse(QPointF(10, 18), 2, 2);
+        }
+        p.end();
+        icon.addPixmap(pixmap);
+    }
+    return icon;
+}
 QByteArray fileHash(const QString& path)
 {
     QFile file(path);
@@ -51,7 +90,7 @@ QByteArray MainWindow::interfaceWindowState()
     // Otherwise reopening in Classic would permanently hide Modern toolbars.
     if (!m_compactMode)
         return saveState();
-    ui->mainToolBar->setVisible(m_advancedMainToolbarVisible);
+    ui->mainToolBar->hide();
     ui->instanceToolBar->setVisible(m_advancedInstanceToolbarVisible);
     const auto state = saveState();
     ui->mainToolBar->hide();
@@ -90,52 +129,75 @@ void MainWindow::setupLaunchModes()
     auto rail = new QWidget(m_modernHome);
     rail->setObjectName(QStringLiteral("elysiumRail"));
     rail->setAttribute(Qt::WA_StyledBackground, true);
-    rail->setFixedWidth(176);
+    rail->setMinimumWidth(200);
     auto navigation = new QVBoxLayout(rail);
-    navigation->setContentsMargins(12, 24, 12, 16);
-    navigation->setSpacing(10);
-    auto workspaceTitle = new QLabel(tr("РАБОЧЕЕ ПРОСТРАНСТВО"), rail);
-    workspaceTitle->setWordWrap(true);
-    workspaceTitle->setObjectName(QStringLiteral("elysiumEyebrow"));
-    navigation->addWidget(workspaceTitle);
-    auto library = new QPushButton(tr("Моя библиотека"), rail);
-    connect(library, &QPushButton::clicked, this, [this] {
-        if (auto search = findChild<QLineEdit*>(QStringLiteral("elysiumSearch")))
-            search->clear();
-        view->setFocus();
-    });
-    navigation->addWidget(library);
-    auto railAction = [rail, navigation](QAction* action, const QString& title) {
+    navigation->setContentsMargins(14, 20, 14, 16);
+    navigation->setSpacing(6);
+    auto section = [rail, navigation](const QString& title) {
+        auto label = new QLabel(title, rail);
+        label->setObjectName(QStringLiteral("elysiumEyebrow"));
+        label->setContentsMargins(8, 12, 0, 6);
+        navigation->addWidget(label);
+    };
+    auto decorate = [](QPushButton* button, const QString& glyph) {
+        button->setIcon(navigationIcon(glyph));
+        button->setIconSize(QSize(20, 20));
+        button->setMinimumHeight(42);
+        button->setCursor(Qt::PointingHandCursor);
+    };
+    auto railAction = [rail, navigation, decorate](QAction* action, const QString& title, const QString& glyph) {
         auto button = new QPushButton(title, rail);
+        decorate(button, glyph);
         connect(button, &QPushButton::clicked, action, &QAction::trigger);
         auto sync = [action, button] { button->setEnabled(action->isEnabled()); };
         connect(action, &QAction::changed, button, sync);
         sync();
         navigation->addWidget(button);
     };
-    railAction(ui->actionAddInstance, tr("Установить сборку"));
-    auto quickVanilla = new QPushButton(tr("Быстрая vanilla"), rail);
-    connect(quickVanilla, &QPushButton::clicked, this, &MainWindow::createQuickVanilla);
-    navigation->addWidget(quickVanilla);
-    auto railPage = [this, rail, navigation](const QString& title, const QString& page) {
-        auto button = new QPushButton(title, rail);
-        auto sync = [this, button] { button->setEnabled(ui->actionEditInstance->isEnabled()); };
-        connect(ui->actionEditInstance, &QAction::changed, button, sync);
-        connect(button, &QPushButton::clicked, this, [this, page] {
-            if (m_selectedInstance && m_selectedInstance->canEdit())
-                APPLICATION->showInstanceWindow(m_selectedInstance, page);
-        });
-        sync();
+    auto railMenu = [rail, navigation](QAction* action, const QString& title, const QString& glyph) {
+        auto button = new QToolButton(rail);
+        button->setDefaultAction(action);
+        button->setText(title);
+        button->setIcon(navigationIcon(glyph));
+        button->setIconSize(QSize(20, 20));
+        button->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+        button->setPopupMode(QToolButton::InstantPopup);
+        button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        button->setMinimumHeight(42);
         navigation->addWidget(button);
     };
-    railPage(tr("Моды сборки"), QStringLiteral("mods"));
-    railPage(tr("Компоненты / Java"), QStringLiteral("version"));
-    auto importOptiFine = new QPushButton(tr("Импорт OptiFine"), rail);
+    section(tr("БИБЛИОТЕКА"));
+    railAction(ui->actionAddInstance, tr("Создать сборку…"), "add");
+    auto quickVanilla = new QPushButton(tr("Установить vanilla…"), rail);
+    decorate(quickVanilla, "import");
+    connect(quickVanilla, &QPushButton::clicked, this, &MainWindow::createQuickVanilla);
+    navigation->addWidget(quickVanilla);
+    section(tr("ВЫБРАННАЯ СБОРКА"));
+    railAction(ui->actionLaunchInstance, tr("Играть"), "play");
+    railAction(ui->actionEditInstance, tr("Настроить сборку…"), "settings");
+    auto importOptiFine = new QPushButton(tr("Импорт OptiFine…"), rail);
+    decorate(importOptiFine, "import");
+    importOptiFine->setToolTip(tr("Импорт локального профиля OptiFine в выбранную vanilla-сборку"));
+    auto syncImport = [this, importOptiFine] {
+        importOptiFine->setEnabled(m_selectedInstance && m_selectedInstance->canEdit() && !m_selectedInstance->isRunning());
+    };
+    connect(ui->actionEditInstance, &QAction::changed, importOptiFine, syncImport);
+    syncImport();
     connect(importOptiFine, &QPushButton::clicked, this, &MainWindow::importOptiFineProfile);
     navigation->addWidget(importOptiFine);
     navigation->addStretch();
-    railAction(ui->actionSettings, tr("Настройки"));
-    workspace->addWidget(rail);
+    section(tr("ЛАУНЧЕР"));
+    railMenu(ui->actionAccountsButton, tr("Учётные записи"), "account");
+    railMenu(ui->actionFoldersButton, tr("Папки"), "folder");
+    railAction(ui->actionSettings, tr("Настройки"), "settings");
+    railMenu(ui->actionHelpButton, tr("Справка"), "help");
+    auto railScroll = new QScrollArea(m_modernHome);
+    railScroll->setFrameShape(QFrame::NoFrame);
+    railScroll->setWidgetResizable(true);
+    railScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    railScroll->setFixedWidth(236);
+    railScroll->setWidget(rail);
+    workspace->addWidget(railScroll);
     auto collection = new QWidget(m_modernHome);
     auto collectionLayout = new QVBoxLayout(collection);
     collectionLayout->setContentsMargins(0, 0, 0, 0);
@@ -208,7 +270,21 @@ void MainWindow::setupLaunchModes()
     auto accounts = new QToolButton(m_compactHome);
     accounts->setDefaultAction(ui->actionAccountsButton);
     accounts->setPopupMode(QToolButton::InstantPopup);
+    accounts->setText(tr("Учётные записи"));
+    accounts->setIcon(navigationIcon("account"));
+    accounts->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     extras->addWidget(accounts);
+    auto launcherMenu = new QToolButton(m_compactHome);
+    launcherMenu->setText(tr("Лаунчер"));
+    launcherMenu->setIcon(navigationIcon("settings"));
+    launcherMenu->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    launcherMenu->setPopupMode(QToolButton::InstantPopup);
+    auto menu = new QMenu(launcherMenu);
+    menu->addAction(ui->actionSettings);
+    menu->addMenu(ui->foldersMenu);
+    menu->addMenu(ui->helpMenu);
+    launcherMenu->setMenu(menu);
+    extras->addWidget(launcherMenu);
     layout->addLayout(extras);
     layout->addStretch();
     ui->horizontalLayout->addWidget(m_compactHome, 1);
@@ -243,6 +319,9 @@ void MainWindow::applyLaunchMode(bool compact)
             search->clear();
     }
     const bool wasCompact = m_compactMode;
+    // The old top toolbar is replaced by navigation in both interfaces.
+    ui->mainToolBar->hide();
+    ui->mainToolBar->toggleViewAction()->setVisible(false);
     m_compactMode = compact;
     m_modernModeButton->setChecked(!compact);
     m_legacyModeButton->setChecked(compact);
@@ -255,7 +334,7 @@ void MainWindow::applyLaunchMode(bool compact)
         ui->mainToolBar->hide();
         ui->instanceToolBar->hide();
     } else if (wasCompact) {
-        ui->mainToolBar->setVisible(m_advancedMainToolbarVisible);
+        ui->mainToolBar->hide();
         ui->instanceToolBar->setVisible(m_advancedInstanceToolbarVisible);
     }
     APPLICATION->settings()->set("ElysiumInterfaceMode", compact ? "classic" : "modern");

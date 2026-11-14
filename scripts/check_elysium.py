@@ -76,6 +76,18 @@ class ElysiumPackagingTests(unittest.TestCase):
         self.assertIn('registerSetting("ElysiumInterfaceMode"', (ROOT / "launcher/Application.cpp").read_text(encoding="utf-8"))
         self.assertNotIn("saveState().toBase64()", main)
 
+    def test_navigation_replaces_top_toolbar(self):
+        source = (ROOT / "launcher/ui/MainWindowModes.cpp").read_text(encoding="utf-8")
+        self.assertIn('ui->mainToolBar->toggleViewAction()->setVisible(false)', source)
+        self.assertNotIn('ui->mainToolBar->setVisible(m_advancedMainToolbarVisible)', source)
+        self.assertNotIn('Компоненты / Java', source)
+        self.assertNotIn('railPage(', source)
+        for action in ('Accounts', 'Folders', 'Help'):
+            self.assertIn('railMenu(ui->action' + action + 'Button', source)
+        self.assertIn('railAction(ui->actionEditInstance', source)
+        self.assertIn('navigationIcon', source)
+        self.assertIn('new QScrollArea', source)
+
     def test_optifine_test_is_registered(self):
         self.assertTrue((ROOT / "tests/OptiFineProfile_test.cpp").is_file())
         self.assertIn("TEST_NAME OptiFineProfile", (ROOT / "tests/CMakeLists.txt").read_text(encoding="utf-8"))
