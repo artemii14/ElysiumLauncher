@@ -15,6 +15,7 @@
 #include "minecraft/PackProfile.h"
 #include "minecraft/VanillaInstanceCreationTask.h"
 #include "ui/dialogs/VersionSelectDialog.h"
+#include "ui/dialogs/ZeroTierDialog.h"
 #include "ui/instanceview/InstanceProxyModel.h"
 #include "ui/instanceview/InstanceView.h"
 
@@ -152,6 +153,14 @@ void MainWindow::setupLaunchModes()
     railMenu(ui->actionAccountsButton, tr("Учётные записи"), "account");
     railMenu(ui->actionFoldersButton, tr("Папки"), "folder");
     railAction(ui->actionSettings, tr("Настройки"), "settings");
+    auto lan = new QPushButton(tr("Эмулятор локальной сети"), rail);
+    decorate(lan, "proxy");
+    lan->setToolTip(tr("Подключение к виртуальной сети через установленный ZeroTier One"));
+    connect(lan, &QPushButton::clicked, this, [this] {
+        ZeroTierDialog dialog(this);
+        dialog.exec();
+    });
+    navigation->addWidget(lan);
     railMenu(ui->actionHelpButton, tr("Справка"), "help");
     auto railScroll = new QScrollArea(m_modernHome);
     railScroll->setFrameShape(QFrame::NoFrame);
@@ -244,6 +253,8 @@ void MainWindow::setupLaunchModes()
     launcherMenu->setPopupMode(QToolButton::InstantPopup);
     auto menu = new QMenu(launcherMenu);
     menu->addAction(ui->actionSettings);
+    auto lanAction = menu->addAction(QIcon::fromTheme("proxy"), tr("Эмулятор локальной сети…"));
+    connect(lanAction, &QAction::triggered, this, [this] { ZeroTierDialog dialog(this); dialog.exec(); });
     menu->addMenu(ui->foldersMenu);
     menu->addMenu(ui->helpMenu);
     launcherMenu->setMenu(menu);

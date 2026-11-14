@@ -141,6 +141,20 @@ class ElysiumPackagingTests(unittest.TestCase):
             self.assertEqual(root.attrib["viewBox"], "0 0 24 24")
             self.assertNotIn("<image", svg.read_text(encoding="utf-8"))
 
+    def test_zerotier_local_control_boundaries(self):
+        source = (ROOT / "launcher/ui/dialogs/ZeroTierDialog.cpp").read_text(encoding="utf-8")
+        self.assertIn('http://127.0.0.1:9993', source)
+        self.assertIn('QNetworkProxy::NoProxy', source)
+        self.assertIn('QNetworkRequest::ManualRedirectPolicy', source)
+        self.assertIn('req.setTransferTimeout(5000)', source)
+        self.assertIn('{"allowDefault", false}', source)
+        self.assertIn('{"allowGlobal", false}', source)
+        self.assertIn('{"allowDNS", false}', source)
+        self.assertNotIn('QProcess', source)
+        self.assertNotIn('qDebug', source)
+        self.assertNotIn('qInfo', source)
+        self.assertIn('ui/dialogs/ZeroTierDialog.cpp', (ROOT / "launcher/CMakeLists.txt").read_text(encoding="utf-8"))
+
     def test_optifine_test_is_registered(self):
         self.assertTrue((ROOT / "tests/OptiFineProfile_test.cpp").is_file())
         self.assertIn("TEST_NAME OptiFineProfile", (ROOT / "tests/CMakeLists.txt").read_text(encoding="utf-8"))
