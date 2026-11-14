@@ -156,6 +156,10 @@ class copy : public QObject {
     QStringList m_failedPaths;
 };
 
+// Create an OS-level link, retaining native error codes on Windows.
+// Shared with the elevated file-link helper; never creates a .lnk shortcut.
+void createFileLink(const QString& source, const QString& destination, bool hardLink, std::error_code& error);
+
 struct LinkPair {
     QString src;
     QString dst;
@@ -276,6 +280,7 @@ class create_link : public QObject {
     std::error_code m_os_err;
 
     QLocalServer m_linkServer;
+    bool m_privilegedResultsReceived = false;
 };
 
 /**

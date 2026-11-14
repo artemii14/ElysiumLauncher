@@ -1,4 +1,5 @@
 #include <QDir>
+#include <QFile>
 #include <QStandardPaths>
 #include <QTemporaryDir>
 #include <QTest>
@@ -302,6 +303,32 @@ class FileSystemTest : public QObject {
 
             QVERIFY(target_dir.entryList(filter).contains("pack.mcmeta"));
         }
+    }
+
+    void test_native_hard_link()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+        const auto source = directory.filePath(QString::fromUtf8("источник.txt"));
+        const auto destination = directory.filePath(QString::fromUtf8("ссылка.txt"));
+        QFile original(source);
+        QVERIFY(original.open(QIODevice::WriteOnly));
+        QCOMPARE(original.write("elysium"), qint64(7));
+        original.close();
+
+        std::error_code error;
+        FS::createFileLink(source, destination, true, error);
+        QVERIFY2(!error, error.message().c_str());
+        QFile linked(destination);
+        QVERIFY(linked.open(QIODevice::ReadOnly));
+        QCOMPARE(linked.readAll(), QByteArray("elysium"));
+        linked.close();
+
+        // Never overwrite an existing destination, even if a prior call worked.
+        FS::createFileLink(source, destination, true, error);
+        QVERIFY(error);
+        QVERIFY(original.open(QIODevice::ReadOnly));
+        QCOMPARE(original.readAll(), QByteArray("elysium"));
     }
 
     void test_getDesktop() { QCOMPARE(FS::getDesktopDir(), QStandardPaths::writableLocation(QStandardPaths::DesktopLocation)); }

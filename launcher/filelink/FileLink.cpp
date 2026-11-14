@@ -34,8 +34,6 @@
 
 #include <DesktopServices.h>
 
-#include <filesystem>
-namespace fs = std::filesystem;
 
 FileLinkApp::FileLinkApp(int& argc, char** argv) : QCoreApplication(argc, argv), socket(new QLocalSocket(this))
 {
@@ -124,16 +122,7 @@ void FileLinkApp::runLink()
         QString dst_path = link.dst;
 
         FS::ensureFilePathExists(dst_path);
-        if (m_useHardLinks) {
-            qDebug() << "making hard link:" << src_path << "to" << dst_path;
-            fs::create_hard_link(StringUtils::toStdString(src_path), StringUtils::toStdString(dst_path), os_err);
-        } else if (fs::is_directory(StringUtils::toStdString(src_path))) {
-            qDebug() << "making directory_symlink:" << src_path << "to" << dst_path;
-            fs::create_directory_symlink(StringUtils::toStdString(src_path), StringUtils::toStdString(dst_path), os_err);
-        } else {
-            qDebug() << "making symlink:" << src_path << "to" << dst_path;
-            fs::create_symlink(StringUtils::toStdString(src_path), StringUtils::toStdString(dst_path), os_err);
-        }
+        FS::createFileLink(src_path, dst_path, m_useHardLinks, os_err);
 
         if (os_err) {
             qWarning() << "Failed to link files:" << QString::fromStdString(os_err.message());

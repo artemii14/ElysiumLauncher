@@ -466,28 +466,56 @@ void create_link::make_link_list(const QString& offset)
     }
 }
 
+void createFileLink(const QString& source, const QString& destination, bool hardLink, std::error_code& error)
+{
+    error.clear();
+#if defined Q_OS_WIN32
+    // MinGW's std::filesystem symlink implementation may return ENOSYS.
+    // Use UTF-16 Win32 APIs in both the launcher and its elevated helper.
+    const auto nativeSource = QDir::toNativeSeparators(source);
+    const auto nativeDestination = QDir::toNativeSeparators(destination);
+    const auto src = reinterpret_cast<LPCWSTR>(nativeSource.utf16());
+    const auto dst = reinterpret_cast<LPCWSTR>(nativeDestination.utf16());
+    if (hardLink) {
+        if (!CreateHardLinkW(dst, src, nullptr))
+            error = std::error_code(static_cast<int>(GetLastError()), std::system_category());
+        return;
+    }
+
+    const DWORD flags = QFileInfo(source).isDir() ? SYMBOLIC_LINK_FLAG_DIRECTORY : 0;
+    // Windows 10 Developer Mode permits unprivileged symlinks with this flag.
+    constexpr DWORD allowUnprivilegedCreate = 0x2;
+    if (CreateSymbolicLinkW(dst, src, flags | allowUnprivilegedCreate))
+        return;
+    auto lastError = GetLastError();
+    if (lastError == ERROR_INVALID_PARAMETER) {
+        // Older Windows versions do not understand the Developer Mode flag.
+        if (CreateSymbolicLinkW(dst, src, flags))
+            return;
+        lastError = GetLastError();
+    }
+    error = std::error_code(static_cast<int>(lastError), std::system_category());
+#else
+    const auto src = StringUtils::toStdString(source);
+    const auto dst = StringUtils::toStdString(destination);
+    if (hardLink)
+        fs::create_hard_link(src, dst, error);
+    else if (QFileInfo(source).isDir())
+        fs::create_directory_symlink(src, dst, error);
+    else
+        fs::create_symlink(src, dst, error);
+#endif
+}
+
 bool create_link::make_links()
 {
     for (auto link : m_links_to_make) {
         QString src_path = link.src;
         QString dst_path = link.dst;
-        auto src_path_std = StringUtils::toStdString(link.src);
-        auto dst_path_std = StringUtils::toStdString(link.dst);
-
         ensureFilePathExists(dst_path);
-        if (m_useHardLinks) {
-            if (m_debug)
-                qDebug() << "making hard link:" << src_path << "to" << dst_path;
-            fs::create_hard_link(src_path_std, dst_path_std, m_os_err);
-        } else if (fs::is_directory(src_path_std)) {
-            if (m_debug)
-                qDebug() << "making directory_symlink:" << src_path << "to" << dst_path;
-            fs::create_directory_symlink(src_path_std, dst_path_std, m_os_err);
-        } else {
-            if (m_debug)
-                qDebug() << "making symlink:" << src_path << "to" << dst_path;
-            fs::create_symlink(src_path_std, dst_path_std, m_os_err);
-        }
+        if (m_debug)
+            qDebug() << "making link:" << src_path << "to" << dst_path << "hard:" << m_useHardLinks;
+        createFileLink(src_path, dst_path, m_useHardLinks, m_os_err);
 
         if (m_os_err) {
             qWarning() << "Failed to link files:" << QString::fromStdString(m_os_err.message());
@@ -512,13 +540,13 @@ void create_link::runPrivileged(const QString& offset)
     m_path_results.clear();
     m_links_to_make.clear();
 
-    bool gotResults = false;
+    m_privilegedResultsReceived = false;
 
     make_link_list(offset);
 
     QString serverName = BuildConfig.LAUNCHER_APP_BINARY_NAME + "_filelink_server" + StringUtils::getRandomAlphaNumeric();
 
-    connect(&m_linkServer, &QLocalServer::newConnection, this, [this, &gotResults]() {
+    connect(&m_linkServer, &QLocalServer::newConnection, this, [this]() {
         qDebug() << "Client connected, sending out pairs";
         // construct block of data to send
         QByteArray block;
@@ -541,7 +569,7 @@ void create_link::runPrivileged(const QString& offset)
         QLocalSocket* clientConnection = m_linkServer.nextPendingConnection();
         connect(clientConnection, &QLocalSocket::disconnected, clientConnection, &QLocalSocket::deleteLater);
 
-        connect(clientConnection, &QLocalSocket::readyRead, this, [&, clientConnection]() {
+        connect(clientConnection, &QLocalSocket::readyRead, this, [this, clientConnection]() {
             QDataStream in;
             quint32 blockSize = 0;
             in.setDevice(clientConnection);
@@ -583,7 +611,7 @@ void create_link::runPrivileged(const QString& offset)
                 }
                 m_path_results.append(result);
             }
-            gotResults = true;
+            m_privilegedResultsReceived = true;
             qDebug() << "results received, closing connection";
             clientConnection->close();
         });
@@ -600,7 +628,7 @@ void create_link::runPrivileged(const QString& offset)
     }
 
     ExternalLinkFileProcess* linkFileProcess = new ExternalLinkFileProcess(serverName, m_useHardLinks, this);
-    connect(linkFileProcess, &ExternalLinkFileProcess::processExited, this, [this, &gotResults]() { emit finishedPrivileged(gotResults); });
+    connect(linkFileProcess, &ExternalLinkFileProcess::processExited, this, [this]() { emit finishedPrivileged(m_privilegedResultsReceived); });
     connect(linkFileProcess, &ExternalLinkFileProcess::finished, linkFileProcess, &QObject::deleteLater);
 
     linkFileProcess->start();
