@@ -35,7 +35,7 @@ private slots:
         auto value = mod("sodium", "v1");
         auto file = primaryFile(value);
         QVERIFY(!file.isEmpty());
-        for (const QString name : {"../escape.jar", "a/b.jar", "a\\b.jar", "a.exe", "CON:bad.jar"}) {
+        for (const QString& name : {"../escape.jar", "a/b.jar", "a\\b.jar", "a.exe", "CON:bad.jar"}) {
             auto unsafe = file; unsafe["filename"] = name;
             value["files"] = QJsonArray{unsafe};
             QVERIFY(primaryFile(value).isEmpty());

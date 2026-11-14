@@ -121,7 +121,7 @@ void SodiumPresetDialog::reload()
         QStringList games = releases.values();
         std::sort(games.begin(), games.end(), [](const QString& a, const QString& b) { return ::Version(a) > ::Version(b); });
         for (const auto& game : games) {
-            for (const QString loader : {QString("fabric"), QString("neoforge")}) {
+            for (const QString& loader : {QString("fabric"), QString("neoforge")}) {
                 auto exists = [this, game, loader](const QString& project) {
                     for (const auto& value : m_projects.value(project)) if (supports(value.toObject(), game, loader)) return true;
                     return false;
