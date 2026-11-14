@@ -86,11 +86,9 @@ void MainWindow::setupLaunchModes()
     auto navigation = new QVBoxLayout(rail);
     navigation->setContentsMargins(14, 20, 14, 16);
     navigation->setSpacing(6);
-    auto section = [rail, navigation](const QString& title) {
-        auto label = new QLabel(title, rail);
-        label->setObjectName(QStringLiteral("elysiumEyebrow"));
-        label->setContentsMargins(8, 12, 0, 6);
-        navigation->addWidget(label);
+    auto panelOrder = new HomePanelOrder(navigation, QStringLiteral("modern"));
+    auto section = [&navigation, panelOrder](const QString& id, const QString& title) {
+        navigation = static_cast<QVBoxLayout*>(panelOrder->addPanel(id, title));
     };
     auto decorate = [](QPushButton* button, const QString& glyph) {
         button->setIcon(navigationIcon(glyph));
@@ -98,7 +96,7 @@ void MainWindow::setupLaunchModes()
         button->setMinimumHeight(42);
         button->setCursor(Qt::PointingHandCursor);
     };
-    auto railAction = [rail, navigation, decorate](QAction* action, const QString& title, const QString& glyph) {
+    auto railAction = [rail, &navigation, decorate](QAction* action, const QString& title, const QString& glyph) {
         auto button = new QPushButton(title, rail);
         decorate(button, glyph);
         connect(button, &QPushButton::clicked, action, &QAction::trigger);
@@ -107,7 +105,7 @@ void MainWindow::setupLaunchModes()
         sync();
         navigation->addWidget(button);
     };
-    auto railMenu = [rail, navigation](QAction* action, const QString& title, const QString& glyph) {
+    auto railMenu = [rail, &navigation](QAction* action, const QString& title, const QString& glyph) {
         auto button = new QToolButton(rail);
         button->setDefaultAction(action);
         button->setText(title);
@@ -136,7 +134,7 @@ void MainWindow::setupLaunchModes()
     m_sidebarInstanceName->setContentsMargins(6, 0, 6, 12);
     navigation->addWidget(m_sidebarInstanceIcon);
     navigation->addWidget(m_sidebarInstanceName);
-    section(tr("БИБЛИОТЕКА"));
+    section(QStringLiteral("library"), tr("БИБЛИОТЕКА"));
     railAction(ui->actionAddInstance, tr("Создать сборку…"), "add");
     auto quickVanilla = new QPushButton(tr("Установить vanilla…"), rail);
     decorate(quickVanilla, "import");
@@ -146,7 +144,7 @@ void MainWindow::setupLaunchModes()
     decorate(sodium, "quickmods");
     connect(sodium, &QPushButton::clicked, this, &MainWindow::createSodiumPreset);
     navigation->addWidget(sodium);
-    section(tr("ВЫБРАННАЯ СБОРКА"));
+    section(QStringLiteral("instance"), tr("ВЫБРАННАЯ СБОРКА"));
     railAction(ui->actionLaunchInstance, tr("Играть"), "play");
     railAction(ui->actionEditInstance, tr("Настроить сборку…"), "settings");
     auto importOptiFine = new QPushButton(tr("Импорт OptiFine…"), rail);
@@ -159,8 +157,7 @@ void MainWindow::setupLaunchModes()
     syncImport();
     connect(importOptiFine, &QPushButton::clicked, this, &MainWindow::importOptiFineProfile);
     navigation->addWidget(importOptiFine);
-    navigation->addStretch();
-    section(tr("ЛАУНЧЕР"));
+    section(QStringLiteral("launcher"), tr("ЛАУНЧЕР"));
     railMenu(ui->actionAccountsButton, tr("Учётные записи"), "account");
     railMenu(ui->actionFoldersButton, tr("Папки"), "folder");
     railAction(ui->actionSettings, tr("Настройки"), "settings");
@@ -173,6 +170,8 @@ void MainWindow::setupLaunchModes()
     });
     navigation->addWidget(lan);
     railMenu(ui->actionHelpButton, tr("Справка"), "help");
+    rail->layout()->addItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding));
+    panelOrder->restore();
     auto railScroll = new QScrollArea(m_modernHome);
     railScroll->setFrameShape(QFrame::NoFrame);
     railScroll->setWidgetResizable(true);
@@ -222,6 +221,7 @@ void MainWindow::setupLaunchModes()
     m_compactDetails->setObjectName(QStringLiteral("elysiumSubtitle"));
     layout->addWidget(m_compactDetails);
 
+    auto legacyPanels = new HomePanelOrder(layout, QStringLiteral("legacy"));
     auto actions = new QHBoxLayout();
     auto addActionButton = [this, actions](QAction* action, const QString& label, const QString& name = {}) {
         auto button = new QPushButton(label, m_compactHome);
@@ -236,7 +236,7 @@ void MainWindow::setupLaunchModes()
     addActionButton(ui->actionLaunchInstance, tr("Играть"), QStringLiteral("elysiumCreate"));
     addActionButton(ui->actionEditInstance, tr("Настроить сборку"));
     addActionButton(ui->actionKillInstance, tr("Остановить"));
-    layout->addLayout(actions);
+    legacyPanels->addPanel(QStringLiteral("play"), tr("ВЫБРАННАЯ СБОРКА"))->addLayout(actions);
 
     auto install = new QHBoxLayout();
     auto vanilla = new QPushButton(tr("+ Vanilla автоматически"), m_compactHome);
@@ -248,7 +248,7 @@ void MainWindow::setupLaunchModes()
     auto sodiumCompact = new QPushButton(tr("Sodium-сборка…"), m_compactHome);
     connect(sodiumCompact, &QPushButton::clicked, this, &MainWindow::createSodiumPreset);
     install->addWidget(sodiumCompact);
-    layout->addLayout(install);
+    legacyPanels->addPanel(QStringLiteral("install"), tr("БИБЛИОТЕКА"))->addLayout(install);
     auto extras = new QHBoxLayout();
     auto create = new QPushButton(tr("Модпаки / Forge / Fabric…"), m_compactHome);
     connect(create, &QPushButton::clicked, ui->actionAddInstance, &QAction::trigger);
@@ -273,7 +273,8 @@ void MainWindow::setupLaunchModes()
     menu->addMenu(ui->helpMenu);
     launcherMenu->setMenu(menu);
     extras->addWidget(launcherMenu);
-    layout->addLayout(extras);
+    legacyPanels->addPanel(QStringLiteral("extras"), tr("ЛАУНЧЕР"))->addLayout(extras);
+    legacyPanels->restore();
     layout->addStretch();
     ui->horizontalLayout->addWidget(m_compactHome, 1);
 

@@ -52,6 +52,13 @@ public:
             {QStringLiteral("Выбери Minecraft — сборка будет создана автоматически"), QStringLiteral("Choose Minecraft — an instance will be created automatically")}
         };
         static const QHash<QString, QString> russian = {
+            {QStringLiteral("Background preset"), QStringLiteral("Готовый анимированный фон")},
+            {QStringLiteral("Aurora"), QStringLiteral("Северное сияние")},
+            {QStringLiteral("Starfield"), QStringLiteral("Звёздное небо")},
+            {QStringLiteral("Waves"), QStringLiteral("Волны")},
+            {QStringLiteral("Reset button and panel order"), QStringLiteral("Сбросить порядок кнопок и блоков")},
+            {QStringLiteral("Drag panel headers to move whole blocks, or drag individual buttons. Turn this off to lock the layout."), QStringLiteral("Перетаскивайте заголовки блоков или отдельные кнопки. Выключите перемещение для блокировки раскладки.")},
+            {QStringLiteral("Drag this header onto another panel to move the whole block."), QStringLiteral("Перетащите заголовок на другой блок, чтобы переместить блок целиком.")},
             {QStringLiteral("Home screen"), QStringLiteral("Главный экран")},
             {QStringLiteral("Animated background"), QStringLiteral("Анимированный фон")},
             {QStringLiteral("Allow moving buttons"), QStringLiteral("Разрешить перемещение")},

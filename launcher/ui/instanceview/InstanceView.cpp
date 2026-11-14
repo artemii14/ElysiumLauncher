@@ -34,6 +34,7 @@
  */
 
 #include "InstanceView.h"
+#include "ui/widgets/HomeCustomization.h"
 
 #include <QAccessible>
 #include <QApplication>
@@ -68,6 +69,7 @@ bool listsIntersect(const QList<T>& l1, const QList<T> t2)
 
 InstanceView::InstanceView(QWidget* parent) : QAbstractItemView(parent)
 {
+    setViewport(new MidnightSurface(this));
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     setAcceptDrops(true);
@@ -458,6 +460,7 @@ void InstanceView::paintEvent([[maybe_unused]] QPaintEvent* event)
     executeDelayedItemsLayout();
 
     QPainter painter(this->viewport());
+    MidnightSurface::paintBackground(painter, viewport()->rect(), palette());
 
     if (m_cat) {
         m_cat->paint(&painter, this->viewport()->rect());

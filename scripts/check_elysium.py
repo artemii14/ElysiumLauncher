@@ -30,6 +30,25 @@ class ElysiumPackagingTests(unittest.TestCase):
         cmake = (ROOT / "launcher/CMakeLists.txt").read_text()
         self.assertIn('ui/widgets/HomeCustomization.cpp', cmake)
 
+    def test_background_and_whole_panel_wiring(self):
+        source = (ROOT / "launcher/ui/widgets/HomeCustomization.cpp").read_text()
+        self.assertIn('HomePanelOrder::addPanel', source)
+        self.assertIn('ElysiumHomePanelOrder', source)
+        self.assertIn('QEvent::WindowStateChange', source)
+        self.assertIn('QEvent::DragMove', source)
+        self.assertIn('qApp->installEventFilter(this)', source)
+        self.assertIn('style == QStringLiteral("stars")', source)
+        self.assertIn('style == QStringLiteral("waves")', source)
+        view = (ROOT / "launcher/ui/instanceview/InstanceView.cpp").read_text()
+        self.assertIn('setViewport(new MidnightSurface(this))', view)
+        self.assertLess(view.index('MidnightSurface::paintBackground'), view.index('m_cat->paint'))
+        modes = (ROOT / "launcher/ui/MainWindowModes.cpp").read_text()
+        self.assertIn('new HomePanelOrder(navigation, QStringLiteral("modern"))', modes)
+        self.assertIn('new HomePanelOrder(layout, QStringLiteral("legacy"))', modes)
+        settings = (ROOT / "launcher/ui/widgets/AppearanceWidget.cpp").read_text()
+        self.assertIn('settings->set("ElysiumHomePanelOrder", QString())', settings)
+        self.assertIn('m_backgroundStyle->currentData()', settings)
+
     def test_supplemental_translation_fallback(self):
         source = (ROOT / "launcher/translations/ElysiumTranslator.h").read_text()
         self.assertIn('return english.value(text)', source)

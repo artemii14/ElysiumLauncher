@@ -9,18 +9,22 @@
 class QAbstractButton;
 class QBoxLayout;
 class QLayout;
+class QPainter;
+class QLabel;
 
 class MidnightSurface : public QWidget {
 public:
     explicit MidnightSurface(QWidget* parent = nullptr);
+    static void paintBackground(QPainter& painter, const QRect& area, const QPalette& palette);
 protected:
     void paintEvent(QPaintEvent*) override;
     void showEvent(QShowEvent*) override;
     void hideEvent(QHideEvent*) override;
+    bool eventFilter(QObject*, QEvent*) override;
 private:
     void syncTimer();
     QTimer m_timer;
-    double m_phase = 0;
+
 };
 
 // Reorders existing buttons in their responsive layout, never absolute pixels.
@@ -43,4 +47,25 @@ private:
     QPointer<QAbstractButton> m_pressed;
     QPoint m_start;
     int m_counter = 0;
+};
+
+// Whole action panels use their own drag handles, independent of button clicks.
+class HomePanelOrder : public QObject {
+public:
+    HomePanelOrder(QBoxLayout* layout, const QString& key);
+    QBoxLayout* addPanel(const QString& id, const QString& title);
+    void restore();
+protected:
+    bool eventFilter(QObject*, QEvent*) override;
+private:
+    struct Panel { QString id; QWidget* widget; QLabel* handle; int position; };
+    void arrange(const QStringList& ids);
+    void save();
+    void refreshHandles();
+    QBoxLayout* m_layout;
+    QString m_key;
+    QString m_session;
+    QList<Panel> m_panels;
+    QPointer<QWidget> m_pressed;
+    QPoint m_start;
 };

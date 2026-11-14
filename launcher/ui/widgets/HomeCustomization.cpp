@@ -19,6 +19,9 @@
 #include <QUuid>
 #include <cmath>
 #include <algorithm>
+#include <QElapsedTimer>
+#include <QLabel>
+#include <QPainterPath>
 
 namespace {
 constexpr auto Mime = "application/x-elysium-home-button";
@@ -31,8 +34,11 @@ QColor accent()
 
 MidnightSurface::MidnightSurface(QWidget* parent) : QWidget(parent)
 {
-    m_timer.setInterval(50); // restrained 20 FPS; no work when hidden or inactive
-    connect(&m_timer, &QTimer::timeout, this, [this] { m_phase += 0.006; update(); syncTimer(); });
+    m_timer.setInterval(50);
+    // Viewports can have Show/Hide consumed by QAbstractScrollArea. Observe
+    // delivery before its filters, so their animation timer still starts.
+    qApp->installEventFilter(this);
+    connect(&m_timer, &QTimer::timeout, this, [this] { update(); });
     connect(qApp, &QGuiApplication::applicationStateChanged, this, [this] { syncTimer(); });
     connect(APPLICATION, &Application::globalSettingsApplied, this, [this] { syncTimer(); update(); });
 }
@@ -41,23 +47,79 @@ void MidnightSurface::syncTimer()
     const bool active = isVisible() && !window()->isMinimized() &&
         qApp->applicationState() == Qt::ApplicationActive &&
         APPLICATION->settings()->get("ElysiumAnimatedBackground").toBool();
-    if (active) m_timer.start(); else m_timer.stop();
+    if (active && !m_timer.isActive()) m_timer.start();
+    if (!active) m_timer.stop();
 }
-void MidnightSurface::showEvent(QShowEvent* event) { QWidget::showEvent(event); syncTimer(); }
+void MidnightSurface::showEvent(QShowEvent* event)
+{
+    QWidget::showEvent(event);
+    syncTimer();
+}
 void MidnightSurface::hideEvent(QHideEvent* event) { m_timer.stop(); QWidget::hideEvent(event); }
+bool MidnightSurface::eventFilter(QObject* object, QEvent* event)
+{
+    if (object == this && event->type() == QEvent::Hide) m_timer.stop();
+    if ((object == window() && event->type() == QEvent::WindowStateChange) ||
+        (object == this && (event->type() == QEvent::Show || event->type() == QEvent::ParentChange)))
+        QTimer::singleShot(0, this, [this] { syncTimer(); update(); });
+    return QWidget::eventFilter(object, event);
+}
 void MidnightSurface::paintEvent(QPaintEvent*)
 {
     QPainter painter(this);
-    painter.fillRect(rect(), palette().window());
-    if (!APPLICATION->settings()->get("ElysiumAnimatedBackground").toBool()) return;
-    for (int i = 0; i < 3; ++i) {
-        const QPointF center(width() * (0.5 + 0.38 * std::sin(m_phase + i * 2.1)),
-                             height() * (0.5 + 0.32 * std::cos(m_phase * 0.7 + i * 1.8)));
-        QRadialGradient gradient(center, qMax(width(), height()) * 0.6);
-        auto color = accent(); color.setAlpha(24 - i * 4);
-        gradient.setColorAt(0, color); color.setAlpha(0); gradient.setColorAt(1, color);
-        painter.fillRect(rect(), gradient);
+    paintBackground(painter, rect(), palette());
+}
+void MidnightSurface::paintBackground(QPainter& painter, const QRect& area, const QPalette& palette)
+{
+    painter.save();
+    painter.setClipRect(area);
+    painter.fillRect(area, palette.window());
+    if (!APPLICATION->settings()->get("ElysiumAnimatedBackground").toBool()) { painter.restore(); return; }
+    static QElapsedTimer clock;
+    if (!clock.isValid()) clock.start();
+    const double time = clock.elapsed() / 1000.0;
+    const auto style = APPLICATION->settings()->get("ElysiumBackgroundStyle").toString();
+    const double width = area.width(), height = area.height();
+    painter.translate(area.topLeft());
+    painter.setRenderHint(QPainter::Antialiasing);
+    const auto color = accent();
+    if (style == QStringLiteral("stars")) {
+        painter.setPen(Qt::NoPen);
+        for (int i = 0; i < 70; ++i) {
+            auto star = color.lighter(140);
+            star.setAlpha(90 + static_cast<int>(65 * (1 + std::sin(time + i))));
+            painter.setBrush(star);
+            const double x = std::fmod(i * 0.61803398875, 1.0) * width;
+            const double y = std::fmod(i * 0.41421356237 + time * (0.008 + (i % 3) * 0.003), 1.0) * height;
+            const double radius = 1.0 + (i % 3) * 0.5;
+            painter.drawEllipse(QPointF(x, y), radius, radius);
+        }
+    } else if (style == QStringLiteral("waves")) {
+        painter.setPen(Qt::NoPen);
+        for (int layer = 0; layer < 4; ++layer) {
+            QPainterPath path;
+            path.moveTo(0, height);
+            for (int x = 0; x <= static_cast<int>(width) + 12; x += 12) {
+                const double y = height * (0.45 + layer * 0.1) +
+                    std::sin(x / 160.0 + time * 0.4 + layer) * height * 0.12;
+                path.lineTo(x, y);
+            }
+            path.lineTo(width, height); path.closeSubpath();
+            auto wave = color; wave.setAlpha(26 + layer * 9);
+            painter.fillPath(path, wave);
+        }
+    } else {
+        // Aurora: broad, visible color blooms instead of almost invisible dots.
+        for (int i = 0; i < 3; ++i) {
+            const QPointF center(width * (0.5 + 0.38 * std::sin(time * 0.22 + i * 2.1)),
+                                 height * (0.5 + 0.32 * std::cos(time * 0.17 + i * 1.8)));
+            QRadialGradient gradient(center, qMax(width, height) * 0.7);
+            auto glow = color; glow.setAlpha(100 - i * 15);
+            gradient.setColorAt(0, glow); glow.setAlpha(0); gradient.setColorAt(1, glow);
+            painter.fillRect(QRectF(0, 0, width, height), gradient);
+        }
     }
+    painter.restore();
 }
 
 HomeButtonOrder::HomeButtonOrder(QWidget* root, const QString& key)
@@ -130,7 +192,7 @@ void HomeButtonOrder::save()
 bool HomeButtonOrder::eventFilter(QObject* object, QEvent* event)
 {
     auto button = qobject_cast<QAbstractButton*>(object);
-    if (!button || !unlocked()) return QObject::eventFilter(object, event);
+    if (!button || !unlocked()) { m_pressed.clear(); return QObject::eventFilter(object, event); }
     if (event->type() == QEvent::MouseButtonPress) {
         auto mouse = static_cast<QMouseEvent*>(event);
         if (mouse->button() == Qt::LeftButton) { m_pressed = button; m_start = mouse->position().toPoint(); return true; }
@@ -148,7 +210,7 @@ bool HomeButtonOrder::eventFilter(QObject* object, QEvent* event)
         }
     }
     if (event->type() == QEvent::MouseButtonRelease && m_pressed == button) { m_pressed.clear(); return true; }
-    if (event->type() == QEvent::DragEnter || event->type() == QEvent::Drop) {
+    if (event->type() == QEvent::DragEnter || event->type() == QEvent::DragMove || event->type() == QEvent::Drop) {
         auto drop = static_cast<QDropEvent*>(event);
         const auto data = QString::fromUtf8(drop->mimeData()->data(Mime));
         if (!data.startsWith(m_session + ":")) return false;
@@ -170,4 +232,128 @@ bool HomeButtonOrder::eventFilter(QObject* object, QEvent* event)
         }
     }
     return QObject::eventFilter(object, event);
+}
+
+HomePanelOrder::HomePanelOrder(QBoxLayout* layout, const QString& key)
+    : QObject(layout->parentWidget()), m_layout(layout), m_key(key), m_session(QUuid::createUuid().toString())
+{
+    connect(APPLICATION, &Application::globalSettingsApplied, this, [this] { m_pressed.clear(); restore(); });
+}
+QBoxLayout* HomePanelOrder::addPanel(const QString& id, const QString& title)
+{
+    auto panel = new QWidget(m_layout->parentWidget());
+    panel->setObjectName(QStringLiteral("elysiumActionPanel"));
+    auto content = new QVBoxLayout(panel);
+    content->setContentsMargins(4, 4, 4, 8);
+    content->setSpacing(6);
+    auto handle = new QLabel(title, panel);
+    handle->setObjectName(QStringLiteral("elysiumEyebrow"));
+    handle->setProperty("panelTitle", title);
+    handle->setMargin(6);
+    content->addWidget(handle);
+    panel->setAcceptDrops(true);
+    handle->setAcceptDrops(true);
+    panel->installEventFilter(this);
+    handle->installEventFilter(this);
+    m_panels.append({id, panel, handle, m_layout->count()});
+    m_layout->addWidget(panel);
+    refreshHandles();
+    return content;
+}
+void HomePanelOrder::refreshHandles()
+{
+    const bool unlocked = APPLICATION->settings()->get("ElysiumMoveButtons").toBool();
+    for (const auto& panel : m_panels) {
+        const auto title = panel.handle->property("panelTitle").toString();
+        panel.handle->setText((unlocked ? QStringLiteral("⠿  ") : QString()) + title);
+        panel.handle->setCursor(unlocked ? Qt::OpenHandCursor : Qt::ArrowCursor);
+        panel.handle->setToolTip(unlocked ? tr("Drag this header onto another panel to move the whole block.") : QString());
+    }
+}
+void HomePanelOrder::arrange(const QStringList& ids)
+{
+    QList<Panel> ordered;
+    QStringList seen;
+    for (const auto& id : ids) {
+        for (const auto& panel : m_panels) {
+            if (panel.id == id && !seen.contains(id)) { ordered.append(panel); seen.append(id); }
+        }
+    }
+    for (const auto& panel : m_panels) if (!seen.contains(panel.id)) ordered.append(panel);
+    QList<int> positions;
+    for (const auto& panel : m_panels) { positions.append(panel.position); m_layout->removeWidget(panel.widget); }
+    std::sort(positions.begin(), positions.end());
+    for (int i = 0; i < ordered.size(); ++i) {
+        ordered[i].position = positions[i];
+        m_layout->insertWidget(positions[i], ordered[i].widget);
+    }
+    m_panels = ordered;
+}
+void HomePanelOrder::restore()
+{
+    const auto json = QJsonDocument::fromJson(APPLICATION->settings()->get("ElysiumHomePanelOrder").toString().toUtf8()).object();
+    QStringList ids;
+    for (const auto& item : json[m_key].toArray()) ids.append(item.toString());
+    if (ids.isEmpty()) {
+        // Explicit semantic defaults, not translated text or current visual order.
+        ids = m_key == QStringLiteral("modern")
+            ? QStringList{QStringLiteral("library"), QStringLiteral("instance"), QStringLiteral("launcher")}
+            : QStringList{QStringLiteral("play"), QStringLiteral("install"), QStringLiteral("extras")};
+    }
+    arrange(ids);
+    refreshHandles();
+}
+void HomePanelOrder::save()
+{
+    auto settings = APPLICATION->settings();
+    auto json = QJsonDocument::fromJson(settings->get("ElysiumHomePanelOrder").toString().toUtf8()).object();
+    QJsonArray ids;
+    for (const auto& panel : m_panels) ids.append(panel.id);
+    json[m_key] = ids;
+    settings->set("ElysiumHomePanelOrder", QString::fromUtf8(QJsonDocument(json).toJson(QJsonDocument::Compact)));
+}
+bool HomePanelOrder::eventFilter(QObject* object, QEvent* event)
+{
+    if (!APPLICATION->settings()->get("ElysiumMoveButtons").toBool()) { m_pressed.clear(); return false; }
+    for (const auto& panel : m_panels) {
+        if (object != panel.handle && object != panel.widget) continue;
+        if (object == panel.handle && event->type() == QEvent::MouseButtonPress) {
+            const auto mouse = static_cast<QMouseEvent*>(event);
+            if (mouse->button() != Qt::LeftButton) return false;
+            m_pressed = panel.handle; m_start = mouse->position().toPoint(); return true;
+        }
+        if (object == m_pressed && event->type() == QEvent::MouseMove) {
+            const auto mouse = static_cast<QMouseEvent*>(event);
+            if (!(mouse->buttons() & Qt::LeftButton)) { m_pressed.clear(); return false; }
+            if ((mouse->position().toPoint() - m_start).manhattanLength() < QApplication::startDragDistance()) return true;
+            const auto id = panel.id;
+            auto widget = panel.widget;
+            m_pressed.clear();
+            QDrag drag(widget);
+            auto mime = new QMimeData;
+            mime->setData("application/x-elysium-home-panel", (m_session + ":" + id).toUtf8());
+            drag.setMimeData(mime);
+            // A small handle preview avoids allocating huge images for long panels.
+            drag.setPixmap(panel.handle->grab());
+            drag.exec(Qt::MoveAction);
+            return true;
+        }
+        if (event->type() == QEvent::MouseButtonRelease) { m_pressed.clear(); return false; }
+        if (event->type() == QEvent::DragEnter || event->type() == QEvent::DragMove || event->type() == QEvent::Drop) {
+            const auto drop = static_cast<QDropEvent*>(event);
+            const auto data = QString::fromUtf8(drop->mimeData()->data("application/x-elysium-home-panel"));
+            if (!data.startsWith(m_session + ":")) return false;
+            const auto source = data.mid(m_session.size() + 1);
+            QStringList ids;
+            for (const auto& entry : m_panels) ids.append(entry.id);
+            if (!ids.contains(source)) return false;
+            drop->setDropAction(Qt::MoveAction); drop->accept();
+            if (event->type() == QEvent::Drop) {
+                ids.move(ids.indexOf(source), ids.indexOf(panel.id));
+                arrange(ids); save();
+            }
+            return true;
+        }
+    }
+    return false;
 }

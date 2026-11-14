@@ -28,6 +28,7 @@ class QTextCharFormat;
 class QCheckBox;
 class QPushButton;
 class QGroupBox;
+class QComboBox;
 class SettingsObject;
 
 namespace Ui {
@@ -59,6 +60,7 @@ class AppearanceWidget : public QWidget {
     QTextCharFormat m_defaultFormat;
     bool m_themesOnly;
     QCheckBox* m_animation;
+    QComboBox* m_backgroundStyle;
     QCheckBox* m_moveButtons;
     QPushButton* m_accent;
     QPushButton* m_resetOrder;
