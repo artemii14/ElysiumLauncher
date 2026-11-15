@@ -31,12 +31,13 @@
 
 **[Скачать Elysium Launcher 1.0](https://github.com/artemii14/ubiquitous-happiness/releases/tag/v1.0)** — релиз 1.0. Бинарники не подписаны.
 
+- **[Windows — установщик EXE](https://github.com/artemii14/ubiquitous-happiness/releases/download/v1.0/ElysiumLauncher-Windows.exe)**
 - **[Windows x64 — portable ZIP](https://github.com/artemii14/ubiquitous-happiness/releases/download/v1.0/ElysiumLauncher-Windows-x64-portable.zip)**
 - **[Linux x64 — AppImage](https://github.com/artemii14/ubiquitous-happiness/releases/download/v1.0/ElysiumLauncher-Linux-x86_64.AppImage)**
 - [SHA-256 файлов релиза](https://github.com/artemii14/ubiquitous-happiness/releases/download/v1.0/SHA256SUMS.txt)
 
 Распакуйте Windows ZIP целиком и запустите `elysiumlauncher.exe`; это переносная версия, не установщик.
-Установщик `.exe` будет добавлен автором в Assets этого релиза отдельно; пока доступен portable ZIP.
+Для установки используйте `ElysiumLauncher-Windows.exe`; для запуска без установки — portable ZIP.
 Релиз не обновляет уже скачанные файлы автоматически. Самые новые экспериментальные сборки также доступны в Actions ниже.
 Изменения Elysium разрабатываются в ветке [`arena/66b41468-ubiquitous-happiness`](https://github.com/artemii14/ubiquitous-happiness/tree/arena/66b41468-ubiquitous-happiness), отдельно от `main`.
 

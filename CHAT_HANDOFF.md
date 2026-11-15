@@ -102,7 +102,9 @@ Windows drag-and-drop и игрового запуска всех рецепто
 
 Релиз переименован по просьбе пользователя в **Elysium Launcher 1.0**, тег **v1.0**;
 пометка pre-release снята. Бинарники не пересобирались и остаются неподписанными.
-Автор сам добавит установщик `.exe` в этот релиз; пока доступны прежние ZIP и AppImage:
+Автор уже добавил `ElysiumLauncher-Windows.exe` (33 655 159 байт); он доступен вместе с ZIP и AppImage.
+Установщик не запускался и не проверялся в CI. README и описание релиза содержат прямую ссылку,
+SHA256SUMS.txt обновлён для трёх файлов по digest из GitHub API:
 https://github.com/artemii14/ubiquitous-happiness/releases/tag/v1.0
 Загружены и проверены через GitHub API: Windows portable ZIP (45 045 665 байт),
 Linux AppImage (54 172 152 байт), SHA256SUMS.txt. `isDraft=false`, `isPrerelease=false`.
@@ -125,7 +127,7 @@ Linux AppImage (54 172 152 байт), SHA256SUMS.txt. `isDraft=false`, `isPrerel
 5. Проверять реальные установки Sodium в новых экземплярах; старые не трогать.
 6. Пользователь спрашивал про Inno Setup: объяснена упаковка всей чистой portable-папки,
    исключение `portable.txt`, per-user установка, ярлыки с
-   `--dir "%APPDATA%\\ElysiumLauncher"`. Готового собранного Setup.exe пока нет.
+   `--dir "%APPDATA%\\ElysiumLauncher"`. В релиз автор отдельно загрузил `ElysiumLauncher-Windows.exe`; его установка здесь не проверялась.
    Не удалять пользовательские миры/аккаунты при деинсталляции.
 
 ## Ограничения окружения предыдущего чата

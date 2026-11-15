@@ -3,17 +3,19 @@
 Релиз 1.0 независимого форка ElyPrismLauncher / Prism Launcher на C++ и Qt 6.
 Бинарники не подписаны. Minecraft и OptiFine в комплект не входят.
 
-Установщик `.exe` автор добавит в Assets отдельно. Пока доступны portable ZIP и AppImage.
+Доступны установщик Windows `.exe`, portable ZIP и Linux AppImage.
 Переименование релиза не меняет версию или содержимое уже собранных бинарников.
 
 ## Скачать
+
+- **[Windows — установщик EXE](https://github.com/artemii14/ubiquitous-happiness/releases/download/v1.0/ElysiumLauncher-Windows.exe):** `ElysiumLauncher-Windows.exe`, загружен автором отдельно. Установка и содержимое этого файла в CI не проверялись.
 
 - **Windows x64:** `ElysiumLauncher-Windows-x64-portable.zip` — распакуйте целиком
   в доступную для записи папку и запустите `elysiumlauncher.exe`. Это portable,
   не установщик Setup.exe. Не распаковывайте поверх единственной копии своих миров без бэкапа.
 - **Linux x64:** `ElysiumLauncher-Linux-x86_64.AppImage` — Ubuntu 24.04 / glibc 2.39+
   или совместимая система. Разрешите исполнение: `chmod +x ElysiumLauncher-Linux-x86_64.AppImage`.
-- **SHA256SUMS.txt:** контрольные суммы обоих файлов. Сумма проверяет целостность,
+- **SHA256SUMS.txt:** контрольные суммы всех трёх файлов (EXE, ZIP и AppImage), по SHA-256 из метаданных GitHub. Сумма проверяет целостность,
   но не заменяет подпись издателя и не является антивирусной гарантией.
 
 ## Возможности
@@ -30,7 +32,7 @@
 
 ## Проверки и ограничения
 
-Бинарники из коммита **c71aa13f5ef5c8f51b2472374b396ae36f3e9620**:
+Portable ZIP и AppImage собраны из коммита **c71aa13f5ef5c8f51b2472374b396ae36f3e9620** (это не проверка отдельно загруженного установщика EXE):
 - [Windows: сборка, тесты, проверка упакованного запуска](https://github.com/artemii14/ubiquitous-happiness/actions/runs/43659460706).
 - [Linux: сборка, Qt-тесты, проверка запуска AppImage](https://github.com/artemii14/ubiquitous-happiness/actions/runs/43659460736).
 
