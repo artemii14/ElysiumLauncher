@@ -75,7 +75,8 @@ QByteArray MainWindow::interfaceWindowState()
 void MainWindow::setupLaunchModes()
 {
     // XMCL-inspired workspace rail; every destination uses a Prism/Elysium action.
-    m_modernHome = new QWidget(this);
+    m_modernHome = new MidnightSurface(this);
+    m_modernHome->setObjectName(QStringLiteral("elysiumModernHome"));
     auto workspace = new QHBoxLayout(m_modernHome);
     workspace->setContentsMargins(0, 0, 0, 0);
     workspace->setSpacing(0);

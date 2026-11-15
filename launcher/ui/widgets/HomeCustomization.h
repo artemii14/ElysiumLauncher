@@ -11,11 +11,12 @@ class QBoxLayout;
 class QLayout;
 class QPainter;
 class QLabel;
+class SettingsObject;
 
 class MidnightSurface : public QWidget {
 public:
-    explicit MidnightSurface(QWidget* parent = nullptr);
-    static void paintBackground(QPainter& painter, const QRect& area, const QPalette& palette);
+    explicit MidnightSurface(QWidget* parent = nullptr, SettingsObject* settings = nullptr);
+    static void paintBackground(QPainter& painter, const QRect& area, const QPalette& palette, const QWidget* target = nullptr, SettingsObject* settings = nullptr);
 protected:
     void paintEvent(QPaintEvent*) override;
     void showEvent(QShowEvent*) override;
@@ -23,6 +24,7 @@ protected:
     bool eventFilter(QObject*, QEvent*) override;
 private:
     void syncTimer();
+    SettingsObject* m_settings;
     QTimer m_timer;
 
 };
@@ -31,7 +33,7 @@ private:
 // Disabled by default; only local registered buttons are accepted as drops.
 class HomeButtonOrder : public QObject {
 public:
-    HomeButtonOrder(QWidget* root, const QString& key);
+    HomeButtonOrder(QWidget* root, const QString& key, SettingsObject* settings = nullptr);
     void restore();
 protected:
     bool eventFilter(QObject* object, QEvent* event) override;
@@ -41,6 +43,7 @@ private:
     void arrange(Group& group, const QStringList& ids);
     void save();
     bool unlocked() const;
+    SettingsObject* m_settings;
     QString m_key;
     QString m_session;
     QList<Group> m_groups;
@@ -52,7 +55,7 @@ private:
 // Whole action panels use their own drag handles, independent of button clicks.
 class HomePanelOrder : public QObject {
 public:
-    HomePanelOrder(QBoxLayout* layout, const QString& key);
+    HomePanelOrder(QBoxLayout* layout, const QString& key, SettingsObject* settings = nullptr);
     QBoxLayout* addPanel(const QString& id, const QString& title);
     void restore();
 protected:
@@ -62,6 +65,7 @@ private:
     void arrange(const QStringList& ids);
     void save();
     void refreshHandles();
+    SettingsObject* m_settings;
     QBoxLayout* m_layout;
     QString m_key;
     QString m_session;

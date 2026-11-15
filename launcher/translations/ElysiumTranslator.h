@@ -52,6 +52,11 @@ public:
             {QStringLiteral("Выбери Minecraft — сборка будет создана автоматически"), QStringLiteral("Choose Minecraft — an instance will be created automatically")}
         };
         static const QHash<QString, QString> russian = {
+            {QStringLiteral("Layout locked. Enable Allow moving buttons in Settings → Appearance, then Apply."), QStringLiteral("Раскладка заблокирована. Включите «Разрешить перемещение» в Настройки → Внешний вид и нажмите «Применить».")},
+            {QStringLiteral("Make room for a new world.\nCreate your first instance to install Minecraft or a modpack."), QStringLiteral("Здесь начнётся новый мир.\nСоздайте сборку Minecraft или установите модпак.")},
+            {QStringLiteral("No matching instances.\nTry another name or clear the search."), QStringLiteral("Сборки не найдены.\nИзмените запрос или очистите поиск.")},
+            {QStringLiteral("Search instances or groups…  Ctrl+K"), QStringLiteral("Поиск сборок или групп…  Ctrl+K")},
+            {QStringLiteral("%1 of %2 instances"), QStringLiteral("Сборки: %1 из %2")},
             {QStringLiteral("Background preset"), QStringLiteral("Готовый анимированный фон")},
             {QStringLiteral("Aurora"), QStringLiteral("Северное сияние")},
             {QStringLiteral("Starfield"), QStringLiteral("Звёздное небо")},

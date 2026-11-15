@@ -45,6 +45,8 @@ class ElysiumPackagingTests(unittest.TestCase):
         modes = (ROOT / "launcher/ui/MainWindowModes.cpp").read_text()
         self.assertIn('new HomePanelOrder(navigation, QStringLiteral("modern"))', modes)
         self.assertIn('new HomePanelOrder(layout, QStringLiteral("legacy"))', modes)
+        self.assertIn('m_modernHome = new MidnightSurface(this)', modes)
+        self.assertIn('panel.widget->isAncestorOf(target)', source)
         settings = (ROOT / "launcher/ui/widgets/AppearanceWidget.cpp").read_text()
         self.assertIn('settings->set("ElysiumHomePanelOrder", QString())', settings)
         self.assertIn('m_backgroundStyle->currentData()', settings)

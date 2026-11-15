@@ -73,7 +73,8 @@ QWidget#elysiumRail QToolButton::menu-indicator { subcontrol-position: right cen
 QWidget#elysiumModeBar { background: #11131d; border-bottom: 1px solid #292d43; }
 QWidget#elysiumCompactHome { background: transparent; }
 QWidget#elysiumCompactHome QPushButton { padding: 12px 16px; }
-QWidget#elysiumHeader { background: #171a27; border-bottom: 1px solid #292d43; }
+QWidget#elysiumModernHome, QLabel#elysiumEmpty { background: transparent; }
+QWidget#elysiumHeader { background: transparent; border-bottom: 1px solid #292d43; }
 QProgressBar { border: none; background: #252a40; border-radius: 4px; text-align: center; }
 QProgressBar::chunk { background: #a997ff; border-radius: 4px; }
 QTabBar::tab { padding: 9px 14px; }

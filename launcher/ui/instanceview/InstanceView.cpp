@@ -460,7 +460,7 @@ void InstanceView::paintEvent([[maybe_unused]] QPaintEvent* event)
     executeDelayedItemsLayout();
 
     QPainter painter(this->viewport());
-    MidnightSurface::paintBackground(painter, viewport()->rect(), palette());
+    MidnightSurface::paintBackground(painter, viewport()->rect(), palette(), viewport());
 
     if (m_cat) {
         m_cat->paint(&painter, this->viewport()->rect());

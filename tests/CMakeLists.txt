@@ -75,3 +75,6 @@ ecm_add_test(ZeroTierDialog_test.cpp LINK_LIBRARIES Launcher_logic Qt${QT_VERSIO
 
 ecm_add_test(SodiumPreset_test.cpp LINK_LIBRARIES Launcher_logic Qt${QT_VERSION_MAJOR}::Test
     TEST_NAME SodiumPreset)
+
+ecm_add_test(HomeCustomization_test.cpp LINK_LIBRARIES Launcher_logic Qt${QT_VERSION_MAJOR}::Test
+    TEST_NAME HomeCustomization)
