@@ -37,7 +37,7 @@ SodiumPresetDialog::SodiumPresetDialog(QWidget* parent) : QDialog(parent), m_net
     setWindowTitle(tr("Установить Sodium-сборку"));
     resize(780, 560);
     auto layout = new QVBoxLayout(this);
-    auto info = new QLabel(tr("Sodium + Iris + LambDynamicLights + Zoomify (или Ok Zoomer). Fabric API обязателен для Fabric. Mod Menu и Sodium Extra добавляются по возможности. Уже установленные сборки не изменяются."), this);
+    auto info = new QLabel(tr("Sodium + Iris + Zoomify (или Ok Zoomer). Fabric API обязателен для Fabric. Mod Menu и Sodium Extra добавляются по возможности. Уже установленные сборки не изменяются."), this);
     info->setWordWrap(true);
     layout->addWidget(info);
     m_status = new QLabel(tr("Загрузка актуального каталога Modrinth…"), this);
@@ -102,9 +102,10 @@ QByteArray SodiumPresetDialog::fetchBytes(const QUrl& url, qint64 limit)
     const auto status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
     const bool ok = reply->error() == QNetworkReply::NoError && status == 200;
     const auto bytes = reply->read(Limit + 1);
+    const auto networkError = reply->errorString();
     reply->deleteLater();
     if (m_progress && m_progress->wasCanceled()) fail(tr("Операция отменена."));
-    if (!ok || bytes.size() > Limit) fail(tr("Не удалось получить данные Modrinth (HTTP %1). Проверьте сеть или повторите позже.").arg(status));
+    if (!ok || bytes.size() > Limit) fail(tr("Ошибка загрузки %1%2 (HTTP %3): %4").arg(url.host(), url.path(), QString::number(status), networkError));
     return bytes;
 }
 
@@ -146,7 +147,7 @@ void SodiumPresetDialog::reload()
                 };
                 if (!exists("sodium")) continue;
                 QStringList missing;
-                for (const auto& project : QStringList{"iris", "lambdynamiclights"}) if (!exists(project)) missing << project;
+                for (const auto& project : QStringList{"iris"}) if (!exists(project)) missing << project;
                 if (loader == "fabric" && !exists("fabric-api")) missing << "fabric-api";
                 const auto zoom = exists("zoomify") ? QString("zoomify") : exists("ok-zoomer") ? QString("ok-zoomer") : QString();
                 if (zoom.isEmpty()) missing << "Zoomify / Ok Zoomer";
@@ -246,8 +247,7 @@ void SodiumPresetDialog::prepare()
         // Prefer newest Iris first, then the newest Sodium it actually supports.
         Resolver resolver(game, loader, versions, version, compatible);
         Resolver::Selection selected;
-        QStringList roots{"iris", "sodium", "lambdynamiclights"};
-        if (loader == "fabric") roots << "fabric-api";
+        const auto roots = coreProjects(loader);
         auto withZoom = roots;
         withZoom << "zoomify";
         QString zoomTitle = "Zoomify";

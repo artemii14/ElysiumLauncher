@@ -11,7 +11,13 @@
 #include <functional>
 
 namespace Elysium::Sodium {
-inline QStringList projects() { return {"sodium", "iris", "lambdynamiclights", "zoomify", "ok-zoomer", "sodium-extra", "modmenu", "fabric-api"}; }
+inline QStringList projects() { return {"sodium", "iris", "zoomify", "ok-zoomer", "sodium-extra", "modmenu", "fabric-api"}; }
+inline QStringList coreProjects(const QString& loader)
+{
+    QStringList roots{"iris", "sodium"};
+    if (loader == "fabric") roots << "fabric-api";
+    return roots;
+}
 inline bool stableMinecraft(const QString& game)
 {
     const auto match = QRegularExpression("^1\\.(\\d+)(?:\\.\\d+)?$").match(game);

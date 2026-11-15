@@ -9,8 +9,8 @@ from pathlib import Path
 import re
 import urllib.request
 
-PROJECTS = ('sodium', 'sodium-extra', 'iris', 'lambdynamiclights', 'zoomify', 'ok-zoomer', 'modmenu', 'fabric-api')
-REQUIRED = ('sodium', 'iris', 'lambdynamiclights')
+PROJECTS = ('sodium', 'sodium-extra', 'iris', 'zoomify', 'ok-zoomer', 'modmenu', 'fabric-api')
+REQUIRED = ('sodium', 'iris')
 BASE = 'https://api.modrinth.com/v2/'
 
 

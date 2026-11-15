@@ -17,8 +17,20 @@ class SodiumPresetTest : public QObject {
                 {"primary", true}, {"hashes", QJsonObject{{"sha512", QString(128, 'a')}}}}}}};
     }
 private slots:
+    void noLambDynamicLightsInRecipes()
+    {
+        QVERIFY(!projects().contains("lambdynamiclights"));
+        QCOMPARE(coreProjects("fabric"), QStringList({"iris", "sodium", "fabric-api"}));
+        QCOMPARE(coreProjects("neoforge"), QStringList({"iris", "sodium"}));
+    }
     void runtimeRanges()
     {
+        QCOMPARE(matchesRuntimeRange("26.2", ">=26.2- <26.3-"), RangeMatch::Yes);
+        QCOMPARE(matchesRuntimeRange("26.3", ">=26.2- <26.3-"), RangeMatch::No);
+        QCOMPARE(matchesRuntimeRange("26.3", ">=26.3-"), RangeMatch::Yes);
+        QCOMPARE(matchesRuntimeRange("26.3-beta.1", ">=26.3-"), RangeMatch::Yes);
+        QCOMPARE(matchesRuntimeRange("1.21.11", ">=1.21.11- <26.1-"), RangeMatch::Yes);
+        QCOMPARE(matchesRuntimeRange("26.2", "~26.2-"), RangeMatch::Yes);
         QCOMPARE(matchesRuntimeRange("1.11.7+mc26.3", "<=1.12.0"), RangeMatch::Yes);
         QCOMPARE(matchesRuntimeRange("1.12.1+mc26.3", "<=1.12.0"), RangeMatch::No);
         QCOMPARE(matchesRuntimeRange("1.12.0-beta.2", ">=1.12.0"), RangeMatch::No);

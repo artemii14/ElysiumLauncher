@@ -15,7 +15,7 @@ struct SemVersion { QList<quint64> numbers; QStringList pre; };
 std::optional<SemVersion> parseVersion(QString text)
 {
     text = text.section('+', 0, 0);
-    const auto match = QRegularExpression("^([0-9]+(?:\\.[0-9]+)*)(?:-([0-9A-Za-z.-]+))?$").match(text);
+    const auto match = QRegularExpression("^([0-9]+(?:\\.[0-9]+)*)(?:-([0-9A-Za-z.-]*))?$").match(text);
     if (!match.hasMatch()) return {};
     SemVersion result;
     for (const auto& part : match.captured(1).split('.')) {
@@ -24,7 +24,9 @@ std::optional<SemVersion> parseVersion(QString text)
         if (!ok) return {};
         result.numbers.append(number);
     }
-    if (!match.captured(2).isEmpty()) result.pre = match.captured(2).split('.');
+    // Fabric uses a trailing '-' as the lowest prerelease sentinel:
+    // ">=26.2- <26.3-" includes stable 26.2. It is not an invalid SemVer.
+    if (text.contains('-')) result.pre = match.captured(2).split('.');
     return result;
 }
 int compare(const SemVersion& a, const SemVersion& b)

@@ -86,7 +86,7 @@ GitHub может потребовать вход. Артефакты Actions х
 ### От vanilla до модифицированной сборки
 
 - **Vanilla:** выберите Minecraft — новый экземпляр получит автоматическое имя.
-- **Sodium · Fabric / NeoForge:** каталог Modrinth, Sodium, Iris, LambDynamicLights
+- **Sodium · Fabric / NeoForge:** каталог Modrinth, Sodium, Iris
   и Zoomify либо Ok Zoomer. Fabric API обязателен для Fabric; Sodium Extra и
   официальный Mod Menu добавляются при наличии совместимых версий.
 - **Проверка загрузок:** зависимости по метаданным и SHA-512 файлов модов.
