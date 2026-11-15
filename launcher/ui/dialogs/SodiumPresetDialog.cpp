@@ -160,7 +160,7 @@ void SodiumPresetDialog::reload()
                 m_table->setItem(row, 3, availability);
             }
         }
-        m_status->setText(tr("Доступно вариантов: %1. Перед установкой проверяются зависимости. Файлы модов могут быть beta/alpha; каталог не означает проверку запуска каждого набора.").arg(m_table->rowCount()));
+        m_status->setText(tr("Вариантов в каталоге: %1. Недоступные строки указывают недостающие обязательные моды. Перед установкой проверяются JAR-зависимости. Моды могут быть beta/alpha; игровой запуск каждого набора не проверен.").arg(m_table->rowCount()));
     } catch (const std::exception& e) {
         m_table->setRowCount(0);
         m_status->setText(QString::fromUtf8(e.what()));
@@ -209,14 +209,16 @@ void SodiumPresetDialog::prepare()
             return fetch("version/" + id).object();
         };
         QMap<QString, QList<RuntimeMod>> runtimeCache;
+        QMap<QString, QString> invalidMetadata;
         qint64 jarBytes = 0;
         QString lastConflict;
         auto compatible = [&](const Resolver::Selection& selection) {
             QList<RuntimeMod> mods;
             for (const auto& candidate : selection) {
                 const auto id = candidate["id"].toString();
+                if (invalidMetadata.contains(id)) { lastConflict = invalidMetadata.value(id); return false; }
                 if (!runtimeCache.contains(id)) {
-                    if (runtimeCache.size() >= 96) fail(tr("Слишком много вариантов JAR. Уточните версию Minecraft."));
+                    if (runtimeCache.size() + invalidMetadata.size() >= 96) fail(tr("Слишком много вариантов JAR. Уточните версию Minecraft."));
                     const auto file = primaryFile(candidate);
                     const auto declaredSize = file["size"].toDouble();
                     constexpr qint64 JarLimit = 64 * 1024 * 1024;
@@ -228,7 +230,11 @@ void SodiumPresetDialog::prepare()
                         fail(tr("SHA-512 JAR не совпадает: %1").arg(file["filename"].toString()));
                     QString error;
                     const auto metadata = readRuntimeMods(bytes, loader, error);
-                    if (!error.isEmpty()) fail(tr("Не удалось проверить %1: %2").arg(file["filename"].toString(), error));
+                    if (!error.isEmpty()) {
+                        lastConflict = tr("Не удалось проверить %1: %2").arg(file["filename"].toString(), error);
+                        invalidMetadata[id] = lastConflict;
+                        return false;
+                    }
                     runtimeCache[id] = metadata;
                 }
                 mods.append(runtimeCache.value(id));

@@ -167,6 +167,9 @@ QList<RuntimeMod> readRuntimeMods(const QByteArray& jar, const QString& loader, 
         if (parseError.error != QJsonParseError::NoError || obj["id"].toString().isEmpty() || obj["version"].toString().isEmpty()) {
             error = "Missing or invalid fabric.mod.json"; return {};
         }
+        for (const auto& key : QStringList{"depends", "breaks"}) {
+            if (obj.contains(key) && !obj[key].isObject()) { error = "Invalid Fabric dependency object"; return {}; }
+        }
         RuntimeMod mod{obj["id"].toString(), obj["version"].toString(), obj["depends"].toObject(), obj["breaks"].toObject(), {}, false};
         for (const auto& alias : obj["provides"].toArray()) mod.provides.append(alias.toString());
         result.append(mod);
@@ -203,11 +206,12 @@ QList<RuntimeMod> readRuntimeMods(const QByteArray& jar, const QString& loader, 
                 const auto side = (*depTable)["side"].value_or(std::string("BOTH"));
                 if (side == "SERVER") continue;
                 const auto id = QString::fromStdString((*depTable)["modId"].value_or(std::string()));
-                const auto range = QString::fromStdString((*depTable)["versionRange"].value_or(std::string()));
+                const auto range = QString::fromStdString((*depTable)["versionRange"].value_or(std::string("(,)")));
                 const auto type = (*depTable)["type"].value_or(std::string());
                 if (id.isEmpty()) continue;
                 if (type == "incompatible") mod.breaks[id] = range;
-                else if (type == "required" || (*depTable)["mandatory"].value_or(false)) mod.depends[id] = range;
+                else if (type.empty() || type == "required" || type == "optional") mod.depends[id] = range;
+                else if (type != "discouraged") { error = "Unknown NeoForge dependency type"; return {}; }
             }
             result.append(mod);
         }
