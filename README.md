@@ -1,127 +1,132 @@
 <p align="center">
-  <img src="program_info/io.github.artemii14.ElysiumLauncher.svg" width="112" alt="Elysium Launcher logo">
+  <img src="program_info/io.github.artemii14.ElysiumLauncher.svg" width="112" alt="Логотип Elysium Launcher">
 </p>
 
 <h1 align="center">Elysium Launcher</h1>
 
 <p align="center">
-  Minecraft-лаунчер на C++ / Qt 6.<br>
-  Интерфейс Midnight, библиотека сборок и компактный режим запуска.
+  Свои миры. Свои сборки. Свой интерфейс.<br>
+  Minecraft-лаунчер на C++ и Qt 6 с темой Midnight и двумя режимами запуска.
 </p>
 
 <p align="center">
-  <a href="https://github.com/artemii14/ubiquitous-happiness/actions/workflows/windows.yml"><img src="https://github.com/artemii14/ubiquitous-happiness/actions/workflows/windows.yml/badge.svg?branch=arena%2F66b41468-ubiquitous-happiness" alt="Windows build"></a>
-  <a href="https://github.com/artemii14/ubiquitous-happiness/actions/workflows/elysium.yml"><img src="https://github.com/artemii14/ubiquitous-happiness/actions/workflows/elysium.yml/badge.svg?branch=arena%2F66b41468-ubiquitous-happiness" alt="Linux build"></a>
-</p>
-
-<p align="center">
-  <a href="#скачать">Скачать</a> ·
+  <a href="https://github.com/artemii14/ubiquitous-happiness/releases/tag/v1.0"><strong>Скачать 1.0</strong></a> ·
   <a href="#возможности">Возможности</a> ·
-  <a href="https://github.com/artemii14/ubiquitous-happiness/issues">Сообщить об ошибке</a> ·
-  <a href="#сборка-из-исходников">Собрать самостоятельно</a>
+  <a href="#документация">Документация</a> ·
+  <a href="https://github.com/artemii14/ubiquitous-happiness/issues/new/choose">Сообщить об ошибке</a>
 </p>
 
-> [!NOTE]
+<p align="center">
+  <a href="https://github.com/artemii14/ubiquitous-happiness/actions/workflows/windows.yml"><img src="https://github.com/artemii14/ubiquitous-happiness/actions/workflows/windows.yml/badge.svg?branch=main" alt="Сборка Windows"></a>
+  <a href="https://github.com/artemii14/ubiquitous-happiness/actions/workflows/elysium.yml"><img src="https://github.com/artemii14/ubiquitous-happiness/actions/workflows/elysium.yml/badge.svg?branch=main" alt="Сборка Linux"></a>
+</p>
+
 > Независимый форк [ElyPrismLauncher](https://github.com/ElyPrismLauncher/Launcher),
 > основанного на [Prism Launcher](https://github.com/PrismLauncher/PrismLauncher).
 > Не является официальным продуктом Prism Launcher, Ely.by или Mojang/Microsoft.
-> Minecraft не входит в комплект. Для игры через Microsoft-аккаунт требуется право на игру.
+> Minecraft не входит в комплект; для игры через Microsoft-аккаунт требуется право на игру.
 
 ## Скачать
 
-**[Скачать Elysium Launcher 1.0](https://github.com/artemii14/ubiquitous-happiness/releases/tag/v1.0)** — релиз 1.0. Бинарники не подписаны.
+### Elysium Launcher 1.0
 
-- **[Windows — установщик EXE](https://github.com/artemii14/ubiquitous-happiness/releases/download/v1.0/ElysiumLauncher-Windows.exe)**
-- **[Windows x64 — portable ZIP](https://github.com/artemii14/ubiquitous-happiness/releases/download/v1.0/ElysiumLauncher-Windows-x64-portable.zip)**
-- **[Linux x64 — AppImage](https://github.com/artemii14/ubiquitous-happiness/releases/download/v1.0/ElysiumLauncher-Linux-x86_64.AppImage)**
-- [SHA-256 файлов релиза](https://github.com/artemii14/ubiquitous-happiness/releases/download/v1.0/SHA256SUMS.txt)
-
-Распакуйте Windows ZIP целиком и запустите `elysiumlauncher.exe`; это переносная версия, не установщик.
-Для установки используйте `ElysiumLauncher-Windows.exe`; для запуска без установки — portable ZIP.
-Релиз не обновляет уже скачанные файлы автоматически. Самые новые экспериментальные сборки также доступны в Actions ниже.
-Изменения Elysium разрабатываются в ветке [`arena/66b41468-ubiquitous-happiness`](https://github.com/artemii14/ubiquitous-happiness/tree/arena/66b41468-ubiquitous-happiness), отдельно от `main`.
-
-| Платформа | Сборка | Артефакт |
+| Платформа | Скачать | Как запустить |
 |---|---|---|
-| Windows x64 | [Windows build](https://github.com/artemii14/ubiquitous-happiness/actions/workflows/windows.yml) | `ElysiumLauncher-Windows-x64-portable` — ZIP |
-| Linux x64 | [Linux build](https://github.com/artemii14/ubiquitous-happiness/actions/workflows/elysium.yml) | `ElysiumLauncher-Linux-x86_64-AppImage` |
+| **Windows · установщик** | **[EXE](https://github.com/artemii14/ubiquitous-happiness/releases/download/v1.0/ElysiumLauncher-Windows.exe)** | Запустите установщик и следуйте его инструкциям |
+| **Windows x64 · portable** | **[ZIP](https://github.com/artemii14/ubiquitous-happiness/releases/download/v1.0/ElysiumLauncher-Windows-x64-portable.zip)** | Распакуйте **весь архив**, запустите `elysiumlauncher.exe` |
+| **Linux x64** | **[AppImage](https://github.com/artemii14/ubiquitous-happiness/releases/download/v1.0/ElysiumLauncher-Linux-x86_64.AppImage)** | Разрешите исполнение и запустите файл |
 
-1. Откройте нужный workflow и выберите **успешный запуск нужной ветки и коммита**.
-2. Внизу страницы, в **Artifacts**, скачайте архив. Для скачивания GitHub может потребовать вход.
-3. Windows: распакуйте ZIP целиком и запустите `elysiumlauncher.exe`.
-4. Linux: извлеките AppImage, разрешите исполнение и запустите:
+[Описание релиза](https://github.com/artemii14/ubiquitous-happiness/releases/tag/v1.0) ·
+[Контрольные суммы SHA-256](https://github.com/artemii14/ubiquitous-happiness/releases/download/v1.0/SHA256SUMS.txt)
 
-   ```sh
-   chmod +x ElysiumLauncher-Linux-x86_64.AppImage
-   ./ElysiumLauncher-Linux-x86_64.AppImage
-   ```
+Linux: Ubuntu 24.04 / glibc 2.39 или совместимая система новее.
 
-Linux-сборка рассчитана на Ubuntu 24.04 / glibc 2.39 или новее.
-Артефакты **Actions** хранятся 14 дней; файлы **Release** публикуются отдельно.
-[Подробнее о Windows-сборках](docs/WINDOWS-GITHUB.md).
+```sh
+chmod +x ElysiumLauncher-Linux-x86_64.AppImage
+./ElysiumLauncher-Linux-x86_64.AppImage
+```
 
 > [!WARNING]
-> Перед тестированием сделайте резервную копию миров и сборок.
-> Бинарники не подписаны; успешный CI не является антивирусной проверкой.
-> Не отключайте защиту системы ради запуска. При блокировке сохраните точный текст предупреждения
-> и сообщите о нём в Issues без публикации персональных данных.
+> Бинарники не подписаны. Portable и AppImage прошли CI; отдельно загруженный автором
+> установщик EXE в CI не проверялся. Контрольная сумма не заменяет подпись и антивирусную проверку.
+> Не отключайте защиту системы ради запуска. Перед тестированием сохраните резервные копии миров и сборок.
 
-## Продолжение работы в новом чате
+<details>
+<summary>Нужны самые свежие экспериментальные сборки?</summary>
 
-**[CHAT_HANDOFF.md](CHAT_HANDOFF.md)** в корне репозитория содержит историю изменений,
-важные решения, расположение кода, результаты проверок и оставшиеся задачи.
-В новом чате напишите: **«Прочитай CHAT_HANDOFF.md в корне репозитория и продолжи работу»**.
+Откройте [Windows Actions](https://github.com/artemii14/ubiquitous-happiness/actions/workflows/windows.yml)
+или [Linux Actions](https://github.com/artemii14/ubiquitous-happiness/actions/workflows/elysium.yml),
+выберите успешный запуск нужной ветки/коммита и скачайте файл из **Artifacts**.
+GitHub может потребовать вход. Артефакты Actions хранятся 14 дней;
+файлы Releases публикуются отдельно. Скачанный архив сам по себе не обновляется.
+
+[Подробнее о Windows-сборках](docs/WINDOWS-GITHUB.md).
+
+</details>
 
 ## Возможности
 
-### Интерфейс Midnight
+### Интерфейс, который можно настроить
 
-- Тёмная тема с лавандовыми акцентами и собственным SVG-набором значков.
-- **Modern** — библиотека с поиском, сортировкой и правой панелью действий.
-- **Legacy** — компактный выбор сборки и запуск.
-- Выбор режима в настройках лаунчера; тему и набор значков можно менять независимо.
-- Поиск по имени и группе: `Ctrl+K`, очистка поля — `Esc`.
-- Смена иконки выбранной сборки нажатием на неё в правой панели.
+| | |
+|---|---|
+| **Modern** | Библиотека с поиском, сортировкой и панелью действий справа |
+| **Legacy** | Компактный выбор сборки и запуск без лишних панелей |
+| **Midnight** | Тёмная тема, собственные SVG-значки и настраиваемый акцент |
+| **Живой фон** | Северное сияние, звёздное небо или волны; анимацию можно выключить |
+| **Своя раскладка** | Перестановка кнопок и целых блоков с сохранением порядка |
 
-### Быстрая установка
+Всё оформление — в **Настройки → Внешний вид**. Чтобы переставлять блоки,
+включите **«Разрешить перемещение»**, нажмите **«Применить»** и тяните заголовок **↕**.
+Выключите переключатель, чтобы заблокировать раскладку. Стандартные темы Prism сохранены.
 
-- **Vanilla** — выбор версии с автоматическим именем новой сборки.
-- **Sodium-сборки** для Fabric и NeoForge: актуальный каталог Modrinth,
-  Sodium, Iris, LambDynamicLights, Zoomify либо Ok Zoomer.
-- Fabric API обязателен для Fabric; Sodium Extra и Mod Menu добавляются по возможности.
-- Проверка зависимостей по метаданным Modrinth и SHA-512 скачанных модов.
-- Каждая установка Sodium создаёт отдельный экземпляр — существующие сборки не обновляются автоматически.
-- Локальный импорт подходящего LaunchWrapper-профиля OptiFine, **без раздачи или автоматического скачивания OptiFine**.
+Поиск: **Ctrl+K**, очистка: **Esc**. Иконку выбранной сборки можно изменить нажатием на неё справа.
+Переводы пока частичные; после смены языка рекомендуется перезапуск.
 
-[Режимы и OptiFine](docs/INTERFACE-MODES.md) · [Условия и ограничения Sodium-сборок](docs/SODIUM-PRESETS.md)
+### От vanilla до модифицированной сборки
 
-### Сеть ZeroTier
+- **Vanilla:** выберите Minecraft — новый экземпляр получит автоматическое имя.
+- **Sodium · Fabric / NeoForge:** каталог Modrinth, Sodium, Iris, LambDynamicLights
+  и Zoomify либо Ok Zoomer. Fabric API обязателен для Fabric; Sodium Extra и
+  официальный Mod Menu добавляются при наличии совместимых версий.
+- **Проверка загрузок:** зависимости по метаданным и SHA-512 файлов модов.
+- **OptiFine:** локальный импорт совместимого LaunchWrapper-профиля,
+  без раздачи и автоматического скачивания OptiFine.
+- **Привычные инструменты Prism/ElyPrism:** аккаунты Ely.by и Microsoft,
+  Modrinth/CurseForge, загрузчики модов, Java, миры, ресурс-паки, шейдеры, логи,
+  импорт и экспорт экземпляров. Доступность внешних сервисов зависит от их API и условий.
 
-Встроенная панель управления **отдельно установленным ZeroTier One**: подключение по Network ID,
-статус сетей, копирование IP и отключение. Может требоваться настройка доступа к локальной службе.
-Установка необязательна и предлагается через официальный сайт.
-**Функции публикации/поиска хостов нет.** Для игры сообщите друзьям `ZT IP:порт` вручную.
-[Инструкция и безопасность](docs/ZEROTIER.md).
+**Sodium-рецепты создают только новые экземпляры — существующие сборки автоматически не обновляются.**
+Проверка метаданных не гарантирует игровой запуск каждой комбинации модов.
 
-### Продолжение работы в новом чате
+### Виртуальная локальная сеть
 
-**[CHAT_HANDOFF.md](CHAT_HANDOFF.md)** в корне репозитория содержит историю изменений,
-важные решения, расположение кода, результаты проверок и оставшиеся задачи.
-В новом чате напишите: **«Прочитай CHAT_HANDOFF.md в корне репозитория и продолжи работу»**.
+Панель управления **отдельно установленным ZeroTier One**: подключение по Network ID,
+статус сетей, копирование IP и отключение. Установка необязательна; доступ к локальной
+службе может требовать настройки. Адрес `ZT IP:порт` передаётся друзьям вручную —
+**публикации и поиска хостов нет**.
 
-## Возможности основы ElyPrism / Prism
+## Документация
 
-Аккаунты Ely.by и Microsoft, отдельные экземпляры Minecraft, загрузчики модов,
-интеграции Modrinth/CurseForge, управление Java, модами, мирами, ресурс-паками,
-шейдерами, логами, импорт и экспорт сборок.
-Доступность сервисов зависит от их API, регистраций приложения и условий использования.
+- [Режимы интерфейса, оформление и OptiFine](docs/INTERFACE-MODES.md)
+- [Sodium: состав рецептов и ограничения](docs/SODIUM-PRESETS.md)
+- [ZeroTier: подключение и безопасность](docs/ZEROTIER.md)
+- [Windows: сборка и диагностика](docs/WINDOWS-GITHUB.md)
+- [Примечания к релизу 1.0](docs/RELEASE-v1.0.md)
+
+### Продолжить разработку в новом чате
+
+**[CHAT_HANDOFF.md](CHAT_HANDOFF.md)** в корне содержит историю изменений, решения,
+расположение кода, проверки и оставшиеся задачи. Напишите новому помощнику:
+
+> Прочитай CHAT_HANDOFF.md в корне репозитория и продолжи работу.
 
 ## Поддержка и предложения
 
-Нашли проблему или хотите предложить улучшение? [Создайте Issue](https://github.com/artemii14/ubiquitous-happiness/issues/new/choose).
-Можно писать **по-русски или по-английски**. Укажите ОС, коммит/сборку, шаги воспроизведения
-и ожидаемый результат. Перед отправкой логов удалите токены, пароли, адреса электронной почты
-и другие личные данные. Ошибки этого форка не следует отправлять разработчикам Prism/ElyPrism.
+[Создайте Issue](https://github.com/artemii14/ubiquitous-happiness/issues/new/choose)
+по-русски или по-английски. Укажите ОС, версию/коммит, шаги воспроизведения
+и ожидаемый результат. Перед публикацией логов удалите токены, пароли, email
+и другие личные данные. Ошибки этого форка не отправляйте разработчикам Prism/ElyPrism.
 
 [Участие в разработке](CONTRIBUTING.md) · [Правила сообщества](CODE_OF_CONDUCT.md)
 
@@ -134,7 +139,7 @@ libqrencode, zlib, toml++ ≥ 3.2. На Linux также нужен development-
 Точные наборы зависимостей CI: [Windows](.github/workflows/windows.yml) и [Linux](.github/workflows/elysium.yml).
 
 ```sh
-git clone --recurse-submodules --branch arena/66b41468-ubiquitous-happiness https://github.com/artemii14/ubiquitous-happiness.git
+git clone --recurse-submodules https://github.com/artemii14/ubiquitous-happiness.git
 cd ubiquitous-happiness
 cmake -S . -B build -G Ninja \
   -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON \
