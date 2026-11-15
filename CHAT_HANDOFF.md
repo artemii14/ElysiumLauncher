@@ -99,9 +99,13 @@
 Windows drag-and-drop и игрового запуска всех рецептов не выполнена**.
 Структурных smoke-проверок на тот момент — 18.
 
-Релиз готовится как **v0.1.0-preview.1**, тестовый, не стабильный и не подписанный:
+Релиз **v0.1.0-preview.1 опубликован**, тестовый, не стабильный и не подписанный:
 https://github.com/artemii14/ubiquitous-happiness/releases/tag/v0.1.0-preview.1
-Публикуются Windows portable ZIP, Linux AppImage, SHA256SUMS.txt.
+Загружены и проверены через GitHub API: Windows portable ZIP (45 045 665 байт),
+Linux AppImage (54 172 152 байт), SHA256SUMS.txt. `isDraft=false`, `isPrerelease=true`.
+Публикация: https://github.com/artemii14/ubiquitous-happiness/actions/runs/43662003346
+Релизный тег указывает на `3add66a9b99fbc914669f62162b563f6c840c30a`
+(проверенный код c71aa13 + документация и workflow).
 Перед сообщением пользователю о готовности проверять реальное состояние релиза и assets
 через `gh release view v0.1.0-preview.1` (черновик ещё не публичен).
 Исходники релизного тега могут включать дополнительные документационные/CI-изменения;
