@@ -54,9 +54,10 @@ public:
     using Versions = std::function<QJsonArray(const QString&)>;
     using Version = std::function<QJsonObject(const QString&)>;
     using Selection = QMap<QString, QJsonObject>;
+    using Compatible = std::function<bool(const Selection&)>;
     struct Need { QString project; QString pin; };
-    Resolver(QString game, QString loader, Versions versions, Version version)
-        : game(std::move(game)), loader(std::move(loader)), versions(std::move(versions)), version(std::move(version)) {}
+    Resolver(QString game, QString loader, Versions versions, Version version, Compatible compatible = {})
+        : game(std::move(game)), loader(std::move(loader)), versions(std::move(versions)), version(std::move(version)), compatible(std::move(compatible)) {}
     bool resolve(const QStringList& roots, Selection& result)
     {
         QList<Need> pending;
@@ -97,6 +98,7 @@ private:
     bool search(QList<Need> pending, Selection& selected, QList<Need> banned, int depth)
     {
         if (--budget < 0 || depth > 128 || selected.size() > 96 || conflicts(selected, banned)) return false;
+        if (compatible && !compatible(selected)) return false;
         if (pending.isEmpty()) return true;
         auto need = pending.takeFirst();
         if (selected.contains(need.project)) {
@@ -131,6 +133,7 @@ private:
     QString game, loader;
     Versions versions;
     Version version;
+    Compatible compatible;
     int budget = 0;
 };
 } // namespace Elysium::Sodium

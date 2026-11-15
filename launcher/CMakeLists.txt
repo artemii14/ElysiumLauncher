@@ -853,6 +853,8 @@ SET(LAUNCHER_SOURCES
     ui/dialogs/ZeroTierDialog.h
     ui/dialogs/ZeroTierDialog.cpp
     ui/dialogs/SodiumPresetDialog.h
+    modplatform/modrinth/SodiumRuntime.cpp
+    modplatform/modrinth/SodiumRuntime.h
     ui/dialogs/SodiumPresetDialog.cpp
     modplatform/modrinth/SodiumPreset.h
     minecraft/OptiFineProfile.h

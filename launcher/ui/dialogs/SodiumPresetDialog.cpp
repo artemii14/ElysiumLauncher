@@ -5,6 +5,8 @@
 #include "meta/VersionList.h"
 #include "tasks/Task.h"
 #include "modplatform/modrinth/SodiumPreset.h"
+#include "modplatform/modrinth/SodiumRuntime.h"
+#include <QCryptographicHash>
 #include <QDialogButtonBox>
 #include <QDateTime>
 #include "Version.h"
@@ -42,8 +44,8 @@ SodiumPresetDialog::SodiumPresetDialog(QWidget* parent) : QDialog(parent), m_net
     m_status->setWordWrap(true);
     m_status->setTextFormat(Qt::PlainText);
     layout->addWidget(m_status);
-    m_table = new QTableWidget(0, 3, this);
-    m_table->setHorizontalHeaderLabels({tr("Minecraft"), tr("Загрузчик"), tr("Мод на зум")});
+    m_table = new QTableWidget(0, 4, this);
+    m_table->setHorizontalHeaderLabels({tr("Minecraft"), tr("Загрузчик"), tr("Мод на зум"), tr("Доступность")});
     m_table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     m_table->setSelectionMode(QAbstractItemView::SingleSelection);
     m_table->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -56,7 +58,7 @@ SodiumPresetDialog::SodiumPresetDialog(QWidget* parent) : QDialog(parent), m_net
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
     connect(m_reload, &QPushButton::clicked, this, &SodiumPresetDialog::reload);
     connect(m_install, &QPushButton::clicked, this, &SodiumPresetDialog::prepare);
-    connect(m_table, &QTableWidget::itemSelectionChanged, this, [this] { m_install->setEnabled(!m_progress && m_table->currentRow() >= 0); });
+    connect(m_table, &QTableWidget::itemSelectionChanged, this, [this] { m_install->setEnabled(!m_progress && m_table->currentRow() >= 0 && m_table->item(m_table->currentRow(), 3)->data(Qt::UserRole).toBool()); });
     layout->addWidget(buttons);
     QTimer::singleShot(0, this, [this] { reload(); });
 }
@@ -67,16 +69,29 @@ QJsonDocument SodiumPresetDialog::fetch(const QString& path)
     if (m_cache.contains(path)) return m_cache.value(path);
     if (m_cache.size() >= 256) fail(tr("Слишком много зависимостей в ответе Modrinth."));
     if (m_progress) m_progress->setLabelText(tr("Проверка Modrinth: %1").arg(path));
-    QNetworkRequest request(QUrl("https://api.modrinth.com/v2/" + path));
+    const auto bytes = fetchBytes(QUrl("https://api.modrinth.com/v2/" + path), 24 * 1024 * 1024);
+    QJsonParseError error;
+    const auto json = QJsonDocument::fromJson(bytes, &error);
+    if (error.error != QJsonParseError::NoError) fail(tr("Некорректный ответ Modrinth."));
+    if (m_cacheBytes + bytes.size() > 96 * 1024 * 1024) fail(tr("Каталог Modrinth слишком большой. Попробуйте повторить загрузку позже."));
+    m_cacheBytes += bytes.size();
+    m_cache[path] = json;
+    return json;
+}
+
+QByteArray SodiumPresetDialog::fetchBytes(const QUrl& url, qint64 limit)
+{
+    if (m_progress && m_progress->wasCanceled()) fail(tr("Операция отменена."));
+    QNetworkRequest request(url);
     request.setRawHeader("User-Agent", "ElysiumLauncher/Sodium-Presets (github.com/artemii14/ubiquitous-happiness)");
     request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::ManualRedirectPolicy);
     request.setTransferTimeout(30000);
     auto reply = m_network->get(request);
-    constexpr qsizetype Limit = 24 * 1024 * 1024;
+    const qint64 Limit = limit;
     reply->setReadBufferSize(Limit + 1);
     QEventLoop loop;
     connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
-    connect(reply, &QNetworkReply::readyRead, reply, [reply] { if (reply->bytesAvailable() > Limit) reply->abort(); });
+    connect(reply, &QNetworkReply::readyRead, reply, [reply, Limit] { if (reply->bytesAvailable() > Limit) reply->abort(); });
     QTimer deadline;
     deadline.setSingleShot(true);
     connect(&deadline, &QTimer::timeout, reply, &QNetworkReply::abort);
@@ -90,13 +105,7 @@ QJsonDocument SodiumPresetDialog::fetch(const QString& path)
     reply->deleteLater();
     if (m_progress && m_progress->wasCanceled()) fail(tr("Операция отменена."));
     if (!ok || bytes.size() > Limit) fail(tr("Не удалось получить данные Modrinth (HTTP %1). Проверьте сеть или повторите позже.").arg(status));
-    QJsonParseError error;
-    const auto json = QJsonDocument::fromJson(bytes, &error);
-    if (error.error != QJsonParseError::NoError) fail(tr("Некорректный ответ Modrinth."));
-    if (m_cacheBytes + bytes.size() > 96 * 1024 * 1024) fail(tr("Каталог Modrinth слишком большой. Попробуйте повторить загрузку позже."));
-    m_cacheBytes += bytes.size();
-    m_cache[path] = json;
-    return json;
+    return bytes;
 }
 
 void SodiumPresetDialog::reload()
@@ -135,15 +144,20 @@ void SodiumPresetDialog::reload()
                     for (const auto& value : m_projects.value(project)) if (supports(value.toObject(), game, loader)) return true;
                     return false;
                 };
-                if (!exists("sodium") || !exists("iris") || !exists("lambdynamiclights") ||
-                    (loader == "fabric" && !exists("fabric-api"))) continue;
+                if (!exists("sodium")) continue;
+                QStringList missing;
+                for (const auto& project : QStringList{"iris", "lambdynamiclights"}) if (!exists(project)) missing << project;
+                if (loader == "fabric" && !exists("fabric-api")) missing << "fabric-api";
                 const auto zoom = exists("zoomify") ? QString("zoomify") : exists("ok-zoomer") ? QString("ok-zoomer") : QString();
-                if (zoom.isEmpty()) continue;
+                if (zoom.isEmpty()) missing << "Zoomify / Ok Zoomer";
                 const int row = m_table->rowCount();
                 m_table->insertRow(row);
                 m_table->setItem(row, 0, new QTableWidgetItem(game));
                 m_table->setItem(row, 1, new QTableWidgetItem(loader));
                 m_table->setItem(row, 2, new QTableWidgetItem(zoom == "zoomify" ? QString("Zoomify") : QString("Ok Zoomer")));
+                auto availability = new QTableWidgetItem(missing.isEmpty() ? tr("Проверить совместимость") : tr("Нет: %1").arg(missing.join(", ")));
+                availability->setData(Qt::UserRole, missing.isEmpty());
+                m_table->setItem(row, 3, availability);
             }
         }
         m_status->setText(tr("Доступно вариантов: %1. Перед установкой проверяются зависимости. Файлы модов могут быть beta/alpha; каталог не означает проверку запуска каждого набора.").arg(m_table->rowCount()));
@@ -161,7 +175,7 @@ void SodiumPresetDialog::prepare()
 {
     if (m_progress) return;
     const auto row = m_table->currentRow();
-    if (row < 0) return;
+    if (row < 0 || !m_table->item(row, 3)->data(Qt::UserRole).toBool()) return;
     const auto game = m_table->item(row, 0)->text();
     const auto loader = m_table->item(row, 1)->text();
     QProgressDialog progress(tr("Подбор зависимостей…"), tr("Отмена"), 0, 0, this);
@@ -194,9 +208,39 @@ void SodiumPresetDialog::prepare()
             if (!QRegularExpression("^[A-Za-z0-9]+$").match(id).hasMatch()) fail(tr("Некорректный ID версии."));
             return fetch("version/" + id).object();
         };
-        Resolver resolver(game, loader, versions, version);
+        QMap<QString, QList<RuntimeMod>> runtimeCache;
+        qint64 jarBytes = 0;
+        QString lastConflict;
+        auto compatible = [&](const Resolver::Selection& selection) {
+            QList<RuntimeMod> mods;
+            for (const auto& candidate : selection) {
+                const auto id = candidate["id"].toString();
+                if (!runtimeCache.contains(id)) {
+                    if (runtimeCache.size() >= 96) fail(tr("Слишком много вариантов JAR. Уточните версию Minecraft."));
+                    const auto file = primaryFile(candidate);
+                    const auto declaredSize = file["size"].toDouble();
+                    constexpr qint64 JarLimit = 64 * 1024 * 1024;
+                    if (declaredSize > JarLimit || jarBytes >= 256 * 1024 * 1024) fail(tr("Превышен лимит проверки JAR."));
+                    progress.setLabelText(tr("Проверка правил внутри JAR: %1").arg(file["filename"].toString()));
+                    const auto bytes = fetchBytes(QUrl(file["url"].toString()), qMin(JarLimit, 256 * 1024 * 1024 - jarBytes));
+                    jarBytes += bytes.size();
+                    if (QCryptographicHash::hash(bytes, QCryptographicHash::Sha512).toHex() != file["hashes"].toObject()["sha512"].toString().toLatin1().toLower())
+                        fail(tr("SHA-512 JAR не совпадает: %1").arg(file["filename"].toString()));
+                    QString error;
+                    const auto metadata = readRuntimeMods(bytes, loader, error);
+                    if (!error.isEmpty()) fail(tr("Не удалось проверить %1: %2").arg(file["filename"].toString(), error));
+                    runtimeCache[id] = metadata;
+                }
+                mods.append(runtimeCache.value(id));
+            }
+            const auto error = runtimeConflict(mods, {{"minecraft", game}});
+            if (!error.isEmpty()) lastConflict = error;
+            return error.isEmpty();
+        };
+        // Prefer newest Iris first, then the newest Sodium it actually supports.
+        Resolver resolver(game, loader, versions, version, compatible);
         Resolver::Selection selected;
-        QStringList roots{"sodium", "iris", "lambdynamiclights"};
+        QStringList roots{"iris", "sodium", "lambdynamiclights"};
         if (loader == "fabric") roots << "fabric-api";
         auto withZoom = roots;
         withZoom << "zoomify";
@@ -206,7 +250,7 @@ void SodiumPresetDialog::prepare()
             withZoom = roots;
             withZoom << "ok-zoomer";
             zoomTitle = "Ok Zoomer";
-            if (!resolver.resolve(withZoom, selected)) fail(tr("Нет полного набора модов с разрешимыми зависимостями для этой версии."));
+            if (!resolver.resolve(withZoom, selected)) fail(tr("Нет совместимого полного набора. %1").arg(lastConflict));
         }
         m_table->item(row, 2)->setText(zoomTitle);
         resolver.addOptional("sodium-extra", selected);
@@ -239,6 +283,11 @@ void SodiumPresetDialog::prepare()
                 if (!chosen || candidate->toComparableVersion() > chosen->toComparableVersion()) chosen = candidate;
         }
         if (!chosen) fail(tr("Не найдена версия загрузчика для Minecraft %1.").arg(game));
+        QList<RuntimeMod> finalMods;
+        for (const auto& mod : selected) finalMods.append(runtimeCache.value(mod["id"].toString()));
+        const auto loaderConflict = runtimeConflict(finalMods, {{"minecraft", game},
+            {loader == "fabric" ? QString("fabricloader") : QString("neoforge"), chosen->descriptor()}});
+        if (!loaderConflict.isEmpty()) fail(tr("Ограничения загрузчика: %1").arg(loaderConflict));
         QJsonArray files;
         QSet<QString> names;
         QStringList summary;
@@ -250,7 +299,7 @@ void SodiumPresetDialog::prepare()
             files.append(QJsonObject{{"path", "mods/" + filename}, {"hashes", file["hashes"]},
                 {"downloads", QJsonArray{file["url"]}}, {"fileSize", file["size"]},
                 {"env", QJsonObject{{"client", "required"}, {"server", "unsupported"}}}});
-            summary << mod["name"].toString() + " [" + mod["version_type"].toString() + "]";
+            summary << mod["name"].toString() + " " + mod["version_number"].toString() + " [" + mod["version_type"].toString() + "]";
         }
         m_name = QString("Sodium %1 · %2").arg(game, loader == "fabric" ? "Fabric" : "NeoForge");
         m_manifest = QJsonObject{{"formatVersion", 1}, {"game", "minecraft"}, {"name", m_name},
@@ -268,5 +317,5 @@ void SodiumPresetDialog::prepare()
     m_progress = nullptr;
     m_table->setEnabled(true);
     m_reload->setEnabled(true);
-    m_install->setEnabled(m_table->currentRow() >= 0);
+    m_install->setEnabled(m_table->currentRow() >= 0 && m_table->item(m_table->currentRow(), 3)->data(Qt::UserRole).toBool());
 }

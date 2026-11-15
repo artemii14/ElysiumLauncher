@@ -5,6 +5,7 @@
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QMap>
+#include <QUrl>
 class QTableWidget;
 class QPushButton;
 class QLabel;
@@ -17,6 +18,7 @@ public:
     QJsonObject manifest() const { return m_manifest; }
     QString instanceName() const { return m_name; }
 private:
+    QByteArray fetchBytes(const QUrl& url, qint64 limit);
     QJsonDocument fetch(const QString& path);
     void reload();
     void prepare();

@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-only
 #include <QtTest>
 #include "modplatform/modrinth/SodiumPreset.h"
+#include "modplatform/modrinth/SodiumRuntime.h"
+#include <archive.h>
+#include <archive_entry.h>
 using namespace Elysium::Sodium;
 
 class SodiumPresetTest : public QObject {
@@ -13,7 +16,104 @@ class SodiumPresetTest : public QObject {
             {"files", QJsonArray{QJsonObject{{"filename", project + ".jar"}, {"url", "https://cdn.modrinth.com/data/test/mod.jar"},
                 {"primary", true}, {"hashes", QJsonObject{{"sha512", QString(128, 'a')}}}}}}};
     }
+    QByteArray jar(const QString& path, const QByteArray& metadata) const
+    {
+        QByteArray bytes(1024 * 1024, '\0');
+        size_t used = 0;
+        auto writer = archive_write_new();
+        archive_write_set_format_zip(writer);
+        archive_write_open_memory(writer, bytes.data(), bytes.size(), &used);
+        auto entry = archive_entry_new();
+        const auto name = path.toUtf8();
+        archive_entry_set_pathname(entry, name.constData());
+        archive_entry_set_size(entry, metadata.size());
+        archive_entry_set_filetype(entry, AE_IFREG);
+        archive_entry_set_perm(entry, 0644);
+        archive_write_header(writer, entry);
+        archive_write_data(writer, metadata.constData(), metadata.size());
+        archive_entry_free(entry);
+        archive_write_close(writer);
+        archive_write_free(writer);
+        bytes.resize(used);
+        return bytes;
+    }
 private slots:
+    void runtimeRanges()
+    {
+        QCOMPARE(matchesRuntimeRange("1.11.7+mc26.3", "<=1.12.0"), RangeMatch::Yes);
+        QCOMPARE(matchesRuntimeRange("1.12.1+mc26.3", "<=1.12.0"), RangeMatch::No);
+        QCOMPARE(matchesRuntimeRange("1.12.0-beta.2", ">=1.12.0"), RangeMatch::No);
+        QCOMPARE(matchesRuntimeRange("0.9.3-beta.5+mc26.3", ">=0.9.3-beta.4 <0.10"), RangeMatch::Yes);
+        QCOMPARE(matchesRuntimeRange("1.11.7", QJsonArray{"1.10.x", ">=1.11 <1.12"}), RangeMatch::Yes);
+        QCOMPARE(matchesRuntimeRange("1.11.7", "[1.12,)", true), RangeMatch::No);
+        QCOMPARE(matchesRuntimeRange("1.12.1", "[1.12,)", true), RangeMatch::Yes);
+        QCOMPARE(matchesRuntimeRange("1.12.0", "(,1.12.0]", true), RangeMatch::Yes);
+        QCOMPARE(matchesRuntimeRange("1.12.0", "[1.12.0]", true), RangeMatch::Yes);
+        QCOMPARE(matchesRuntimeRange("1.12.0", "???"), RangeMatch::No);
+        QCOMPARE(matchesRuntimeRange("1.12.0", QJsonObject{}), RangeMatch::Unknown);
+    }
+    void fabricJarRulesCatchScreenshotConflict()
+    {
+        QString error;
+        const auto sodium = readRuntimeMods(jar("fabric.mod.json", R"({"id":"sodium","version":"0.9.3-beta.5+mc26.3","breaks":{"iris":"<=1.12.0"}})"), "fabric", error);
+        QVERIFY2(error.isEmpty(), qPrintable(error));
+        RuntimeMod iris; iris.id = "iris"; iris.version = "1.11.7+mc26.3";
+        QVERIFY(runtimeConflict(sodium + QList<RuntimeMod>{iris}).contains("iris"));
+        iris.version = "1.12.1+mc26.3";
+        QVERIFY(runtimeConflict(sodium + QList<RuntimeMod>{iris}).isEmpty());
+        QVERIFY(readRuntimeMods(QByteArray("not a jar"), "fabric", error).isEmpty());
+        QVERIFY(!error.isEmpty());
+    }
+    void neoForgeJarRanges()
+    {
+        QString error;
+        const auto mods = readRuntimeMods(jar("META-INF/neoforge.mods.toml", R"(
+[[mods]]
+modId="sodium"
+version="0.9.3-beta.5"
+[[dependencies.sodium]]
+modId="iris"
+type="incompatible"
+versionRange="(,1.12.0]"
+side="CLIENT"
+)"), "neoforge", error);
+        QVERIFY2(error.isEmpty(), qPrintable(error));
+        RuntimeMod iris; iris.id = "iris"; iris.version = "1.11.7";
+        QVERIFY(!runtimeConflict(mods + QList<RuntimeMod>{iris}).isEmpty());
+        iris.version = "1.12.1";
+        QVERIFY(runtimeConflict(mods + QList<RuntimeMod>{iris}).isEmpty());
+    }
+    void runtimeValidationBacktracksFor26x()
+    {
+        for (const auto& game : QStringList{"26.2", "26.3"}) {
+            auto sodiumNew = mod("sodium", "new", "2026-02-01");
+            auto sodiumOld = mod("sodium", "old");
+            auto iris = mod("iris", "iris1");
+            sodiumNew["game_versions"] = QJsonArray{game};
+            sodiumOld["game_versions"] = QJsonArray{game};
+            iris["game_versions"] = QJsonArray{game};
+            QMap<QString, QJsonArray> data{{"sodium", {sodiumNew, sodiumOld}}, {"iris", {iris}}};
+            auto compatible = [](const Resolver::Selection& selected) {
+                QList<RuntimeMod> mods;
+                if (selected.contains("sodium")) {
+                    RuntimeMod sodium; sodium.id = "sodium"; sodium.version = "0.9.3-beta.5";
+                    if (selected["sodium"]["id"] == "new") sodium.breaks["iris"] = "<=1.12.0";
+                    mods.append(sodium);
+                }
+                if (selected.contains("iris")) { RuntimeMod irisMod; irisMod.id = "iris"; irisMod.version = "1.11.7"; mods.append(irisMod); }
+                return runtimeConflict(mods).isEmpty();
+            };
+            Resolver solver(game, "fabric", [&](const QString& p) { return data.value(p); }, [](const QString&) { return QJsonObject{}; }, compatible);
+            Resolver::Selection selected;
+            QVERIFY(solver.resolve({"iris", "sodium"}, selected));
+            QCOMPARE(selected["sodium"]["id"].toString(), QString("old"));
+            data["sodium"] = QJsonArray{sodiumNew};
+            selected.clear();
+            QVERIFY(!solver.resolve({"iris", "sodium"}, selected));
+            QVERIFY(selected.isEmpty());
+        }
+    }
+
     void stableVersions()
     {
         QVERIFY(stableMinecraft("1.14"));
