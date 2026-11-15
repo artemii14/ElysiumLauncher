@@ -1,0 +1,46 @@
+name: Ошибка / Bug report
+description: Сообщить о проблеме в Elysium Launcher
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Спасибо за отчёт! Можно писать по-русски или по-английски.
+        Проверьте, нет ли похожей ошибки в Issues этого репозитория.
+        Не публикуйте пароли, токены Microsoft/Ely.by/ZeroTier или личные данные.
+  - type: dropdown
+    id: os
+    attributes:
+      label: Операционная система
+      options:
+        - Windows
+        - Linux
+        - macOS (собственная сборка)
+        - Другая
+    validations:
+      required: true
+  - type: input
+    id: build
+    attributes:
+      label: Версия / коммит / ссылка на Actions
+      description: Укажите, какой именно архив или исходный код использован.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Как воспроизвести
+      description: Шаги, ожидаемый результат и что получилось на самом деле.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Логи и скриншоты
+      description: Перед отправкой удалите секреты и личные данные. При проблеме с Minecraft укажите версию игры, loader, Java и моды.
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Проверка перед отправкой
+      options:
+        - label: Я проверил похожие Issues и удалил секреты из прикреплённых данных.
+          required: true

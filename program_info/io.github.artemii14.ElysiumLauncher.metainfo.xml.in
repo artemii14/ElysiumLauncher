@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>@Launcher_AppID@</id>
+  <name>@Launcher_DisplayName@</name>
+  <summary>A native Minecraft library with Ely.by support</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-only</project_license>
+  <description>
+    <p>ElysiumLauncher is an independent fork of ElyPrismLauncher, based on Prism Launcher.</p>
+    <p>Manage isolated Minecraft instances, install mods and modpacks, and switch accounts in a native desktop interface.</p>
+  </description>
+  <url type="homepage">https://github.com/artemii14/ubiquitous-happiness</url>
+  <url type="bugtracker">https://github.com/artemii14/ubiquitous-happiness/issues</url>
+  <url type="vcs-browser">https://github.com/artemii14/ubiquitous-happiness</url>
+  <launchable type="desktop-id">@Launcher_AppID@.desktop</launchable>
+  <content_rating type="oars-1.1"/>
+</component>

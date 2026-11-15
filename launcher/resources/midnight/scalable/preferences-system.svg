@@ -1,0 +1,4 @@
+<!-- SPDX-License-Identifier: GPL-3.0-only; Original Elysium Midnight artwork -->
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+ <g fill="none" stroke="#b7a8ff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h5m4 0h9M3 12h11m4 0h3M3 18h4m4 0h10"/><circle cx="10" cy="6" r="2"/><circle cx="16" cy="12" r="2"/><circle cx="9" cy="18" r="2"/></g>
+</svg>

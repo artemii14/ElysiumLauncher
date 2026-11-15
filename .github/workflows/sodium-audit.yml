@@ -1,0 +1,22 @@
+name: Sodium catalog availability audit
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - scripts/audit_sodium_catalog.py
+      - .github/workflows/sodium-audit.yml
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check official Modrinth version metadata
+        run: python3 scripts/audit_sodium_catalog.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Sodium-catalog-availability
+          path: sodium-catalog-audit.json
+          retention-days: 14

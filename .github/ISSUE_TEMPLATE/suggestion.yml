@@ -1,0 +1,21 @@
+name: Предложение / Feature request
+description: Предложить улучшение Elysium Launcher
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Какую задачу нужно решить?
+      description: Опишите сценарий использования, а не только желаемую кнопку.
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Предлагаемое решение
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Альтернативы и примеры
+      description: Ссылки и изображения при необходимости. Не прикладывайте чужой закрытый код.

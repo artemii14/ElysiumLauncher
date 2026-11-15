@@ -1,0 +1,150 @@
+name: ElysiumLauncher Windows
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: elysium-windows-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  portable:
+    name: Windows x64 portable
+    runs-on: windows-2022
+    timeout-minutes: 90
+    env:
+      PYTHONUTF8: '1'
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
+      CCACHE_SLOPPINESS: pch_defines,time_macros
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: git
+          pacboy: >-
+            toolchain:p
+            ccache:p
+            cmake:p
+            ninja:p
+            extra-cmake-modules:p
+            pkgconf:p
+            python:p
+            qt6-base:p
+            qt6-svg:p
+            qt6-imageformats:p
+            qt6-networkauth:p
+            cmark:p
+            qrencode:p
+            tomlplusplus:p
+            libarchive:p
+      - name: Restore compiler cache
+        uses: actions/cache/restore@v4
+        with:
+          path: .ccache
+          key: windows-ucrt64-ccache-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: windows-ucrt64-ccache-
+      - name: Check resources
+        run: bash scripts/ci_run.sh python scripts/check_elysium.py
+      - name: Configure
+        run: |
+          export PATH="$(cygpath -u "$JAVA_HOME")/bin:$PATH"
+          bash scripts/ci_run.sh cmake -S . -B build-windows -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_TESTING=ON \
+            -DENABLE_LTO=OFF \
+            -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+            -DCMAKE_INSTALL_PREFIX="$PWD/install-windows"
+      - name: Build
+        id: build
+        run: bash scripts/ci_run.sh cmake --build build-windows --parallel 2
+      - name: Test
+        id: tests
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: bash scripts/ci_run.sh ctest --test-dir build-windows --output-on-failure --output-junit test-results.xml
+      - name: Diagnose failed filesystem test
+        if: failure() && steps.tests.outcome == 'failure'
+        run: |
+          # Write QtTest output to a file too: some Windows failures have no
+          # captured console output under CTest. Keep the original test failure.
+          bash scripts/ci_run.sh bash -c '
+            ./build-windows/FileSystem.exe -o FileSystem-test.txt,txt
+            status=$?
+            if test -f FileSystem-test.txt; then cat FileSystem-test.txt; fi
+            echo "FileSystem process exit code: $status"
+            exit "$status"
+          '
+      - name: Save test diagnostics
+        if: always() && steps.build.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Windows-test-diagnostics
+          path: |
+            FileSystem-test.txt
+            build-windows/test-results.xml
+            build-windows/Testing/Temporary/LastTest.log
+          if-no-files-found: warn
+      - name: Save compiler cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .ccache
+          key: windows-ucrt64-ccache-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Package portable application
+        run: |
+          # Upstream installation rules deploy Qt plugins and runtime DLLs.
+          bash scripts/ci_run.sh cmake --install build-windows
+          bash scripts/ci_run.sh cmake --install build-windows --component portable
+          cp LICENSE COPYING.md install-windows/
+          test -f install-windows/elysiumlauncher.exe
+          test -f install-windows/platforms/qwindows.dll
+          test -f install-windows/portable.txt
+          test -f install-windows/jars/NewLaunch.jar
+      - name: Check packaged startup without MSYS2 on PATH
+        shell: pwsh
+        env:
+          QT_QPA_PLATFORM: windows
+        run: |
+          # Do not hang the runner on an interactive Windows loader-error box.
+          Add-Type -Namespace ElysiumCI -Name ErrorMode -MemberDefinition '[System.Runtime.InteropServices.DllImport("kernel32.dll")] public static extern uint SetErrorMode(uint mode);'
+          [ElysiumCI.ErrorMode]::SetErrorMode(0x8003) | Out-Null
+          $env:PATH = "$env:SystemRoot\System32;$env:SystemRoot"
+          $exe = Join-Path $env:GITHUB_WORKSPACE "install-windows/elysiumlauncher.exe"
+          $process = Start-Process -FilePath $exe -ArgumentList "--version" -PassThru -RedirectStandardOutput package.stdout.log -RedirectStandardError package.stderr.log
+          if (-not $process.WaitForExit(60000)) {
+            $process.Kill($true)
+            Get-Content package.stderr.log -ErrorAction SilentlyContinue
+            throw "Packaged launcher did not exit within 60 seconds"
+          }
+          $process.Refresh()
+          Get-Content package.stdout.log -ErrorAction SilentlyContinue
+          Get-Content package.stderr.log -ErrorAction SilentlyContinue
+          if ($process.ExitCode -ne 0) { throw "Packaged launcher failed: $($process.ExitCode)" }
+          $root = (Resolve-Path "install-windows").Path
+          Get-ChildItem $root -File -Recurse | Where-Object { $_.Name -ne "SHA256SUMS.txt" } | Sort-Object FullName | ForEach-Object {
+            $relative = $_.FullName.Substring($root.Length + 1).Replace('\', '/')
+            "$( (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower() )  $relative"
+          } | Set-Content -Encoding utf8 "install-windows/SHA256SUMS.txt"
+      - name: Upload portable ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: ElysiumLauncher-Windows-x64-portable
+          path: install-windows/
+          if-no-files-found: error
+          retention-days: 14

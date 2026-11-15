@@ -1,0 +1,29 @@
+name: Обсуждение изменения / RFC
+description: Обсудить крупное изменение архитектуры или интерфейса
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: Цель и мотивация
+    validations:
+      required: true
+  - type: textarea
+    id: design
+    attributes:
+      label: План реализации
+      description: Компоненты, ограничения, совместимость со старыми настройками.
+    validations:
+      required: true
+  - type: textarea
+    id: risks
+    attributes:
+      label: Риски, безопасность и лицензии
+    validations:
+      required: true
+  - type: textarea
+    id: tests
+    attributes:
+      label: План проверки
+      description: Автоматические тесты и ручные сценарии Windows/Linux.
+    validations:
+      required: true

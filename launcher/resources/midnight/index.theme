@@ -1,0 +1,11 @@
+[Icon Theme]
+Name=Elysium Midnight
+Comment=Original rounded lavender outline icons
+Inherits=multimc
+Directories=scalable
+
+[scalable]
+Size=24
+Type=Scalable
+MinSize=16
+MaxSize=256
