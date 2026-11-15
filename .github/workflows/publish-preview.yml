@@ -1,0 +1,68 @@
+name: Publish verified preview
+on:
+  push:
+    branches: [arena/66b41468-ubiquitous-happiness]
+    paths: [.github/workflows/publish-preview.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: publish-preview-1
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      TAG: v0.1.0-preview.1
+      CODE_SHA: c71aa13f5ef5c8f51b2472374b396ae36f3e9620
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify source runs and unchanged application code
+        run: |
+          set -euo pipefail
+          for run in 43659460706 43659460736; do
+            test "$(gh api "repos/$GH_REPO/actions/runs/$run" --jq .head_sha)" = "$CODE_SHA"
+            test "$(gh api "repos/$GH_REPO/actions/runs/$run" --jq .conclusion)" = success
+          done
+          # The release commit adds documentation and publishing only.
+          git diff --exit-code "$CODE_SHA" HEAD -- launcher libraries buildconfig program_info CMakeLists.txt cmake tests
+      - uses: actions/download-artifact@v4
+        with:
+          name: ElysiumLauncher-Windows-x64-portable
+          run-id: 43659460706
+          github-token: ${{ github.token }}
+          path: payload/windows
+      - uses: actions/download-artifact@v4
+        with:
+          name: ElysiumLauncher-Linux-x86_64-AppImage
+          run-id: 43659460736
+          github-token: ${{ github.token }}
+          path: payload/linux
+      - name: Prepare release files
+        run: |
+          set -euo pipefail
+          test -f payload/windows/elysiumlauncher.exe
+          test -f payload/windows/platforms/qwindows.dll
+          test -f payload/windows/portable.txt
+          test -f payload/linux/ElysiumLauncher-Linux-x86_64.AppImage
+          (cd payload/linux && sha256sum -c ElysiumLauncher-Linux-x86_64.AppImage.sha256)
+          mkdir -p release
+          (cd payload/windows && zip -q -r ../../release/ElysiumLauncher-Windows-x64-portable.zip .)
+          cp payload/linux/ElysiumLauncher-Linux-x86_64.AppImage release/
+          (cd release && sha256sum ElysiumLauncher-Windows-x64-portable.zip ElysiumLauncher-Linux-x86_64.AppImage > SHA256SUMS.txt)
+      - name: Upload and publish preview
+        run: |
+          set -euo pipefail
+          # Do not publish an empty release: upload every asset first.
+          if ! gh release view "$TAG" > /dev/null 2>&1; then
+            gh release create "$TAG" --target "$GITHUB_SHA" --draft --prerelease --title "Elysium Launcher 0.1.0 Preview 1" --notes-file docs/RELEASE-v0.1.0-preview.1.md
+          fi
+          gh release upload "$TAG" release/ElysiumLauncher-Windows-x64-portable.zip release/ElysiumLauncher-Linux-x86_64.AppImage release/SHA256SUMS.txt --clobber
+          gh release edit "$TAG" --target "$GITHUB_SHA" --notes-file docs/RELEASE-v0.1.0-preview.1.md --draft=false --prerelease
+          gh release view "$TAG" --json url,assets

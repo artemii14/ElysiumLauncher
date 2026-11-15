@@ -29,7 +29,14 @@
 
 ## Скачать
 
-Сейчас распространяются **тестовые сборки GitHub Actions**, не стабильный подписанный релиз.
+**[Скачать Elysium Launcher 0.1.0 Preview 1](https://github.com/artemii14/ubiquitous-happiness/releases/tag/v0.1.0-preview.1)** — тестовый неподписанный релиз.
+
+- **[Windows x64 — portable ZIP](https://github.com/artemii14/ubiquitous-happiness/releases/download/v0.1.0-preview.1/ElysiumLauncher-Windows-x64-portable.zip)**
+- **[Linux x64 — AppImage](https://github.com/artemii14/ubiquitous-happiness/releases/download/v0.1.0-preview.1/ElysiumLauncher-Linux-x86_64.AppImage)**
+- [SHA-256 файлов релиза](https://github.com/artemii14/ubiquitous-happiness/releases/download/v0.1.0-preview.1/SHA256SUMS.txt)
+
+Распакуйте Windows ZIP целиком и запустите `elysiumlauncher.exe`; это переносная версия, не установщик.
+Релиз не обновляет уже скачанные файлы автоматически. Самые новые экспериментальные сборки также доступны в Actions ниже.
 Изменения Elysium разрабатываются в ветке [`arena/66b41468-ubiquitous-happiness`](https://github.com/artemii14/ubiquitous-happiness/tree/arena/66b41468-ubiquitous-happiness), отдельно от `main`.
 
 | Платформа | Сборка | Артефакт |
@@ -48,7 +55,7 @@
    ```
 
 Linux-сборка рассчитана на Ubuntu 24.04 / glibc 2.39 или новее.
-Артефакты хранятся 14 дней; старый архив не обновляется автоматически.
+Артефакты **Actions** хранятся 14 дней; файлы **Release** публикуются отдельно.
 [Подробнее о Windows-сборках](docs/WINDOWS-GITHUB.md).
 
 > [!WARNING]
@@ -56,6 +63,12 @@ Linux-сборка рассчитана на Ubuntu 24.04 / glibc 2.39 или н
 > Бинарники не подписаны; успешный CI не является антивирусной проверкой.
 > Не отключайте защиту системы ради запуска. При блокировке сохраните точный текст предупреждения
 > и сообщите о нём в Issues без публикации персональных данных.
+
+## Продолжение работы в новом чате
+
+**[CHAT_HANDOFF.md](CHAT_HANDOFF.md)** в корне репозитория содержит историю изменений,
+важные решения, расположение кода, результаты проверок и оставшиеся задачи.
+В новом чате напишите: **«Прочитай CHAT_HANDOFF.md в корне репозитория и продолжи работу»**.
 
 ## Возможности
 
@@ -88,7 +101,13 @@ Linux-сборка рассчитана на Ubuntu 24.04 / glibc 2.39 или н
 **Функции публикации/поиска хостов нет.** Для игры сообщите друзьям `ZT IP:порт` вручную.
 [Инструкция и безопасность](docs/ZEROTIER.md).
 
-### Возможности основы ElyPrism / Prism
+### Продолжение работы в новом чате
+
+**[CHAT_HANDOFF.md](CHAT_HANDOFF.md)** в корне репозитория содержит историю изменений,
+важные решения, расположение кода, результаты проверок и оставшиеся задачи.
+В новом чате напишите: **«Прочитай CHAT_HANDOFF.md в корне репозитория и продолжи работу»**.
+
+## Возможности основы ElyPrism / Prism
 
 Аккаунты Ely.by и Microsoft, отдельные экземпляры Minecraft, загрузчики модов,
 интеграции Modrinth/CurseForge, управление Java, модами, мирами, ресурс-паками,
