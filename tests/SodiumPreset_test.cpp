@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-only
 #include <QtTest>
+#include <QJsonDocument>
 #include "modplatform/modrinth/SodiumPreset.h"
 #include "modplatform/modrinth/SodiumRuntime.h"
-#include <archive.h>
-#include <archive_entry.h>
+#include "SodiumRuntimeFixtures.h"
 using namespace Elysium::Sodium;
 
 class SodiumPresetTest : public QObject {
@@ -15,27 +15,6 @@ class SodiumPresetTest : public QObject {
             {"dependencies", QJsonArray{}},
             {"files", QJsonArray{QJsonObject{{"filename", project + ".jar"}, {"url", "https://cdn.modrinth.com/data/test/mod.jar"},
                 {"primary", true}, {"hashes", QJsonObject{{"sha512", QString(128, 'a')}}}}}}};
-    }
-    QByteArray jar(const QString& path, const QByteArray& metadata) const
-    {
-        QByteArray bytes(1024 * 1024, '\0');
-        size_t used = 0;
-        auto writer = archive_write_new();
-        archive_write_set_format_zip(writer);
-        archive_write_open_memory(writer, bytes.data(), bytes.size(), &used);
-        auto entry = archive_entry_new();
-        const auto name = path.toUtf8();
-        archive_entry_set_pathname(entry, name.constData());
-        archive_entry_set_size(entry, metadata.size());
-        archive_entry_set_filetype(entry, AE_IFREG);
-        archive_entry_set_perm(entry, 0644);
-        archive_write_header(writer, entry);
-        archive_write_data(writer, metadata.constData(), metadata.size());
-        archive_entry_free(entry);
-        archive_write_close(writer);
-        archive_write_free(writer);
-        bytes.resize(used);
-        return bytes;
     }
 private slots:
     void runtimeRanges()
@@ -55,7 +34,7 @@ private slots:
     void fabricJarRulesCatchScreenshotConflict()
     {
         QString error;
-        const auto sodium = readRuntimeMods(jar("fabric.mod.json", R"({"id":"sodium","version":"0.9.3-beta.5+mc26.3","breaks":{"iris":"<=1.12.0"}})"), "fabric", error);
+        const auto sodium = readRuntimeMods(runtimeJar("fabric.mod.json", QJsonDocument(QJsonObject{{"id", "sodium"}, {"version", "0.9.3-beta.5+mc26.3"}, {"breaks", QJsonObject{{"iris", "<=1.12.0"}}}}).toJson()), "fabric", error);
         QVERIFY2(error.isEmpty(), qPrintable(error));
         RuntimeMod iris; iris.id = "iris"; iris.version = "1.11.7+mc26.3";
         QVERIFY(runtimeConflict(sodium + QList<RuntimeMod>{iris}).contains("iris"));
@@ -67,16 +46,7 @@ private slots:
     void neoForgeJarRanges()
     {
         QString error;
-        const auto mods = readRuntimeMods(jar("META-INF/neoforge.mods.toml", R"(
-[[mods]]
-modId="sodium"
-version="0.9.3-beta.5"
-[[dependencies.sodium]]
-modId="iris"
-type="incompatible"
-versionRange="(,1.12.0]"
-side="CLIENT"
-)"), "neoforge", error);
+        const auto mods = readRuntimeMods(runtimeJar("META-INF/neoforge.mods.toml", "\n[[mods]]\nmodId=\"sodium\"\nversion=\"0.9.3-beta.5\"\n[[dependencies.sodium]]\nmodId=\"iris\"\ntype=\"incompatible\"\nversionRange=\"(,1.12.0]\"\nside=\"CLIENT\"\n"), "neoforge", error);
         QVERIFY2(error.isEmpty(), qPrintable(error));
         RuntimeMod iris; iris.id = "iris"; iris.version = "1.11.7";
         QVERIFY(!runtimeConflict(mods + QList<RuntimeMod>{iris}).isEmpty());
