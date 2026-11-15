@@ -81,7 +81,8 @@
 - `tests/HomeCustomization_test.cpp`: Qt-регрессии фона, drop, блокировки, сохранения/сброса.
 - `scripts/check_elysium.py`: структурные smoke-проверки, НЕ замена компиляции.
 - `.github/workflows/windows.yml`, `elysium.yml`: нативные сборки, тесты, упаковка.
-- `.github/workflows/publish-preview.yml`: публикация проверенных артефактов preview-релиза.
+- Одноразовый `.github/workflows/publish-preview.yml` выполнил публикацию и удалён,
+  чтобы не перезаписывать вручную добавляемые автором файлы релиза.
 - `docs/INTERFACE-MODES.md`, `SODIUM-PRESETS.md`, `ZEROTIER.md`, `WINDOWS-GITHUB.md`:
   детали функций и ограничений.
 
@@ -99,15 +100,17 @@
 Windows drag-and-drop и игрового запуска всех рецептов не выполнена**.
 Структурных smoke-проверок на тот момент — 18.
 
-Релиз **v0.1.0-preview.1 опубликован**, тестовый, не стабильный и не подписанный:
-https://github.com/artemii14/ubiquitous-happiness/releases/tag/v0.1.0-preview.1
+Релиз переименован по просьбе пользователя в **Elysium Launcher 1.0**, тег **v1.0**;
+пометка pre-release снята. Бинарники не пересобирались и остаются неподписанными.
+Автор сам добавит установщик `.exe` в этот релиз; пока доступны прежние ZIP и AppImage:
+https://github.com/artemii14/ubiquitous-happiness/releases/tag/v1.0
 Загружены и проверены через GitHub API: Windows portable ZIP (45 045 665 байт),
-Linux AppImage (54 172 152 байт), SHA256SUMS.txt. `isDraft=false`, `isPrerelease=true`.
+Linux AppImage (54 172 152 байт), SHA256SUMS.txt. `isDraft=false`, `isPrerelease=false`.
 Публикация: https://github.com/artemii14/ubiquitous-happiness/actions/runs/43662003346
 Релизный тег указывает на `3add66a9b99fbc914669f62162b563f6c840c30a`
 (проверенный код c71aa13 + документация и workflow).
 Перед сообщением пользователю о готовности проверять реальное состояние релиза и assets
-через `gh release view v0.1.0-preview.1` (черновик ещё не публичен).
+через `gh release view v1.0` (релиз публичен).
 Исходники релизного тега могут включать дополнительные документационные/CI-изменения;
 бинарники относятся к указанному выше проверенному коммиту кода.
 

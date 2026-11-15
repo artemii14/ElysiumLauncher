@@ -1,7 +1,10 @@
-# Elysium Launcher 0.1.0 Preview 1
+# Elysium Launcher 1.0
 
-Тестовый релиз независимого форка ElyPrismLauncher / Prism Launcher на C++ и Qt 6.
-Это не стабильный подписанный выпуск. Minecraft и OptiFine в комплект не входят.
+Релиз 1.0 независимого форка ElyPrismLauncher / Prism Launcher на C++ и Qt 6.
+Бинарники не подписаны. Minecraft и OptiFine в комплект не входят.
+
+Установщик `.exe` автор добавит в Assets отдельно. Пока доступны portable ZIP и AppImage.
+Переименование релиза не меняет версию или содержимое уже собранных бинарников.
 
 ## Скачать
 
