@@ -1,0 +1,42 @@
+name: Refresh release 1.0 checksums
+on:
+  push:
+    branches: [arena/66b41468-ubiquitous-happiness]
+    paths: [.github/workflows/refresh-release-checksums.yml]
+permissions:
+  contents: write
+concurrency:
+  group: refresh-release-1-0
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare checksums from GitHub asset digests
+        run: |
+          set -euo pipefail
+          gh api "repos/$GH_REPO/releases/tags/v1.0" > metadata.json
+          python3 - <<'PY'
+          import json, re
+          assets = json.load(open('metadata.json'))['assets']
+          names = {'ElysiumLauncher-Windows.exe', 'ElysiumLauncher-Windows-x64-portable.zip', 'ElysiumLauncher-Linux-x86_64.AppImage'}
+          selected = [a for a in assets if a['name'] in names]
+          assert {a['name'] for a in selected} == names
+          lines = []
+          for asset in sorted(selected, key=lambda a: a['name']):
+              digest = asset.get('digest') or ''
+              assert re.fullmatch(r'sha256:[0-9a-f]{64}', digest), asset['name']
+              lines.append(digest.split(':', 1)[1] + '  ' + asset['name'])
+          open('SHA256SUMS.txt', 'w').write('\n'.join(lines) + '\n')
+          PY
+      - name: Update only checksum asset and release notes
+        run: |
+          set -euo pipefail
+          gh release upload v1.0 SHA256SUMS.txt --clobber
+          gh release edit v1.0 --notes-file docs/RELEASE-v1.0.md
+          gh release view v1.0 --json url,assets
