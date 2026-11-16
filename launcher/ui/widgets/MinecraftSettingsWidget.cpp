@@ -42,6 +42,8 @@
 #include <QFileDialog>
 #include <QFormLayout>
 #include <QVBoxLayout>
+#include <QScrollArea>
+#include "minecraft/SharedGameOptionsSchema.h"
 #include <QLabel>
 #include "Application.h"
 #include "BuildConfig.h"
@@ -59,29 +61,47 @@ MinecraftSettingsWidget::MinecraftSettingsWidget(MinecraftInstance* instance, QW
     if (m_instance == nullptr) {
         m_sharedOptions = new QGroupBox(tr("Общие настройки игры"), this);
         m_sharedOptions->setCheckable(true);
-        auto form = new QFormLayout(m_sharedOptions);
-        auto hint = new QLabel(tr("Применяются перед каждым запуском ко всем сборкам. Изменения этих параметров в игре будут заменены при следующем запуске. Остальные параметры не меняются. Исходный options.txt сохраняется как options.txt.before-elysium."));
+        auto outer = new QVBoxLayout(m_sharedOptions);
+        auto hint = new QLabel(tr("Общие параметры применяются перед каждым запуском. Настройки, изменённые в игре, будут заменены. Исходный options.txt сохраняется в options.txt.before-elysium. Параметры, которых нет в вашей версии Minecraft, могут игнорироваться игрой. Модовые конфиги не меняются."));
         hint->setWordWrap(true);
-        form->addRow(hint);
-        auto number = [&](const QString& key, const QString& title, int min, int max, int initial) {
-            auto spin = new QSpinBox(m_sharedOptions);
-            spin->setRange(min, max);
-            spin->setValue(initial);
-            m_sharedNumbers.insert(key, spin);
-            form->addRow(title, spin);
-        };
-        number("renderDistance", tr("Дальность прорисовки (чанки)"), 2, 32, 12);
-        number("maxFps", tr("Ограничение FPS"), 10, 260, 120);
-        number("fov", tr("Поле зрения (градусы)"), 30, 110, 70);
-        for (const auto& key : {QString("enableVsync"), QString("autoJump")}) {
-            auto check = new QCheckBox(key == "enableVsync" ? tr("Вертикальная синхронизация") : tr("Автопрыжок"), m_sharedOptions);
-            m_sharedFlags.insert(key, check);
-            form->addRow(check);
+        outer->addWidget(hint);
+        auto tabs = new QTabWidget(m_sharedOptions);
+        outer->addWidget(tabs);
+        QMap<QString, QFormLayout*> groups;
+        for (const auto& option : SharedGameOptions::schema()) {
+            auto form = groups.value(option.group, nullptr);
+            if (!form) {
+                auto content = new QWidget;
+                form = new QFormLayout(content);
+                form->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
+                auto scroll = new QScrollArea(tabs);
+                scroll->setWidgetResizable(true);
+                scroll->setWidget(content);
+                tabs->addTab(scroll, option.group);
+                groups.insert(option.group, form);
+            }
+            if (!option.choices.isEmpty()) {
+                auto combo = new QComboBox;
+                combo->addItems(option.choices);
+                combo->setCurrentIndex(option.initial);
+                m_sharedChoices.insert(option.key, combo);
+                form->addRow(option.title, combo);
+            } else if (option.maximum == 1) {
+                auto check = new QCheckBox(option.title);
+                check->setChecked(option.initial);
+                m_sharedFlags.insert(option.key, check);
+                form->addRow(check);
+            } else {
+                auto spin = new QSpinBox;
+                spin->setRange(option.minimum, option.maximum);
+                spin->setValue(option.initial);
+                m_sharedNumbers.insert(option.key, spin);
+                form->addRow(option.title, spin);
+            }
         }
         auto page = new QWidget(this);
         auto layout = new QVBoxLayout(page);
         layout->addWidget(m_sharedOptions);
-        layout->addStretch();
         m_ui->settingsTabs->addTab(page, tr("Настройки игры"));
         m_ui->settingsTabs->removeTab(1);
 
@@ -198,7 +218,9 @@ void MinecraftSettingsWidget::loadSettings()
             if (values.contains(it.key())) it.value()->setValue(values.value(it.key()).toInt());
         }
         for (auto it = m_sharedFlags.cbegin(); it != m_sharedFlags.cend(); ++it)
-            it.value()->setChecked(values.value(it.key(), false).toBool());
+            it.value()->setChecked(values.value(it.key(), it.value()->isChecked()).toBool());
+        for (auto it = m_sharedChoices.cbegin(); it != m_sharedChoices.cend(); ++it)
+            it.value()->setCurrentIndex(qBound(0, values.value(it.key(), it.value()->currentIndex()).toInt(), it.value()->count() - 1));
     }
 
     // Ely.by patch
@@ -365,6 +387,8 @@ void MinecraftSettingsWidget::saveSettings()
             values.insert(it.key(), it.value()->value());
         for (auto it = m_sharedFlags.cbegin(); it != m_sharedFlags.cend(); ++it)
             values.insert(it.key(), it.value()->isChecked());
+        for (auto it = m_sharedChoices.cbegin(); it != m_sharedChoices.cend(); ++it)
+            values.insert(it.key(), it.value()->currentIndex());
         settings->set("SharedGameOptionsEnabled", m_sharedOptions->isChecked());
         settings->set("SharedGameOptions", values);
     }
