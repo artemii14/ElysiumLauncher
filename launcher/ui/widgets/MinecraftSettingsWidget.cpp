@@ -40,6 +40,13 @@
 #include "ui_MinecraftSettingsWidget.h"
 
 #include <QFileDialog>
+#include <QFormLayout>
+#include <QVBoxLayout>
+#include <QScrollArea>
+#include <QPushButton>
+#include <QMessageBox>
+#include "minecraft/SharedGameOptionsSchema.h"
+#include <QLabel>
 #include "Application.h"
 #include "BuildConfig.h"
 #include "Json.h"
@@ -54,6 +61,73 @@ MinecraftSettingsWidget::MinecraftSettingsWidget(MinecraftInstance* instance, QW
     m_ui->setupUi(this);
 
     if (m_instance == nullptr) {
+        m_sharedOptions = new QGroupBox(tr("Общие настройки игры"), this);
+        auto outer = new QVBoxLayout(m_sharedOptions);
+        m_sharedEnabled = new QCheckBox(tr("Применять ко всем сборкам перед запуском"), m_sharedOptions);
+        outer->addWidget(m_sharedEnabled);
+        auto status = new QLabel(m_sharedOptions);
+        status->setWordWrap(true);
+        outer->addWidget(status);
+        auto updateStatus = [status](bool enabled) {
+            status->setText(enabled
+                ? tr("Включено. Нажмите «Применить» или «ОК», затем запустите Minecraft заново.")
+                : tr("Выключено: параметры ниже можно редактировать, но игра их не получит. Для применения включите переключатель выше и сохраните настройки."));
+        };
+        connect(m_sharedEnabled, &QCheckBox::toggled, this, updateStatus);
+        updateStatus(false);
+        auto hint = new QLabel(tr("Общие параметры применяются перед каждым запуском. Настройки, изменённые в игре, будут заменены. Исходный options.txt сохраняется в options.txt.before-elysium. Параметры, которых нет в вашей версии Minecraft, могут игнорироваться игрой. Модовые конфиги не меняются."));
+        hint->setWordWrap(true);
+        outer->addWidget(hint);
+        auto tabs = new QTabWidget(m_sharedOptions);
+        outer->addWidget(tabs);
+        QMap<QString, QFormLayout*> groups;
+        for (const auto& option : SharedGameOptions::schema()) {
+            auto form = groups.value(option.group, nullptr);
+            if (!form) {
+                auto content = new QWidget;
+                form = new QFormLayout(content);
+                form->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
+                auto scroll = new QScrollArea(tabs);
+                scroll->setWidgetResizable(true);
+                scroll->setWidget(content);
+                tabs->addTab(scroll, option.group);
+                groups.insert(option.group, form);
+            }
+            if (!option.choices.isEmpty()) {
+                auto combo = new QComboBox;
+                combo->addItems(option.choices);
+                combo->setCurrentIndex(option.initial);
+                m_sharedChoices.insert(option.key, combo);
+                form->addRow(option.title, combo);
+            } else if (option.maximum == 1) {
+                auto check = new QCheckBox(option.title);
+                check->setChecked(option.initial);
+                m_sharedFlags.insert(option.key, check);
+                form->addRow(check);
+            } else {
+                auto spin = new QSpinBox;
+                spin->setRange(option.minimum, option.maximum);
+                spin->setValue(option.initial);
+                m_sharedNumbers.insert(option.key, spin);
+                form->addRow(option.title, spin);
+            }
+        }
+        auto reset = new QPushButton(tr("Сбросить общие параметры"), m_sharedOptions);
+        outer->addWidget(reset);
+        connect(reset, &QPushButton::clicked, this, [this] {
+            if (QMessageBox::question(this, tr("Сбросить параметры?"),
+                    tr("Вернуть базовые значения общих настроек? Изменения применятся после сохранения настроек.")) != QMessageBox::Yes)
+                return;
+            for (const auto& option : SharedGameOptions::schema()) {
+                if (auto spin = m_sharedNumbers.value(option.key)) spin->setValue(option.initial);
+                if (auto check = m_sharedFlags.value(option.key)) check->setChecked(option.initial);
+                if (auto combo = m_sharedChoices.value(option.key)) combo->setCurrentIndex(option.initial);
+            }
+        });
+        auto page = new QWidget(this);
+        auto layout = new QVBoxLayout(page);
+        layout->addWidget(m_sharedOptions);
+        m_ui->settingsTabs->addTab(page, tr("Настройки игры"));
         m_ui->settingsTabs->removeTab(1);
 
         m_ui->openGlobalSettingsButton->setVisible(false);
@@ -146,6 +220,14 @@ MinecraftSettingsWidget::MinecraftSettingsWidget(MinecraftInstance* instance, QW
     connect(m_ui->useNativeGLFWCheck, &QAbstractButton::toggled, m_ui->lineEditGLFWPath, &QWidget::setEnabled);
 
     loadSettings();
+    // Connect only after loading: opening Settings must not enable syncing.
+    // An actual edit opts into applying the edited shared values automatically.
+    if (m_sharedEnabled) {
+        auto edited = [this] { m_sharedEnabled->setChecked(true); };
+        for (auto spin : m_sharedNumbers) connect(spin, &QSpinBox::valueChanged, this, edited);
+        for (auto check : m_sharedFlags) connect(check, &QCheckBox::toggled, this, edited);
+        for (auto combo : m_sharedChoices) connect(combo, &QComboBox::currentIndexChanged, this, edited);
+    }
 }
 
 MinecraftSettingsWidget::~MinecraftSettingsWidget()
@@ -161,6 +243,18 @@ void MinecraftSettingsWidget::loadSettings()
         settings = m_instance->settings();
     else
         settings = APPLICATION->settings();
+
+    if (m_sharedOptions) {
+        m_sharedEnabled->setChecked(settings->get("SharedGameOptionsEnabled").toBool());
+        const auto values = SharedGameOptions::decode(settings->get("SharedGameOptions"));
+        for (auto it = m_sharedNumbers.cbegin(); it != m_sharedNumbers.cend(); ++it) {
+            if (values.contains(it.key())) it.value()->setValue(values.value(it.key()).toInt());
+        }
+        for (auto it = m_sharedFlags.cbegin(); it != m_sharedFlags.cend(); ++it)
+            it.value()->setChecked(values.value(it.key(), it.value()->isChecked()).toBool());
+        for (auto it = m_sharedChoices.cbegin(); it != m_sharedChoices.cend(); ++it)
+            it.value()->setCurrentIndex(qBound(0, values.value(it.key(), it.value()->currentIndex()).toInt(), it.value()->count() - 1));
+    }
 
     // Ely.by patch
     m_ui->elyGroupBox->setChecked(m_instance == nullptr || settings->get("OverrideElySettings").toBool());
@@ -319,6 +413,18 @@ void MinecraftSettingsWidget::saveSettings()
         settings = m_instance->settings();
     else
         settings = APPLICATION->settings();
+
+    if (m_sharedOptions) {
+        QVariantMap values;
+        for (auto it = m_sharedNumbers.cbegin(); it != m_sharedNumbers.cend(); ++it)
+            values.insert(it.key(), it.value()->value());
+        for (auto it = m_sharedFlags.cbegin(); it != m_sharedFlags.cend(); ++it)
+            values.insert(it.key(), it.value()->isChecked());
+        for (auto it = m_sharedChoices.cbegin(); it != m_sharedChoices.cend(); ++it)
+            values.insert(it.key(), it.value()->currentIndex());
+        settings->set("SharedGameOptionsEnabled", m_sharedEnabled->isChecked());
+        settings->set("SharedGameOptions", SharedGameOptions::encode(values));
+    }
 
     {
         SettingsObject::Lock lock(settings);

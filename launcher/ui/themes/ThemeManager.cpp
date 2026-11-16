@@ -31,6 +31,7 @@
 #include "ui/themes/CustomTheme.h"
 #include "ui/themes/DarkTheme.h"
 #include "ui/themes/ElysiumTheme.h"
+#include "ui/themes/HyprlandTheme.h"
 #include "ui/themes/SystemTheme.h"
 
 #include "Application.h"
@@ -138,6 +139,7 @@ void ThemeManager::initializeWidgets()
     themeDebugLog() << "Loading Built-in Theme:" << addTheme(std::make_unique<SystemTheme>(m_defaultStyle, m_defaultPalette, true));
     auto darkThemeId = addTheme(std::make_unique<DarkTheme>());
     addTheme(std::make_unique<ElysiumTheme>());
+    addTheme(std::make_unique<HyprlandTheme>());
     themeDebugLog() << "Loading Built-in Theme:" << darkThemeId;
     themeDebugLog() << "Loading Built-in Theme:" << addTheme(std::make_unique<BrightTheme>());
 

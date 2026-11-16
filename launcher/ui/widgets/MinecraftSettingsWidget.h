@@ -37,6 +37,11 @@
 #pragma once
 
 #include <QWidget>
+#include <QGroupBox>
+#include <QSpinBox>
+#include <QCheckBox>
+#include <QMap>
+#include <QComboBox>
 #include "JavaSettingsWidget.h"
 #include "minecraft/MinecraftInstance.h"
 
@@ -61,6 +66,11 @@ class MinecraftSettingsWidget : public QWidget {
     void saveDataPacksPath();
     void selectDataPacksFolder();
 
+    QGroupBox* m_sharedOptions = nullptr;
+    QCheckBox* m_sharedEnabled = nullptr;
+    QMap<QString, QSpinBox*> m_sharedNumbers;
+    QMap<QString, QCheckBox*> m_sharedFlags;
+    QMap<QString, QComboBox*> m_sharedChoices;
     MinecraftInstance* m_instance;
     Ui::MinecraftSettingsWidget* m_ui;
     JavaSettingsWidget* m_javaSettings = nullptr;

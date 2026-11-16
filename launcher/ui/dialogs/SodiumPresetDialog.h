@@ -5,11 +5,13 @@
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QMap>
+#include <QUrl>
 class QTableWidget;
 class QPushButton;
 class QLabel;
 class QProgressDialog;
 class QNetworkAccessManager;
+class QCheckBox;
 
 class SodiumPresetDialog : public QDialog {
 public:
@@ -17,7 +19,9 @@ public:
     QJsonObject manifest() const { return m_manifest; }
     QString instanceName() const { return m_name; }
 private:
+    QByteArray fetchBytes(const QUrl& url, qint64 limit);
     QJsonDocument fetch(const QString& path);
+    bool canPrepare() const;
     void reload();
     void prepare();
     QNetworkAccessManager* m_network;
@@ -25,6 +29,7 @@ private:
     QPushButton* m_install;
     QPushButton* m_reload;
     QLabel* m_status;
+    QCheckBox* m_shaders;
     QProgressDialog* m_progress = nullptr;
     QMap<QString, QJsonDocument> m_cache;
     qint64 m_cacheBytes = 0;

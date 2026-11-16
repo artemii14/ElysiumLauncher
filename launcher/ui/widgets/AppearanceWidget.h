@@ -29,6 +29,7 @@ class QCheckBox;
 class QPushButton;
 class QGroupBox;
 class QComboBox;
+class QLabel;
 class SettingsObject;
 
 namespace Ui {
@@ -61,6 +62,7 @@ class AppearanceWidget : public QWidget {
     bool m_themesOnly;
     QCheckBox* m_animation;
     QComboBox* m_backgroundStyle;
+    QLabel* m_backgroundLabel;
     QCheckBox* m_moveButtons;
     QPushButton* m_accent;
     QPushButton* m_resetOrder;

@@ -39,10 +39,13 @@
 #include <QStandardPaths>
 
 #include "Application.h"
+#include "minecraft/SharedGameOptions.h"
+#include "minecraft/SharedGameOptionsSchema.h"
 #include "Commandline.h"
 #include "FileSystem.h"
 #include "launch/LaunchTask.h"
 #include "minecraft/MinecraftInstance.h"
+#include "minecraft/PackProfile.h"
 
 #ifdef Q_OS_LINUX
 #include "gamemode_client.h"
@@ -80,6 +83,18 @@ void LauncherPartLaunch::executeTask()
     }
 
     auto instance = m_parent->instance();
+    if (APPLICATION->settings()->get("SharedGameOptionsEnabled").toBool()) {
+        const auto saved = SharedGameOptions::decode(APPLICATION->settings()->get("SharedGameOptions"));
+        const auto values = SharedGameOptions::serialize(saved, instance->getPackProfile()->getComponentVersion("net.minecraft"));
+        QString error;
+        if (!SharedGameOptions::apply(FS::PathCombine(instance->gameRoot(), "options.txt"), values, error)) {
+            emitFailed(tr("Не удалось применить общие настройки Minecraft: %1").arg(error));
+            return;
+        }
+        emit logLine(tr("Общие настройки Minecraft применены: %1").arg(FS::PathCombine(instance->gameRoot(), "options.txt")), MessageLevel::Launcher);
+    } else {
+        emit logLine(tr("Общие настройки Minecraft выключены в настройках лаунчера."), MessageLevel::Launcher);
+    }
 
     QString legacyJarPath;
     if (instance->getLauncher() == "legacy" || instance->shouldApplyOnlineFixes()) {

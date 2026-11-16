@@ -101,6 +101,44 @@ void MidnightSurface::paintBackground(QPainter& painter, const QRect& area, cons
             const double radius = 1.0 + (i % 3) * 0.5;
             painter.drawEllipse(QPointF(x, y), radius, radius);
         }
+    } else if (style == QStringLiteral("rain")) {
+        for (int i = 0; i < 90; ++i) {
+            auto drop = color; drop.setAlpha(55 + (i % 5) * 18);
+            painter.setPen(QPen(drop, 1.0 + (i % 2) * 0.5));
+            const double x = std::fmod(i * 0.61803398875, 1.0) * width;
+            const double y = std::fmod(i * 0.41421356237 + time * (0.11 + (i % 5) * 0.025), 1.0) * (height + 36) - 36;
+            painter.drawLine(QPointF(x, y), QPointF(x - 5, y + 18 + i % 14));
+        }
+    } else if (style == QStringLiteral("orbit")) {
+        const QPointF center(width * 0.5, height * 0.5);
+        painter.setBrush(Qt::NoBrush);
+        for (int ring = 0; ring < 3; ++ring) {
+            const double radius = qMin(width, height) * (0.18 + ring * 0.1);
+            auto line = color; line.setAlpha(42);
+            painter.setPen(QPen(line, 1.2));
+            painter.drawEllipse(center, radius * 1.55, radius);
+            const double angle = time * (0.45 - ring * 0.08) + ring * 2.1;
+            const QPointF point = center + QPointF(std::cos(angle) * radius * 1.55, std::sin(angle) * radius);
+            QRadialGradient glow(point, 22);
+            auto bright = color; bright.setAlpha(190); glow.setColorAt(0, bright);
+            bright.setAlpha(0); glow.setColorAt(1, bright);
+            painter.setPen(Qt::NoPen);
+            painter.setBrush(glow);
+            painter.drawEllipse(point, 22, 22);
+            painter.setBrush(Qt::NoBrush);
+        }
+    } else if (style == QStringLiteral("grid")) {
+        const double step = qMax(32.0, qMax(width, height) / 24.0);
+        const double offset = std::fmod(time * 12, step);
+        auto line = color; line.setAlpha(32);
+        painter.setPen(QPen(line, 1));
+        for (double x = offset - step; x < width; x += step)
+            painter.drawLine(QPointF(x, 0), QPointF(x, height));
+        for (double y = offset - step; y < height; y += step)
+            painter.drawLine(QPointF(0, y), QPointF(width, y));
+        const double scan = (0.5 + 0.5 * std::sin(time * 0.4)) * height;
+        line.setAlpha(125); painter.setPen(QPen(line, 2));
+        painter.drawLine(QPointF(0, scan), QPointF(width, scan));
     } else if (style == QStringLiteral("waves")) {
         painter.setPen(Qt::NoPen);
         for (int layer = 0; layer < 4; ++layer) {

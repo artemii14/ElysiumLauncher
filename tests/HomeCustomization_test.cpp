@@ -91,6 +91,24 @@ private slots:
         // A sample under the empty-label widget must show the scene beneath it.
         QVERIFY(enabled.pixel(100, 550) != disabled.pixel(100, 550));
     }
+    void allAnimationPresetsRender()
+    {
+        QTemporaryDir directory;
+        INISettingsObject settings(directory.filePath("home.cfg"));
+        registerSettings(settings);
+        QPalette palette;
+        palette.setColor(QPalette::Window, QColor("#11131d"));
+        for (const auto& preset : QStringList{"aurora", "stars", "waves", "rain", "orbit", "grid"}) {
+            settings.set("ElysiumBackgroundStyle", preset);
+            QImage image(QSize(320, 240), QImage::Format_ARGB32_Premultiplied);
+            { QPainter painter(&image); MidnightSurface::paintBackground(painter, image.rect(), palette, nullptr, &settings); }
+            int colored = 0;
+            for (int y = 0; y < image.height(); ++y)
+                for (int x = 0; x < image.width(); ++x)
+                    if (image.pixel(x, y) != palette.color(QPalette::Window).rgba()) ++colored;
+            QVERIFY2(colored > 50, qPrintable(preset));
+        }
+    }
     void backgroundCoversLeftAndRightAndCanBeDisabled()
     {
         QTemporaryDir directory;

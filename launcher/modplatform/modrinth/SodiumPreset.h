@@ -11,27 +11,53 @@
 #include <functional>
 
 namespace Elysium::Sodium {
-inline QStringList projects() { return {"sodium", "iris", "lambdynamiclights", "zoomify", "ok-zoomer", "sodium-extra", "modmenu", "fabric-api"}; }
+inline QStringList projects() { return {"sodium", "iris", "zoomify", "ok-zoomer", "modmenu", "fabric-api"}; }
+inline QStringList coreProjects(const QString& loader)
+{
+    QStringList roots{"iris", "sodium"};
+    if (loader == "fabric") roots << "fabric-api";
+    return roots;
+}
 inline bool stableMinecraft(const QString& game)
 {
     const auto match = QRegularExpression("^1\\.(\\d+)(?:\\.\\d+)?$").match(game);
     return (match.hasMatch() && match.captured(1).toInt() >= 14) || QRegularExpression("^[2-9][0-9]\\.\\d+(?:\\.\\d+)?$").match(game).hasMatch();
 }
-inline QJsonObject primaryFile(const QJsonObject& version)
+inline QJsonObject primaryArchiveFile(const QJsonObject& version, const QString& extension)
 {
+    if (extension != "jar" && extension != "zip") return {};
     QJsonObject fallback;
     for (const auto& value : version["files"].toArray()) {
         const auto file = value.toObject();
         const auto name = file["filename"].toString();
         const auto url = QUrl(file["url"].toString());
         const auto hash = file["hashes"].toObject()["sha512"].toString();
-        if (!QRegularExpression("^[A-Za-z0-9_.+ -]+\\.jar$").match(name).hasMatch() || name.contains("..") ||
+        if (!QRegularExpression("^[A-Za-z0-9_.+ -]+\\." + extension + "$").match(name).hasMatch() || name.contains("..") ||
             url.scheme() != "https" || url.host() != "cdn.modrinth.com" || !url.userInfo().isEmpty() ||
             url.port(443) != 443 || !QRegularExpression("^[a-fA-F0-9]{128}$").match(hash).hasMatch()) continue;
         if (file["primary"].toBool()) return file;
         if (fallback.isEmpty()) fallback = file;
     }
     return fallback;
+}
+inline QJsonObject primaryFile(const QJsonObject& version) { return primaryArchiveFile(version, "jar"); }
+inline QStringList shaderProjects() { return {"complementary-unbound", "complementary-reimagined"}; }
+inline QJsonObject shaderFile(const QJsonObject& version, const QString& game)
+{
+    if (!version["game_versions"].toArray().contains(game) || !version["loaders"].toArray().contains("iris")) return {};
+    const auto file = primaryArchiveFile(version, "zip");
+    const auto size = file["size"].toDouble();
+    if (size <= 0 || size > 128 * 1024 * 1024) return {};
+    return file;
+}
+inline QJsonObject packFile(const QJsonObject& file, const QString& directory)
+{
+    if (directory != "mods" && directory != "shaderpacks") return {};
+    const auto extension = directory == "mods" ? QString("jar") : QString("zip");
+    if (primaryArchiveFile(QJsonObject{{"files", QJsonArray{file}}}, extension).isEmpty()) return {};
+    return {{"path", directory + "/" + file["filename"].toString()}, {"hashes", file["hashes"]},
+        {"downloads", QJsonArray{file["url"]}}, {"fileSize", file["size"]},
+        {"env", QJsonObject{{"client", "required"}, {"server", "unsupported"}}}};
 }
 inline bool supports(const QJsonObject& version, const QString& game, const QString& loader)
 {
@@ -47,6 +73,24 @@ inline QJsonArray newestFirst(QJsonArray array)
     return result;
 }
 
+// LDL publishes one universal version with a Fabric API project dependency.
+// Its native NeoForge manifest has no Fabric API dependency. Keep this narrow:
+// only LDL's unpinned API dependency on dual-loader versions is platform-scoped.
+// The dialog still verifies the actual native NeoForge JAR metadata via Compatible.
+inline QJsonObject platformVersion(QJsonObject candidate, const QString& loader)
+{
+    if (loader != "neoforge" || candidate["project_id"].toString() != "yBW8D80W" ||
+        !candidate["loaders"].toArray().contains("fabric") || !candidate["loaders"].toArray().contains("neoforge")) return candidate;
+    QJsonArray dependencies;
+    for (const auto& value : candidate["dependencies"].toArray()) {
+        const auto dep = value.toObject();
+        if (dep["dependency_type"] == "required" && dep["project_id"] == "P7dR8mSH" && dep["version_id"].toString().isEmpty()) continue;
+        dependencies.append(value);
+    }
+    candidate["dependencies"] = dependencies;
+    return candidate;
+}
+
 // Resolve Modrinth required/pinned and incompatible dependencies with bounded
 // backtracking. Unavailable optional roots may be omitted without changing core.
 class Resolver {
@@ -54,9 +98,10 @@ public:
     using Versions = std::function<QJsonArray(const QString&)>;
     using Version = std::function<QJsonObject(const QString&)>;
     using Selection = QMap<QString, QJsonObject>;
+    using Compatible = std::function<bool(const Selection&)>;
     struct Need { QString project; QString pin; };
-    Resolver(QString game, QString loader, Versions versions, Version version)
-        : game(std::move(game)), loader(std::move(loader)), versions(std::move(versions)), version(std::move(version)) {}
+    Resolver(QString game, QString loader, Versions versions, Version version, Compatible compatible = {})
+        : game(std::move(game)), loader(std::move(loader)), versions(std::move(versions)), version(std::move(version)), compatible(std::move(compatible)) {}
     bool resolve(const QStringList& roots, Selection& result)
     {
         QList<Need> pending;
@@ -97,6 +142,7 @@ private:
     bool search(QList<Need> pending, Selection& selected, QList<Need> banned, int depth)
     {
         if (--budget < 0 || depth > 128 || selected.size() > 96 || conflicts(selected, banned)) return false;
+        if (compatible && !compatible(selected)) return false;
         if (pending.isEmpty()) return true;
         auto need = pending.takeFirst();
         if (selected.contains(need.project)) {
@@ -105,7 +151,7 @@ private:
         }
         const auto choices = need.pin.isEmpty() ? newestFirst(versions(need.project)) : QJsonArray{version(need.pin)};
         for (const auto& choice : choices) {
-            const auto candidate = choice.toObject();
+            const auto candidate = platformVersion(choice.toObject(), loader);
             if (candidate["project_id"].toString() != need.project ||
                 (!need.pin.isEmpty() && candidate["id"].toString() != need.pin) || !supports(candidate, game, loader)) continue;
             auto trial = selected;
@@ -131,6 +177,7 @@ private:
     QString game, loader;
     Versions versions;
     Version version;
+    Compatible compatible;
     int budget = 0;
 };
 } // namespace Elysium::Sodium

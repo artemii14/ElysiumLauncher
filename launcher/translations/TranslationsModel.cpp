@@ -36,6 +36,7 @@
 
 #include "TranslationsModel.h"
 #include "ElysiumTranslator.h"
+#include "BundledRussianTranslator.h"
 
 #include <QDebug>
 #include <memory>
@@ -267,12 +268,14 @@ void TranslationsModel::reloadLocalFiles()
 {
     QMap<QString, Language> languages = { { g_defaultLangCode, Language(g_defaultLangCode) } };
 
+    languages.insert("ru", Language("ru")); // embedded offline catalog
+
     const auto indexPath = d->m_dir.absoluteFilePath("index_v2.json");
     if (!QFileInfo::exists(indexPath)) {
         downloadIndex();
-        return;
+    } else {
+        readIndex(indexPath, languages);
     }
-    readIndex(indexPath, languages);
     auto entries = d->m_dir.entryInfoList({ "mmc_*.qm", "*.po" }, QDir::Files | QDir::NoDotAndDotDot);
     for (auto& entry : entries) {
         auto completeSuffix = entry.completeSuffix();
@@ -329,7 +332,9 @@ void TranslationsModel::reloadLocalFiles()
     if (languages.isEmpty()) {
         return;
     }
-    beginInsertRows(QModelIndex(), 0, d->m_languages.size() + languages.size() - 1);
+    // Appending and sorting also reorders existing rows: reset the model so
+    // language selectors never receive an invalid inserted-row range.
+    beginResetModel();
     for (auto& language : languages) {
         d->m_languages.append(language);
     }
@@ -346,7 +351,7 @@ void TranslationsModel::reloadLocalFiles()
         return a.languageName().toLower() < b.languageName().toLower();
     };
     std::ranges::sort(d->m_languages, comp);
-    endInsertRows();
+    endResetModel();
 }
 
 namespace {
@@ -448,6 +453,7 @@ void TranslationsModel::setUseSystemLocale(const bool useSystemLocale) const
 bool TranslationsModel::selectLanguage(QString key) const
 {
     QString& langCode = key;
+    if (key.startsWith("ru", Qt::CaseInsensitive)) key = "ru";
     auto langPtr = findLanguageAsOptional(key);
 
     if (langCode.isEmpty()) {
@@ -460,6 +466,10 @@ bool TranslationsModel::selectLanguage(QString key) const
     } else {
         langCode = langPtr->key;
     }
+
+    static auto bundledRussian = new BundledRussianTranslator(QCoreApplication::instance());
+    QCoreApplication::removeTranslator(bundledRussian);
+    if (langCode.startsWith("ru")) QCoreApplication::installTranslator(bundledRussian);
 
     // Install before the upstream translator so complete upstream catalogs win.
     static auto supplement = new ElysiumTranslator(QCoreApplication::instance());
@@ -492,7 +502,7 @@ bool TranslationsModel::selectLanguage(QString key) const
     }
 
     // otherwise install new translations
-    bool successful = false;
+    bool successful = langCode.startsWith("ru") && !bundledRussian->isEmpty();
     // FIXME: this is likely never present. FIX IT.
     d->m_qtTranslator = std::make_unique<QTranslator>();
     if (d->m_qtTranslator->load("qt_" + langCode, QLibraryInfo::path(QLibraryInfo::TranslationsPath))) {

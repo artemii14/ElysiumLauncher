@@ -853,6 +853,8 @@ SET(LAUNCHER_SOURCES
     ui/dialogs/ZeroTierDialog.h
     ui/dialogs/ZeroTierDialog.cpp
     ui/dialogs/SodiumPresetDialog.h
+    modplatform/modrinth/SodiumRuntime.cpp
+    modplatform/modrinth/SodiumRuntime.h
     ui/dialogs/SodiumPresetDialog.cpp
     modplatform/modrinth/SodiumPreset.h
     minecraft/OptiFineProfile.h
@@ -895,6 +897,7 @@ SET(LAUNCHER_SOURCES
     ui/themes/DarkTheme.cpp
     ui/themes/DarkTheme.h
     ui/themes/ElysiumTheme.h
+    ui/themes/HyprlandTheme.h
     ui/themes/ITheme.cpp
     ui/themes/ITheme.h
     ui/themes/HintOverrideProxyStyle.cpp
@@ -1247,6 +1250,8 @@ qt_add_resources(LAUNCHER_RESOURCES
     resources/OSX/OSX.qrc
     resources/iOS/iOS.qrc
     resources/midnight/midnight.qrc
+    resources/hyprland/hyprland.qrc
+    resources/translations/russiantranslations.qrc
     resources/flat/flat.qrc
     resources/flat_white/flat_white.qrc
     resources/documents/documents.qrc

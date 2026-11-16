@@ -141,3 +141,109 @@ Linux AppImage (54 172 152 байт), SHA256SUMS.txt. `isDraft=false`, `isPrerel
 push в рабочую ветку запускал workflows. Права могут изменяться — проверять,
 но не запрашивать пароли/токены в чате. При проблемах аутентификации просить
 переподключить GitHub в Arena, не придумывать успешный результат.
+
+
+## Продолжение: конфликты модов 26.2 / 26.3
+
+Активная задача в новой ветке `arena/1bdea8a4-ubiquitous-happiness`: пользователь
+прислал скрин Fabric Loader 0.20.1: Sodium 0.9.3-beta.5+mc26.3 запрещает Iris <=1.12.0,
+но установлен Iris 1.11.7+mc26.3. Проверка только зависимостей Modrinth пропускала
+это правило из JAR. Добавлен SodiumRuntime.{h,cpp}: ограниченное чтение JAR без
+распаковки, проверка runtime depends/breaks и NeoForge TOML-диапазонов. Resolver
+принимает callback совместимости, откатывает конфликтующие пары, Iris выбирается
+первым. Подготовка скачивает и проверяет SHA-512 кандидатов; итог показывает номера
+модов. Каталог показывает причины недоступности NeoForge вместо молчаливого скрытия.
+Не подменять отсутствующие обязательные моды неофициальными альтернативами.
+Ограничения и трафик описаны в docs/SODIUM-PRESETS.md. Новые регрессии воспроизводят
+конфликт для 26.2/26.3 и проверяют Fabric/NeoForge правила. Игровой запуск отдельно
+не подтверждён. Через `gh repo view` обнаружено актуальное имя репозитория:
+`artemii14/ElysiumLauncher` (старые ссылки пока полагаются на GitHub redirect).
+
+Проверка исправления runtime-ограничений: коммит `1125c582cc83706e584966a32f3b31e75aec7c3d`,
+Linux CI https://github.com/artemii14/ElysiumLauncher/actions/runs/43714903952 — success:
+компиляция, CTest (включая SodiumPreset с новыми регрессиями), упаковка и проверка
+запуска AppImage. Ранее CI выявил проблему moc с фикстурами теста; исправлено
+выносом ZIP-хелпера и исключением сырых метаданных из входа moc. Windows run
+https://github.com/artemii14/ElysiumLauncher/actions/runs/43714903925 — при записи
+этого обновления ещё не подтверждён, проверить фактический статус. PR #2 открыт:
+https://github.com/artemii14/ElysiumLauncher/pull/2. Релиз 1.0 не обновлялся.
+Для проверки исправления нужно новое приложение и новый Sodium-экземпляр;
+старую конфликтующую сборку лаунчер намеренно не переписывает.
+
+
+### Последняя правка: убрать LambDynamicLights, «ничего не скачивается»
+
+Пользователь отменил прежнее требование LambDynamicLights: он удалён из каталога,
+обязательных корней, аудита и описания. Теперь coreProjects(loader) — Iris/Sodium
+и Fabric API для Fabric; zoom обязателен, Extra/Mod Menu по возможности.
+Обнаружена ошибка нового парсера: Fabric использует `>=26.2- <26.3-`, а конечный
+дефис раньше отклонялся. Добавлена prerelease-sentinel семантика и регрессии для
+26.2/26.3. Это могла быть причина блокировки всех рецептов; реальная ошибка
+пользователя пока не получена. Сеть теперь сообщает конкретный URL host/path,
+HTTP и errorString. Не выдавать это за проверенный игровой запуск; CI проверять.
+
+
+### Последняя задача: Hyprland-inspired тема + UI-исправления
+
+Добавлена отдельная `HyprlandTheme.h` (id hyprland) и пакет 71 собственных SVG
+`resources/hyprland`, генератор scripts/generate_hyprland_icons.py. Регистрация
+через ThemeManager, CMake и Q_INIT_RESOURCE; старые defaults не меняются.
+Выбрать оба пункта независимо в Appearance. Нет системного blur/Wayland-зависимости,
+это не официальный Hyprland. Палитра фиксированная teal/cyan, picker Midnight не
+перекрашивает новую тему. Исправлены canPrepare null-check и обновление состояния
+Sodium install при сбросе/частичном заполнении таблицы; динамические строки
+AppearanceWidget теперь retranslate. Новые тесты HyprlandTheme_test.cpp + smoke.
+CI этой правки нужно проверить перед утверждением о готовой сборке.
+
+
+### Публикация 1.1
+
+По просьбе пользователя подготовлена публикация v1.1 из последнего проверенного
+кода eaa465a7406ef51429d20b6026e546a6cf144083. Обе сборки success:
+Windows 43885411853, Linux 43885411902. Артефакты не истекли на момент подготовки.
+Одноразовый workflow .github/workflows/publish-1.1.yml скачивает именно эти runs,
+проверяет commit/conclusion и отсутствие изменений приложения, упаковывает ZIP,
+проверяет исходный checksum AppImage и публикует оба файла + SHA256SUMS.txt.
+Не перезаписывает уже опубликованный v1.1. Релизный тег указывает на проверенный
+код eaa465a, не на документационный коммит. Статус публикации проверять через
+`gh release view v1.1`; название Elysium Launcher 1.1. Установщика 1.1 пока нет,
+EXE от 1.0 не копировать как новый. Полный список изменений docs/RELEASE-v1.1.md.
+README обновлён на 1.1 и актуальное имя репозитория artemii14/ElysiumLauncher;
+PR #2 пока не слит, main README обновится после слияния. Переименование Release
+не меняет встроенную версию в уже собранном приложении.
+
+
+Публикация v1.1 завершилась успешно: workflow run 43891782891.
+Проверены GitHub API: isDraft=false, isPrerelease=false, тег на eaa465a;
+assets ElysiumLauncher-1.1-Windows-x64-portable.zip,
+ElysiumLauncher-1.1-Linux-x86_64.AppImage, SHA256SUMS.txt.
+Релиз: https://github.com/artemii14/ElysiumLauncher/releases/tag/v1.1
+Установщик 1.0 не переносился, source archive автогенерируется из проверенного кода.
+
+
+### После 1.1: вернуть LambDynamicLights + Complementary
+
+Пользователь снова попросил LambDynamicLights и автоустановку Complementary Unbound /
+Reimagined. Реализованы два checked по умолчанию checkbox в SodiumPresetDialog.
+Lamb — optional resolver.addOptional, не обязательный корень: отсутствие совместимости
+не блокирует NeoForge/основной рецепт, пропуск виден в подтверждении. Шейдеры берутся
+из точных Modrinth slug complementary-unbound / complementary-reimagined, проверяются
+project_type/id, MC и Iris, зависимости, ZIP-имя/CDN/SHA512/размер; packFile пишет
+shaderpacks/ в generated mrpack. Штатный importer скачивает с SHA512. Автовключения
+шейдера в игре нет, одновременно два пакета не активируются. Опции можно отключить.
+Существующие экземпляры и опубликованный 1.1 не менялись. Новые тесты безопасных ZIP,
+путей, фильтра Iris/MC и checkbox. CI текущей правки нужно проверить.
+
+
+### Самое последнее: ещё фоны, LDL без кнопки, причина пропуска LDL
+
+Убран checkbox LDL, автоматический addOptional выполняется первым (перед Extra/Menu).
+Добавлены rain/orbit/grid в Appearance/переводы/рендерер; всего шесть пресетов,
+регрессия отрисовки каждого. В Modrinth-полученных метаданных LDL 4.13.0+26.3
+(rylKnJ4M/yBW8D80W) подтверждён общий required Fabric API при тегах Fabric+NeoForge.
+Исходники LDL26.3 генерируют native NeoForge TOML без этой зависимости. Введено
+узкое исключение platformVersion для unpinned API-зависимости LDL на NeoForge;
+Fabric, другие проекты, pinneddeps не затронуты, JAR/TOML по-прежнему проверяются.
+Добавлены регрессии resolver, сохранения зависимостей Fabric/pinned, отсутствие UI
+переключателя. Реальная причина на Fabric без лога не установлена. Подробные
+источники и условия docs/SODIUM-PRESETS.md. 1.1 не обновлялся, код только в PR #2.

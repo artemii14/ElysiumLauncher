@@ -1,0 +1,4 @@
+<!-- SPDX-License-Identifier: GPL-3.0-only; Elysium Hyprland-inspired artwork -->
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+ <g fill="none" stroke="#68e8da" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5v8l-9 5-9-5V8ZM3 8l9 5 9-5M12 13v8"/><path d="M9 6h6"/></g>
+</svg>

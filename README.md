@@ -10,15 +10,15 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/artemii14/ubiquitous-happiness/releases/tag/v1.0"><strong>Скачать 1.0</strong></a> ·
+  <a href="https://github.com/artemii14/ElysiumLauncher/releases/tag/v1.1"><strong>Скачать 1.1</strong></a> ·
   <a href="#возможности">Возможности</a> ·
   <a href="#документация">Документация</a> ·
-  <a href="https://github.com/artemii14/ubiquitous-happiness/issues/new/choose">Сообщить об ошибке</a>
+  <a href="https://github.com/artemii14/ElysiumLauncher/issues/new/choose">Сообщить об ошибке</a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/artemii14/ubiquitous-happiness/actions/workflows/windows.yml"><img src="https://github.com/artemii14/ubiquitous-happiness/actions/workflows/windows.yml/badge.svg?branch=main" alt="Сборка Windows"></a>
-  <a href="https://github.com/artemii14/ubiquitous-happiness/actions/workflows/elysium.yml"><img src="https://github.com/artemii14/ubiquitous-happiness/actions/workflows/elysium.yml/badge.svg?branch=main" alt="Сборка Linux"></a>
+  <a href="https://github.com/artemii14/ElysiumLauncher/actions/workflows/windows.yml"><img src="https://github.com/artemii14/ElysiumLauncher/actions/workflows/windows.yml/badge.svg?branch=main" alt="Сборка Windows"></a>
+  <a href="https://github.com/artemii14/ElysiumLauncher/actions/workflows/elysium.yml"><img src="https://github.com/artemii14/ElysiumLauncher/actions/workflows/elysium.yml/badge.svg?branch=main" alt="Сборка Linux"></a>
 </p>
 
 > Независимый форк [ElyPrismLauncher](https://github.com/ElyPrismLauncher/Launcher),
@@ -28,22 +28,22 @@
 
 ## Скачать
 
-### Elysium Launcher 1.0
+### Elysium Launcher 1.1
 
 | Платформа | Скачать | Как запустить |
 |---|---|---|
-| **Windows · установщик** | **[EXE](https://github.com/artemii14/ubiquitous-happiness/releases/download/v1.0/ElysiumLauncher-Windows.exe)** | Запустите установщик и следуйте его инструкциям |
-| **Windows x64 · portable** | **[ZIP](https://github.com/artemii14/ubiquitous-happiness/releases/download/v1.0/ElysiumLauncher-Windows-x64-portable.zip)** | Распакуйте **весь архив**, запустите `elysiumlauncher.exe` |
-| **Linux x64** | **[AppImage](https://github.com/artemii14/ubiquitous-happiness/releases/download/v1.0/ElysiumLauncher-Linux-x86_64.AppImage)** | Разрешите исполнение и запустите файл |
+| **Windows · установщик 1.0 (старый)** | **[EXE](https://github.com/artemii14/ElysiumLauncher/releases/download/v1.0/ElysiumLauncher-Windows.exe)** | Не содержит изменений 1.1; для новой версии используйте portable ниже |
+| **Windows x64 · portable** | **[ZIP](https://github.com/artemii14/ElysiumLauncher/releases/download/v1.1/ElysiumLauncher-1.1-Windows-x64-portable.zip)** | Распакуйте **весь архив**, запустите `elysiumlauncher.exe` |
+| **Linux x64** | **[AppImage](https://github.com/artemii14/ElysiumLauncher/releases/download/v1.1/ElysiumLauncher-1.1-Linux-x86_64.AppImage)** | Разрешите исполнение и запустите файл |
 
-[Описание релиза](https://github.com/artemii14/ubiquitous-happiness/releases/tag/v1.0) ·
-[Контрольные суммы SHA-256](https://github.com/artemii14/ubiquitous-happiness/releases/download/v1.0/SHA256SUMS.txt)
+[Описание релиза](https://github.com/artemii14/ElysiumLauncher/releases/tag/v1.1) ·
+[Контрольные суммы SHA-256](https://github.com/artemii14/ElysiumLauncher/releases/download/v1.1/SHA256SUMS.txt)
 
 Linux: Ubuntu 24.04 / glibc 2.39 или совместимая система новее.
 
 ```sh
-chmod +x ElysiumLauncher-Linux-x86_64.AppImage
-./ElysiumLauncher-Linux-x86_64.AppImage
+chmod +x ElysiumLauncher-1.1-Linux-x86_64.AppImage
+./ElysiumLauncher-1.1-Linux-x86_64.AppImage
 ```
 
 > [!WARNING]
@@ -54,8 +54,8 @@ chmod +x ElysiumLauncher-Linux-x86_64.AppImage
 <details>
 <summary>Нужны самые свежие экспериментальные сборки?</summary>
 
-Откройте [Windows Actions](https://github.com/artemii14/ubiquitous-happiness/actions/workflows/windows.yml)
-или [Linux Actions](https://github.com/artemii14/ubiquitous-happiness/actions/workflows/elysium.yml),
+Откройте [Windows Actions](https://github.com/artemii14/ElysiumLauncher/actions/workflows/windows.yml)
+или [Linux Actions](https://github.com/artemii14/ElysiumLauncher/actions/workflows/elysium.yml),
 выберите успешный запуск нужной ветки/коммита и скачайте файл из **Artifacts**.
 GitHub может потребовать вход. Артефакты Actions хранятся 14 дней;
 файлы Releases публикуются отдельно. Скачанный архив сам по себе не обновляется.
@@ -73,7 +73,8 @@ GitHub может потребовать вход. Артефакты Actions х
 | **Modern** | Библиотека с поиском, сортировкой и панелью действий справа |
 | **Legacy** | Компактный выбор сборки и запуск без лишних панелей |
 | **Midnight** | Тёмная тема, собственные SVG-значки и настраиваемый акцент |
-| **Живой фон** | Северное сияние, звёздное небо или волны; анимацию можно выключить |
+| **Hyprland-inspired** | Графитовые панели, бирюзовые рамки и отдельные тонкие cyan-иконки |
+| **Живой фон** | Сияние, звёзды, волны, неоновый дождь, орбиты и сетка; анимацию можно выключить |
 | **Своя раскладка** | Перестановка кнопок и целых блоков с сохранением порядка |
 
 Всё оформление — в **Настройки → Внешний вид**. Чтобы переставлять блоки,
@@ -86,10 +87,13 @@ GitHub может потребовать вход. Артефакты Actions х
 ### От vanilla до модифицированной сборки
 
 - **Vanilla:** выберите Minecraft — новый экземпляр получит автоматическое имя.
-- **Sodium · Fabric / NeoForge:** каталог Modrinth, Sodium, Iris, LambDynamicLights
-  и Zoomify либо Ok Zoomer. Fabric API обязателен для Fabric; Sodium Extra и
-  официальный Mod Menu добавляются при наличии совместимых версий.
-- **Проверка загрузок:** зависимости по метаданным и SHA-512 файлов модов.
+- **Sodium · Fabric / NeoForge:** каталог Modrinth, Sodium, Iris
+  и Zoomify либо Ok Zoomer. Fabric API обязателен для Fabric;
+  официальный Mod Menu добавляется при наличии совместимых версий.
+- **Дополнения к новой Sodium-сборке:** LambDynamicLights автоматически при совместимости,
+  а также опция загрузки Complementary Unbound / Reimagined в `shaderpacks`.
+  Шейдерный пакет выбирается в Iris внутри игры. Эти дополнения добавлены после релиза 1.1.
+- **Проверка загрузок:** зависимости по метаданным и SHA-512 файлов модов и шейдеров.
 - **OptiFine:** локальный импорт совместимого LaunchWrapper-профиля,
   без раздачи и автоматического скачивания OptiFine.
 - **Привычные инструменты Prism/ElyPrism:** аккаунты Ely.by и Microsoft,
@@ -112,7 +116,7 @@ GitHub может потребовать вход. Артефакты Actions х
 - [Sodium: состав рецептов и ограничения](docs/SODIUM-PRESETS.md)
 - [ZeroTier: подключение и безопасность](docs/ZEROTIER.md)
 - [Windows: сборка и диагностика](docs/WINDOWS-GITHUB.md)
-- [Примечания к релизу 1.0](docs/RELEASE-v1.0.md)
+- [Что нового в 1.1](docs/RELEASE-v1.1.md) · [Релиз 1.0](docs/RELEASE-v1.0.md)
 
 ### Продолжить разработку в новом чате
 
@@ -123,7 +127,7 @@ GitHub может потребовать вход. Артефакты Actions х
 
 ## Поддержка и предложения
 
-[Создайте Issue](https://github.com/artemii14/ubiquitous-happiness/issues/new/choose)
+[Создайте Issue](https://github.com/artemii14/ElysiumLauncher/issues/new/choose)
 по-русски или по-английски. Укажите ОС, версию/коммит, шаги воспроизведения
 и ожидаемый результат. Перед публикацией логов удалите токены, пароли, email
 и другие личные данные. Ошибки этого форка не отправляйте разработчикам Prism/ElyPrism.
@@ -139,8 +143,8 @@ libqrencode, zlib, toml++ ≥ 3.2. На Linux также нужен development-
 Точные наборы зависимостей CI: [Windows](.github/workflows/windows.yml) и [Linux](.github/workflows/elysium.yml).
 
 ```sh
-git clone --recurse-submodules https://github.com/artemii14/ubiquitous-happiness.git
-cd ubiquitous-happiness
+git clone --recurse-submodules https://github.com/artemii14/ElysiumLauncher.git
+cd ElysiumLauncher
 cmake -S . -B build -G Ninja \
   -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON \
   -DCMAKE_INSTALL_PREFIX="$PWD/install"
@@ -168,3 +172,11 @@ cmake --install build
 
 Исходная ревизия ElyPrism: `1c8bdd4dd72da77024a5dbb8bd8ef863540e3364`.
 [Оригинальное описание проекта](docs/UPSTREAM-README.md) · [Чек-лист публичного релиза](docs/RELEASE-CHECKLIST.md)
+
+### Общие настройки Minecraft
+
+Настройки → Minecraft → Настройки игры: включаемые общие параметры графики, звука,
+мыши, клавиш, чата, языка, доступности и внешнего вида для всех сборок перед каждым запуском. По умолчанию выключены.
+Остальные параметры и модовые конфиги сохраняются. Исходный файл сохраняется в
+`options.txt.before-elysium`; отключение синхронизации не откатывает уже применённые значения.
+Sodium Extra больше не включается в новые рецепты; установленные моды не удаляются.
