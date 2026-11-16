@@ -43,6 +43,8 @@
 #include <QFormLayout>
 #include <QVBoxLayout>
 #include <QScrollArea>
+#include <QPushButton>
+#include <QMessageBox>
 #include "minecraft/SharedGameOptionsSchema.h"
 #include <QLabel>
 #include "Application.h"
@@ -99,6 +101,18 @@ MinecraftSettingsWidget::MinecraftSettingsWidget(MinecraftInstance* instance, QW
                 form->addRow(option.title, spin);
             }
         }
+        auto reset = new QPushButton(tr("Сбросить общие параметры"), m_sharedOptions);
+        outer->addWidget(reset);
+        connect(reset, &QPushButton::clicked, this, [this] {
+            if (QMessageBox::question(this, tr("Сбросить параметры?"),
+                    tr("Вернуть базовые значения общих настроек? Изменения применятся после сохранения настроек.")) != QMessageBox::Yes)
+                return;
+            for (const auto& option : SharedGameOptions::schema()) {
+                if (auto spin = m_sharedNumbers.value(option.key)) spin->setValue(option.initial);
+                if (auto check = m_sharedFlags.value(option.key)) check->setChecked(option.initial);
+                if (auto combo = m_sharedChoices.value(option.key)) combo->setCurrentIndex(option.initial);
+            }
+        });
         auto page = new QWidget(this);
         auto layout = new QVBoxLayout(page);
         layout->addWidget(m_sharedOptions);

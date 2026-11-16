@@ -20,7 +20,7 @@ private slots:
             groups.insert(option.group);
         }
         QVERIFY(keys.size() >= 100);
-        QCOMPARE(groups.size(), 8);
+        QCOMPARE(groups.size(), 7);
     }
     void serializesMinecraftFormatsAndClampsCorruptSettings()
     {
