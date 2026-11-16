@@ -227,7 +227,7 @@ void MinecraftSettingsWidget::loadSettings()
 
     if (m_sharedOptions) {
         m_sharedOptions->setChecked(settings->get("SharedGameOptionsEnabled").toBool());
-        const auto values = settings->get("SharedGameOptions").toMap();
+        const auto values = SharedGameOptions::decode(settings->get("SharedGameOptions"));
         for (auto it = m_sharedNumbers.cbegin(); it != m_sharedNumbers.cend(); ++it) {
             if (values.contains(it.key())) it.value()->setValue(values.value(it.key()).toInt());
         }
@@ -404,7 +404,7 @@ void MinecraftSettingsWidget::saveSettings()
         for (auto it = m_sharedChoices.cbegin(); it != m_sharedChoices.cend(); ++it)
             values.insert(it.key(), it.value()->currentIndex());
         settings->set("SharedGameOptionsEnabled", m_sharedOptions->isChecked());
-        settings->set("SharedGameOptions", values);
+        settings->set("SharedGameOptions", SharedGameOptions::encode(values));
     }
 
     {

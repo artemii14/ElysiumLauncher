@@ -83,7 +83,7 @@ void LauncherPartLaunch::executeTask()
 
     auto instance = m_parent->instance();
     if (APPLICATION->settings()->get("SharedGameOptionsEnabled").toBool()) {
-        const auto saved = APPLICATION->settings()->get("SharedGameOptions").toMap();
+        const auto saved = SharedGameOptions::decode(APPLICATION->settings()->get("SharedGameOptions"));
         const auto values = SharedGameOptions::serialize(saved);
         QString error;
         if (!SharedGameOptions::apply(FS::PathCombine(instance->gameRoot(), "options.txt"), values, error)) {

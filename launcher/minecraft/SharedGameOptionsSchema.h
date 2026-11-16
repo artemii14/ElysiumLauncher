@@ -4,8 +4,23 @@
 #include <QVariant>
 #include <QStringList>
 #include <QVector>
+#include <QJsonDocument>
+#include <QJsonObject>
 
 namespace SharedGameOptions {
+// INI values are strings after restarting the launcher. Do not persist a raw
+// QVariantMap and then rely on QVariant::toMap() to parse its stored form.
+inline QString encode(const QVariantMap& values)
+{
+    return QString::fromUtf8(QJsonDocument(QJsonObject::fromVariantMap(values)).toJson(QJsonDocument::Compact));
+}
+inline QVariantMap decode(const QVariant& stored)
+{
+    // Accept in-memory maps from older builds as well as the persistent JSON form.
+    if (stored.userType() == QMetaType::QVariantMap) return stored.toMap();
+    return QJsonDocument::fromJson(stored.toString().toUtf8()).object().toVariantMap();
+}
+
 struct Option {
     QString key, title, group;
     int minimum = 0, maximum = 1, initial = 0;

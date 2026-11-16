@@ -1,11 +1,54 @@
 // SPDX-License-Identifier: GPL-3.0-only
 #include <QtTest>
 #include <QTemporaryDir>
+#include "settings/INISettingsObject.h"
 #include "minecraft/SharedGameOptions.h"
 #include "minecraft/SharedGameOptionsSchema.h"
 class SharedGameOptionsTest : public QObject {
     Q_OBJECT
 private slots:
+    void settingsSurviveRealLauncherRestart()
+    {
+        QTemporaryDir dir;
+        const auto config = dir.filePath("elysiumlauncher.cfg");
+        const QVariantMap selected{{"fov", 95}, {"renderDistance", 24}, {"enableVsync", true},
+            {"soundCategory_master", 37}, {"lang", 4}, {"autoJump", false}};
+        {
+            INISettingsObject settings(config);
+            settings.registerSetting("SharedGameOptions", QStringLiteral("{}"));
+            settings.registerSetting("SharedGameOptionsEnabled", false);
+            QVERIFY(settings.set("SharedGameOptions", SharedGameOptions::encode(selected)));
+            QVERIFY(settings.set("SharedGameOptionsEnabled", true));
+        }
+        INISettingsObject reopened(config);
+        reopened.registerSetting("SharedGameOptions", QStringLiteral("{}"));
+        reopened.registerSetting("SharedGameOptionsEnabled", false);
+        QVERIFY(reopened.get("SharedGameOptionsEnabled").toBool());
+        const auto restored = SharedGameOptions::decode(reopened.get("SharedGameOptions"));
+        QCOMPARE(restored.value("fov").toInt(), 95);
+        QCOMPARE(restored.value("lang").toInt(), 4);
+        QVERIFY(restored.value("enableVsync").toBool());
+        const auto applied = SharedGameOptions::serialize(restored);
+        QCOMPARE(applied.value("fov"), QString("0.625"));
+        QCOMPARE(applied.value("soundCategory_master"), QString("0.37"));
+        QCOMPARE(applied.value("renderDistance"), QString("24"));
+        QCOMPARE(applied.value("lang"), QString("fi_fi"));
+        QString error;
+        const auto path = dir.filePath("options.txt");
+        QVERIFY2(SharedGameOptions::apply(path, applied, error), qPrintable(error));
+        QFile file(path);
+        QVERIFY(file.open(QIODevice::ReadOnly));
+        const auto data = file.readAll();
+        QVERIFY(data.contains("fov:0.625\n"));
+        QVERIFY(data.contains("soundCategory_master:0.37\n"));
+    }
+    void acceptsOldInMemoryMapsAndInvalidInput()
+    {
+        const QVariantMap previous{{"fov", 80}, {"autoJump", true}};
+        QCOMPARE(SharedGameOptions::decode(previous), previous);
+        QVERIFY(SharedGameOptions::decode(QString("not json")).isEmpty());
+        QVERIFY(SharedGameOptions::decode(QString("[]")).isEmpty());
+    }
     void schemaIsCompleteAndValid()
     {
         QSet<QString> keys;

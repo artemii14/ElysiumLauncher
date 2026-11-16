@@ -743,7 +743,7 @@ Application::Application(int& argc, char** argv) : QApplication(argc, argv)
 
         // Window Size
         m_settings->registerSetting("SharedGameOptionsEnabled", false);
-        m_settings->registerSetting("SharedGameOptions", QVariantMap{});
+        m_settings->registerSetting("SharedGameOptions", QStringLiteral("{}"));
         m_settings->registerSetting({ "LaunchMaximized", "MCWindowMaximize" }, false);
         m_settings->registerSetting({ "MinecraftWinWidth", "MCWindowWidth" }, 854);
         m_settings->registerSetting({ "MinecraftWinHeight", "MCWindowHeight" }, 480);
