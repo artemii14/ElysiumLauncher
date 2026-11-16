@@ -38,7 +38,7 @@ SodiumPresetDialog::SodiumPresetDialog(QWidget* parent) : QDialog(parent), m_net
     setWindowTitle(tr("Установить Sodium-сборку"));
     resize(780, 560);
     auto layout = new QVBoxLayout(this);
-    auto info = new QLabel(tr("Sodium + Iris + Zoomify (или Ok Zoomer). Fabric API обязателен для Fabric. LambDynamicLights, Mod Menu и Sodium Extra добавляются автоматически при совместимости. Уже установленные сборки не изменяются."), this);
+    auto info = new QLabel(tr("Sodium + Iris + Zoomify (или Ok Zoomer). Fabric API обязателен для Fabric. LambDynamicLights и Mod Menu добавляются автоматически при совместимости. Уже установленные сборки не изменяются."), this);
     info->setWordWrap(true);
     layout->addWidget(info);
     m_shaders = new QCheckBox(tr("Установить Complementary Unbound и Reimagined для Iris"), this);
@@ -287,7 +287,6 @@ void SodiumPresetDialog::prepare()
             extrasSummary << tr("LambDynamicLights: добавлен автоматически");
         else extrasSummary << tr("LambDynamicLights: пропущен — %1").arg(lastConflict.isEmpty()
             ? tr("нет разрешимого набора для %1 / %2").arg(game, loader) : lastConflict);
-        resolver.addOptional("sodium-extra", selected);
         resolver.addOptional("modmenu", selected);
         const auto uid = loader == "fabric" ? QString("net.fabricmc.fabric-loader") : QString("net.neoforged");
         auto loaders = APPLICATION->metadataIndex()->get(uid);

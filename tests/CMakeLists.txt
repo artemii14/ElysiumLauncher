@@ -81,3 +81,6 @@ ecm_add_test(HomeCustomization_test.cpp LINK_LIBRARIES Launcher_logic Qt${QT_VER
 
 ecm_add_test(HyprlandTheme_test.cpp LINK_LIBRARIES Launcher_logic Qt${QT_VERSION_MAJOR}::Test
     TEST_NAME HyprlandTheme)
+
+ecm_add_test(SharedGameOptions_test.cpp LINK_LIBRARIES Launcher_logic Qt${QT_VERSION_MAJOR}::Test
+    TEST_NAME SharedGameOptions)

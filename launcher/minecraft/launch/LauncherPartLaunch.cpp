@@ -39,6 +39,7 @@
 #include <QStandardPaths>
 
 #include "Application.h"
+#include "minecraft/SharedGameOptions.h"
 #include "Commandline.h"
 #include "FileSystem.h"
 #include "launch/LaunchTask.h"
@@ -80,6 +81,22 @@ void LauncherPartLaunch::executeTask()
     }
 
     auto instance = m_parent->instance();
+    if (APPLICATION->settings()->get("SharedGameOptionsEnabled").toBool()) {
+        const auto saved = APPLICATION->settings()->get("SharedGameOptions").toMap();
+        QMap<QString, QString> values;
+        values.insert("renderDistance", QString::number(qBound(2, saved.value("renderDistance", 12).toInt(), 32)));
+        values.insert("maxFps", QString::number(qBound(10, saved.value("maxFps", 120).toInt(), 260)));
+        // Minecraft stores FOV normalized around 70 degrees, not in degrees.
+        values.insert("fov", QString::number((qBound(30, saved.value("fov", 70).toInt(), 110) - 70) / 40.0));
+        for (const auto& key : {QString("enableVsync"), QString("autoJump")})
+            values.insert(key, saved.value(key, false).toBool() ? "true" : "false");
+        QString error;
+        if (!SharedGameOptions::apply(FS::PathCombine(instance->gameRoot(), "options.txt"), values, error)) {
+            emitFailed(tr("Не удалось применить общие настройки Minecraft: %1").arg(error));
+            return;
+        }
+    }
+
 
     QString legacyJarPath;
     if (instance->getLauncher() == "legacy" || instance->shouldApplyOnlineFixes()) {

@@ -40,6 +40,9 @@
 #include "ui_MinecraftSettingsWidget.h"
 
 #include <QFileDialog>
+#include <QFormLayout>
+#include <QVBoxLayout>
+#include <QLabel>
 #include "Application.h"
 #include "BuildConfig.h"
 #include "Json.h"
@@ -54,6 +57,32 @@ MinecraftSettingsWidget::MinecraftSettingsWidget(MinecraftInstance* instance, QW
     m_ui->setupUi(this);
 
     if (m_instance == nullptr) {
+        m_sharedOptions = new QGroupBox(tr("Общие настройки игры"), this);
+        m_sharedOptions->setCheckable(true);
+        auto form = new QFormLayout(m_sharedOptions);
+        auto hint = new QLabel(tr("Применяются перед каждым запуском ко всем сборкам. Изменения этих параметров в игре будут заменены при следующем запуске. Остальные параметры не меняются. Исходный options.txt сохраняется как options.txt.before-elysium."));
+        hint->setWordWrap(true);
+        form->addRow(hint);
+        auto number = [&](const QString& key, const QString& title, int min, int max, int initial) {
+            auto spin = new QSpinBox(m_sharedOptions);
+            spin->setRange(min, max);
+            spin->setValue(initial);
+            m_sharedNumbers.insert(key, spin);
+            form->addRow(title, spin);
+        };
+        number("renderDistance", tr("Дальность прорисовки (чанки)"), 2, 32, 12);
+        number("maxFps", tr("Ограничение FPS"), 10, 260, 120);
+        number("fov", tr("Поле зрения (градусы)"), 30, 110, 70);
+        for (const auto& key : {QString("enableVsync"), QString("autoJump")}) {
+            auto check = new QCheckBox(key == "enableVsync" ? tr("Вертикальная синхронизация") : tr("Автопрыжок"), m_sharedOptions);
+            m_sharedFlags.insert(key, check);
+            form->addRow(check);
+        }
+        auto page = new QWidget(this);
+        auto layout = new QVBoxLayout(page);
+        layout->addWidget(m_sharedOptions);
+        layout->addStretch();
+        m_ui->settingsTabs->addTab(page, tr("Настройки игры"));
         m_ui->settingsTabs->removeTab(1);
 
         m_ui->openGlobalSettingsButton->setVisible(false);
@@ -161,6 +190,16 @@ void MinecraftSettingsWidget::loadSettings()
         settings = m_instance->settings();
     else
         settings = APPLICATION->settings();
+
+    if (m_sharedOptions) {
+        m_sharedOptions->setChecked(settings->get("SharedGameOptionsEnabled").toBool());
+        const auto values = settings->get("SharedGameOptions").toMap();
+        for (auto it = m_sharedNumbers.cbegin(); it != m_sharedNumbers.cend(); ++it) {
+            if (values.contains(it.key())) it.value()->setValue(values.value(it.key()).toInt());
+        }
+        for (auto it = m_sharedFlags.cbegin(); it != m_sharedFlags.cend(); ++it)
+            it.value()->setChecked(values.value(it.key(), false).toBool());
+    }
 
     // Ely.by patch
     m_ui->elyGroupBox->setChecked(m_instance == nullptr || settings->get("OverrideElySettings").toBool());
@@ -319,6 +358,16 @@ void MinecraftSettingsWidget::saveSettings()
         settings = m_instance->settings();
     else
         settings = APPLICATION->settings();
+
+    if (m_sharedOptions) {
+        QVariantMap values;
+        for (auto it = m_sharedNumbers.cbegin(); it != m_sharedNumbers.cend(); ++it)
+            values.insert(it.key(), it.value()->value());
+        for (auto it = m_sharedFlags.cbegin(); it != m_sharedFlags.cend(); ++it)
+            values.insert(it.key(), it.value()->isChecked());
+        settings->set("SharedGameOptionsEnabled", m_sharedOptions->isChecked());
+        settings->set("SharedGameOptions", values);
+    }
 
     {
         SettingsObject::Lock lock(settings);

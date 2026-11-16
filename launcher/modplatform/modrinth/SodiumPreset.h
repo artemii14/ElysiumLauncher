@@ -11,7 +11,7 @@
 #include <functional>
 
 namespace Elysium::Sodium {
-inline QStringList projects() { return {"sodium", "iris", "zoomify", "ok-zoomer", "sodium-extra", "modmenu", "fabric-api"}; }
+inline QStringList projects() { return {"sodium", "iris", "zoomify", "ok-zoomer", "modmenu", "fabric-api"}; }
 inline QStringList coreProjects(const QString& loader)
 {
     QStringList roots{"iris", "sodium"};

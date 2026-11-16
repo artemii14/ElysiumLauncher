@@ -235,7 +235,7 @@ class ElysiumPackagingTests(unittest.TestCase):
     def test_sodium_presets_are_create_only(self):
         source = (ROOT / "launcher/ui/dialogs/SodiumPresetDialog.cpp").read_text(encoding="utf-8")
         self.assertIn('loader == "fabric" && !exists("fabric-api")', source)
-        self.assertIn('resolver.addOptional("sodium-extra", selected)', source)
+        self.assertNotIn('resolver.addOptional("sodium-extra", selected)', source)
         self.assertIn('resolver.addOptional("modmenu", selected)', source)
         self.assertIn('tr("Мод на зум")', source)
         self.assertIn('resolver.addOptional("lambdynamiclights", selected)', source)

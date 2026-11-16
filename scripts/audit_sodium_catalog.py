@@ -9,7 +9,7 @@ from pathlib import Path
 import re
 import urllib.request
 
-PROJECTS = ('sodium', 'sodium-extra', 'iris', 'zoomify', 'ok-zoomer', 'modmenu', 'fabric-api')
+PROJECTS = ('sodium', 'iris', 'zoomify', 'ok-zoomer', 'modmenu', 'fabric-api')
 REQUIRED = ('sodium', 'iris')
 BASE = 'https://api.modrinth.com/v2/'
 
@@ -56,15 +56,13 @@ def run():
         for game in sorted(eligible, key=lambda s: tuple(map(int, s.split('.')))):
             zoom = 'zoomify' if game in available['zoomify'] else 'ok-zoomer'
             mods = {s: available[s][game] for s in required + (zoom,)}
-            if game in available['sodium-extra']:
-                mods['sodium-extra'] = available['sodium-extra'][game]
             if game in available['modmenu']:
                 mods['modmenu'] = available['modmenu'][game]
-            rows.append({'minecraft': game, 'zoom': zoom, 'extra': 'sodium-extra' in mods, 'mods': mods})
+            rows.append({'minecraft': game, 'zoom': zoom, 'mods': mods})
         report['loaders'][loader] = {'rows': rows, 'coverage': {s: sorted(v) for s, v in available.items()}}
         if os.environ.get('GITHUB_ACTIONS'):
             # Check annotations can be read without downloading redirected Azure logs.
-            text = '; '.join(r['minecraft'] + ':' + r['zoom'] + ('+extra' if r['extra'] else '') for r in rows)
+            text = '; '.join(r['minecraft'] + ':' + r['zoom'] for r in rows)
             print(f'::notice title=Sodium catalog {loader}::{text or "NONE"}')
             for slug in required:
                 if not available[slug]:
@@ -74,8 +72,8 @@ def run():
     summary = ['# Sodium catalog availability', '', report['checked_utc'], '', report['scope'],
                '', 'Includes release, beta and alpha mod files; only stable Minecraft releases.', '']
     for loader, result in report['loaders'].items():
-        summary += ['## ' + loader, '', '| Minecraft | Zoom | Sodium Extra |', '|---|---|---|']
-        summary += [f'| {r["minecraft"]} | {r["zoom"]} | {r["extra"]} |' for r in result['rows']]
+        summary += ['## ' + loader, '', '| Minecraft | Zoom |', '|---|---|']
+        summary += [f'| {r["minecraft"]} | {r["zoom"]} |' for r in result['rows']]
     if os.environ.get('GITHUB_STEP_SUMMARY'):
         Path(os.environ['GITHUB_STEP_SUMMARY']).write_text('\n'.join(summary) + '\n', encoding='utf-8')
 
