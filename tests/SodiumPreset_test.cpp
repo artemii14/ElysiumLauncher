@@ -53,6 +53,35 @@ private slots:
         QVERIFY(shaderFile(shader, "26.3").isEmpty());
         QCOMPARE(shaderProjects(), QStringList({"complementary-unbound", "complementary-reimagined"}));
     }
+    void universalLdlUsesPlatformSpecificApiRequirement()
+    {
+        auto ldl = mod("yBW8D80W", "ldl-26.3");
+        ldl["loaders"] = QJsonArray{"fabric", "neoforge", "quilt"};
+        const QJsonObject apiDep{{"project_id", "P7dR8mSH"}, {"dependency_type", "required"}};
+        ldl["dependencies"] = QJsonArray{apiDep};
+        QCOMPARE(platformVersion(ldl, "fabric")["dependencies"].toArray().size(), 1);
+        QVERIFY(platformVersion(ldl, "neoforge")["dependencies"].toArray().isEmpty());
+        auto api = mod("P7dR8mSH", "api1");
+        auto sodium = mod("sodium", "s1"); sodium["loaders"] = QJsonArray{"neoforge"};
+        auto versions = [&](const QString& project) {
+            if (project == "lambdynamiclights" || project == "yBW8D80W") return QJsonArray{ldl};
+            if (project == "P7dR8mSH") return QJsonArray{api};
+            if (project == "sodium") return QJsonArray{sodium};
+            return QJsonArray{};
+        };
+        Resolver solver("1.21.1", "neoforge", versions, [](const QString&) { return QJsonObject{}; });
+        Resolver::Selection selected;
+        QVERIFY(solver.resolve({"sodium"}, selected));
+        QVERIFY(solver.addOptional("lambdynamiclights", selected));
+        QVERIFY(selected.contains("yBW8D80W"));
+        QVERIFY(!selected.contains("P7dR8mSH")); // never install Fabric API on NeoForge
+        auto pinned = apiDep; pinned["version_id"] = "pinned";
+        ldl["dependencies"] = QJsonArray{pinned};
+        QCOMPARE(platformVersion(ldl, "neoforge")["dependencies"].toArray().size(), 1);
+        ldl["project_id"] = "unrelated";
+        ldl["dependencies"] = QJsonArray{apiDep};
+        QCOMPARE(platformVersion(ldl, "neoforge")["dependencies"].toArray().size(), 1);
+    }
     void runtimeRanges()
     {
         QCOMPARE(matchesRuntimeRange("26.2", ">=26.2- <26.3-"), RangeMatch::Yes);

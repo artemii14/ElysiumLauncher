@@ -38,13 +38,9 @@ SodiumPresetDialog::SodiumPresetDialog(QWidget* parent) : QDialog(parent), m_net
     setWindowTitle(tr("Установить Sodium-сборку"));
     resize(780, 560);
     auto layout = new QVBoxLayout(this);
-    auto info = new QLabel(tr("Sodium + Iris + Zoomify (или Ok Zoomer). Fabric API обязателен для Fabric. Mod Menu и Sodium Extra добавляются по возможности. Уже установленные сборки не изменяются."), this);
+    auto info = new QLabel(tr("Sodium + Iris + Zoomify (или Ok Zoomer). Fabric API обязателен для Fabric. LambDynamicLights, Mod Menu и Sodium Extra добавляются автоматически при совместимости. Уже установленные сборки не изменяются."), this);
     info->setWordWrap(true);
     layout->addWidget(info);
-    m_dynamicLights = new QCheckBox(tr("Добавить LambDynamicLights при совместимости"), this);
-    m_dynamicLights->setObjectName(QStringLiteral("sodiumDynamicLights"));
-    m_dynamicLights->setChecked(true);
-    layout->addWidget(m_dynamicLights);
     m_shaders = new QCheckBox(tr("Установить Complementary Unbound и Reimagined для Iris"), this);
     m_shaders->setObjectName(QStringLiteral("sodiumComplementaryShaders"));
     m_shaders->setChecked(true);
@@ -203,7 +199,6 @@ void SodiumPresetDialog::prepare()
     if (!canPrepare()) return;
     const auto game = m_table->item(row, 0)->text();
     const auto loader = m_table->item(row, 1)->text();
-    const bool addLights = m_dynamicLights->isChecked();
     const bool addShaders = m_shaders->isChecked();
     QProgressDialog progress(tr("Подбор зависимостей…"), tr("Отмена"), 0, 0, this);
     progress.setWindowModality(Qt::WindowModal);
@@ -285,14 +280,15 @@ void SodiumPresetDialog::prepare()
             if (!resolver.resolve(withZoom, selected)) fail(tr("Нет совместимого полного набора. %1").arg(lastConflict));
         }
         m_table->item(row, 2)->setText(zoomTitle);
+        QStringList extrasSummary;
+        lastConflict.clear();
+        // Try LDL before other optional mods so they cannot crowd it out.
+        if (resolver.addOptional("lambdynamiclights", selected))
+            extrasSummary << tr("LambDynamicLights: добавлен автоматически");
+        else extrasSummary << tr("LambDynamicLights: пропущен — %1").arg(lastConflict.isEmpty()
+            ? tr("нет разрешимого набора для %1 / %2").arg(game, loader) : lastConflict);
         resolver.addOptional("sodium-extra", selected);
         resolver.addOptional("modmenu", selected);
-        QStringList extrasSummary;
-        if (addLights) {
-            if (resolver.addOptional("lambdynamiclights", selected))
-                extrasSummary << tr("LambDynamicLights: добавлен");
-            else extrasSummary << tr("LambDynamicLights: нет совместимой версии, пропущен");
-        }
         const auto uid = loader == "fabric" ? QString("net.fabricmc.fabric-loader") : QString("net.neoforged");
         auto loaders = APPLICATION->metadataIndex()->get(uid);
         progress.setLabelText(tr("Проверка версии загрузчика…"));

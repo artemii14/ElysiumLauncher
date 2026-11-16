@@ -73,6 +73,24 @@ inline QJsonArray newestFirst(QJsonArray array)
     return result;
 }
 
+// LDL publishes one universal version with a Fabric API project dependency.
+// Its native NeoForge manifest has no Fabric API dependency. Keep this narrow:
+// only LDL's unpinned API dependency on dual-loader versions is platform-scoped.
+// The dialog still verifies the actual native NeoForge JAR metadata via Compatible.
+inline QJsonObject platformVersion(QJsonObject candidate, const QString& loader)
+{
+    if (loader != "neoforge" || candidate["project_id"].toString() != "yBW8D80W" ||
+        !candidate["loaders"].toArray().contains("fabric") || !candidate["loaders"].toArray().contains("neoforge")) return candidate;
+    QJsonArray dependencies;
+    for (const auto& value : candidate["dependencies"].toArray()) {
+        const auto dep = value.toObject();
+        if (dep["dependency_type"] == "required" && dep["project_id"] == "P7dR8mSH" && dep["version_id"].toString().isEmpty()) continue;
+        dependencies.append(value);
+    }
+    candidate["dependencies"] = dependencies;
+    return candidate;
+}
+
 // Resolve Modrinth required/pinned and incompatible dependencies with bounded
 // backtracking. Unavailable optional roots may be omitted without changing core.
 class Resolver {
@@ -133,7 +151,7 @@ private:
         }
         const auto choices = need.pin.isEmpty() ? newestFirst(versions(need.project)) : QJsonArray{version(need.pin)};
         for (const auto& choice : choices) {
-            const auto candidate = choice.toObject();
+            const auto candidate = platformVersion(choice.toObject(), loader);
             if (candidate["project_id"].toString() != need.project ||
                 (!need.pin.isEmpty() && candidate["id"].toString() != need.pin) || !supports(candidate, game, loader)) continue;
             auto trial = selected;

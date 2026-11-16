@@ -68,6 +68,9 @@ AppearanceWidget::AppearanceWidget(bool themesOnly, QWidget* parent)
     m_backgroundStyle->addItem(tr("Aurora"), QStringLiteral("aurora"));
     m_backgroundStyle->addItem(tr("Starfield"), QStringLiteral("stars"));
     m_backgroundStyle->addItem(tr("Waves"), QStringLiteral("waves"));
+    m_backgroundStyle->addItem(tr("Neon rain"), QStringLiteral("rain"));
+    m_backgroundStyle->addItem(tr("Orbits"), QStringLiteral("orbit"));
+    m_backgroundStyle->addItem(tr("Neon grid"), QStringLiteral("grid"));
     homeLayout->addWidget(m_backgroundLabel);
     homeLayout->addWidget(m_backgroundStyle);
     m_backgroundStyle->setEnabled(m_animation->isChecked());
@@ -206,6 +209,9 @@ void AppearanceWidget::retranslateUi()
     m_backgroundStyle->setItemText(0, tr("Aurora"));
     m_backgroundStyle->setItemText(1, tr("Starfield"));
     m_backgroundStyle->setItemText(2, tr("Waves"));
+    m_backgroundStyle->setItemText(3, tr("Neon rain"));
+    m_backgroundStyle->setItemText(4, tr("Orbits"));
+    m_backgroundStyle->setItemText(5, tr("Neon grid"));
 }
 
 void AppearanceWidget::applyIconTheme(int index)

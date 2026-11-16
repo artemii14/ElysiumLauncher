@@ -44,9 +44,8 @@ private slots:
         SodiumPresetDialog dialog;
         auto lights = dialog.findChild<QCheckBox*>(QStringLiteral("sodiumDynamicLights"));
         auto shaders = dialog.findChild<QCheckBox*>(QStringLiteral("sodiumComplementaryShaders"));
-        QVERIFY(lights && lights->isChecked());
+        QVERIFY(!lights); // LDL is automatic, not a user toggle
         QVERIFY(shaders && shaders->isChecked());
-        lights->setChecked(false);
         shaders->setChecked(false);
         auto table = dialog.findChild<QTableWidget*>(QStringLiteral("sodiumPresetTable"));
         auto install = dialog.findChild<QPushButton*>(QStringLiteral("sodiumPresetInstall"));

@@ -52,6 +52,9 @@ public:
             {QStringLiteral("Выбери Minecraft — сборка будет создана автоматически"), QStringLiteral("Choose Minecraft — an instance will be created automatically")}
         };
         static const QHash<QString, QString> russian = {
+            {QStringLiteral("Neon rain"), QStringLiteral("Неоновый дождь")},
+            {QStringLiteral("Orbits"), QStringLiteral("Орбиты")},
+            {QStringLiteral("Neon grid"), QStringLiteral("Неоновая сетка")},
             {QStringLiteral("Hyprland-inspired dark panels, cyan borders and rounded controls. No compositor required."), QStringLiteral("В стиле Hyprland: тёмные панели, бирюзовые рамки и скругления. Композитор не требуется.")},
             {QStringLiteral("Layout locked. Enable Allow moving buttons in Settings → Appearance, then Apply."), QStringLiteral("Раскладка заблокирована. Включите «Разрешить перемещение» в Настройки → Внешний вид и нажмите «Применить».")},
             {QStringLiteral("Make room for a new world.\nCreate your first instance to install Minecraft or a modpack."), QStringLiteral("Здесь начнётся новый мир.\nСоздайте сборку Minecraft или установите модпак.")},
