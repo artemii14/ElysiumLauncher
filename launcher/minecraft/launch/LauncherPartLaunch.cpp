@@ -90,8 +90,10 @@ void LauncherPartLaunch::executeTask()
             emitFailed(tr("Не удалось применить общие настройки Minecraft: %1").arg(error));
             return;
         }
+        emit logLine(tr("Общие настройки Minecraft применены: %1").arg(FS::PathCombine(instance->gameRoot(), "options.txt")), MessageLevel::Launcher);
+    } else {
+        emit logLine(tr("Общие настройки Minecraft выключены в настройках лаунчера."), MessageLevel::Launcher);
     }
-
 
     QString legacyJarPath;
     if (instance->getLauncher() == "legacy" || instance->shouldApplyOnlineFixes()) {

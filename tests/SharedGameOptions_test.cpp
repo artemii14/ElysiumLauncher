@@ -42,6 +42,25 @@ private slots:
         QVERIFY(data.contains("fov:0.625\n"));
         QVERIFY(data.contains("soundCategory_master:0.37\n"));
     }
+    void migratesPreviousIniMapWithoutLosingValues()
+    {
+        QTemporaryDir dir;
+        const auto config = dir.filePath("old.cfg");
+        const QVariantMap selected{{"fov", 95}, {"enableVsync", true}};
+        {
+            INISettingsObject previous(config);
+            previous.registerSetting("SharedGameOptions", QVariantMap{});
+            previous.set("SharedGameOptions", selected);
+        }
+        INISettingsObject current(config);
+        current.registerSetting("SharedGameOptions", QStringLiteral("{}"));
+        const auto restored = SharedGameOptions::decode(current.get("SharedGameOptions"));
+        QCOMPARE(restored.value("fov").toInt(), 95);
+        QVERIFY(restored.value("enableVsync").toBool());
+        current.set("SharedGameOptions", SharedGameOptions::encode(restored));
+        QVERIFY(current.reload());
+        QCOMPARE(SharedGameOptions::decode(current.get("SharedGameOptions")).value("fov").toInt(), 95);
+    }
     void acceptsOldInMemoryMapsAndInvalidInput()
     {
         const QVariantMap previous{{"fov", 80}, {"autoJump", true}};

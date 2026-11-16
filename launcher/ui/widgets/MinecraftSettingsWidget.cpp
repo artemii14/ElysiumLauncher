@@ -62,8 +62,19 @@ MinecraftSettingsWidget::MinecraftSettingsWidget(MinecraftInstance* instance, QW
 
     if (m_instance == nullptr) {
         m_sharedOptions = new QGroupBox(tr("Общие настройки игры"), this);
-        m_sharedOptions->setCheckable(true);
         auto outer = new QVBoxLayout(m_sharedOptions);
+        m_sharedEnabled = new QCheckBox(tr("Применять ко всем сборкам перед запуском"), m_sharedOptions);
+        outer->addWidget(m_sharedEnabled);
+        auto status = new QLabel(m_sharedOptions);
+        status->setWordWrap(true);
+        outer->addWidget(status);
+        auto updateStatus = [status](bool enabled) {
+            status->setText(enabled
+                ? tr("Включено. Нажмите «Применить» или «ОК», затем запустите Minecraft заново.")
+                : tr("Выключено: параметры ниже можно редактировать, но игра их не получит. Для применения включите переключатель выше и сохраните настройки."));
+        };
+        connect(m_sharedEnabled, &QCheckBox::toggled, this, updateStatus);
+        updateStatus(false);
         auto hint = new QLabel(tr("Общие параметры применяются перед каждым запуском. Настройки, изменённые в игре, будут заменены. Исходный options.txt сохраняется в options.txt.before-elysium. Параметры, которых нет в вашей версии Minecraft, могут игнорироваться игрой. Модовые конфиги не меняются."));
         hint->setWordWrap(true);
         outer->addWidget(hint);
@@ -226,7 +237,7 @@ void MinecraftSettingsWidget::loadSettings()
         settings = APPLICATION->settings();
 
     if (m_sharedOptions) {
-        m_sharedOptions->setChecked(settings->get("SharedGameOptionsEnabled").toBool());
+        m_sharedEnabled->setChecked(settings->get("SharedGameOptionsEnabled").toBool());
         const auto values = SharedGameOptions::decode(settings->get("SharedGameOptions"));
         for (auto it = m_sharedNumbers.cbegin(); it != m_sharedNumbers.cend(); ++it) {
             if (values.contains(it.key())) it.value()->setValue(values.value(it.key()).toInt());
@@ -403,7 +414,7 @@ void MinecraftSettingsWidget::saveSettings()
             values.insert(it.key(), it.value()->isChecked());
         for (auto it = m_sharedChoices.cbegin(); it != m_sharedChoices.cend(); ++it)
             values.insert(it.key(), it.value()->currentIndex());
-        settings->set("SharedGameOptionsEnabled", m_sharedOptions->isChecked());
+        settings->set("SharedGameOptionsEnabled", m_sharedEnabled->isChecked());
         settings->set("SharedGameOptions", SharedGameOptions::encode(values));
     }
 

@@ -67,6 +67,7 @@ class MinecraftSettingsWidget : public QWidget {
     void selectDataPacksFolder();
 
     QGroupBox* m_sharedOptions = nullptr;
+    QCheckBox* m_sharedEnabled = nullptr;
     QMap<QString, QSpinBox*> m_sharedNumbers;
     QMap<QString, QCheckBox*> m_sharedFlags;
     QMap<QString, QComboBox*> m_sharedChoices;
