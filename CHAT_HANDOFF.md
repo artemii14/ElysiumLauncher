@@ -211,3 +211,11 @@ EXE от 1.0 не копировать как новый. Полный спис�
 README обновлён на 1.1 и актуальное имя репозитория artemii14/ElysiumLauncher;
 PR #2 пока не слит, main README обновится после слияния. Переименование Release
 не меняет встроенную версию в уже собранном приложении.
+
+
+Публикация v1.1 завершилась успешно: workflow run 43891782891.
+Проверены GitHub API: isDraft=false, isPrerelease=false, тег на eaa465a;
+assets ElysiumLauncher-1.1-Windows-x64-portable.zip,
+ElysiumLauncher-1.1-Linux-x86_64.AppImage, SHA256SUMS.txt.
+Релиз: https://github.com/artemii14/ElysiumLauncher/releases/tag/v1.1
+Установщик 1.0 не переносился, source archive автогенерируется из проверенного кода.

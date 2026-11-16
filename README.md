@@ -141,7 +141,7 @@ libqrencode, zlib, toml++ ≥ 3.2. На Linux также нужен development-
 
 ```sh
 git clone --recurse-submodules https://github.com/artemii14/ElysiumLauncher.git
-cd ubiquitous-happiness
+cd ElysiumLauncher
 cmake -S . -B build -G Ninja \
   -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON \
   -DCMAKE_INSTALL_PREFIX="$PWD/install"
