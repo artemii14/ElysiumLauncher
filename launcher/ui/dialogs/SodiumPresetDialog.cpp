@@ -7,6 +7,7 @@
 #include "modplatform/modrinth/SodiumPreset.h"
 #include "modplatform/modrinth/SodiumRuntime.h"
 #include <QCryptographicHash>
+#include <QCheckBox>
 #include <QDialogButtonBox>
 #include <QDateTime>
 #include "Version.h"
@@ -40,6 +41,15 @@ SodiumPresetDialog::SodiumPresetDialog(QWidget* parent) : QDialog(parent), m_net
     auto info = new QLabel(tr("Sodium + Iris + Zoomify (или Ok Zoomer). Fabric API обязателен для Fabric. Mod Menu и Sodium Extra добавляются по возможности. Уже установленные сборки не изменяются."), this);
     info->setWordWrap(true);
     layout->addWidget(info);
+    m_dynamicLights = new QCheckBox(tr("Добавить LambDynamicLights при совместимости"), this);
+    m_dynamicLights->setObjectName(QStringLiteral("sodiumDynamicLights"));
+    m_dynamicLights->setChecked(true);
+    layout->addWidget(m_dynamicLights);
+    m_shaders = new QCheckBox(tr("Установить Complementary Unbound и Reimagined для Iris"), this);
+    m_shaders->setObjectName(QStringLiteral("sodiumComplementaryShaders"));
+    m_shaders->setChecked(true);
+    m_shaders->setToolTip(tr("ZIP-файлы будут помещены в shaderpacks. Выберите один пакет в настройках Iris внутри игры."));
+    layout->addWidget(m_shaders);
     m_status = new QLabel(tr("Загрузка актуального каталога Modrinth…"), this);
     m_status->setWordWrap(true);
     m_status->setTextFormat(Qt::PlainText);
@@ -193,6 +203,8 @@ void SodiumPresetDialog::prepare()
     if (!canPrepare()) return;
     const auto game = m_table->item(row, 0)->text();
     const auto loader = m_table->item(row, 1)->text();
+    const bool addLights = m_dynamicLights->isChecked();
+    const bool addShaders = m_shaders->isChecked();
     QProgressDialog progress(tr("Подбор зависимостей…"), tr("Отмена"), 0, 0, this);
     progress.setWindowModality(Qt::WindowModal);
     progress.setMinimumDuration(0);
@@ -275,6 +287,12 @@ void SodiumPresetDialog::prepare()
         m_table->item(row, 2)->setText(zoomTitle);
         resolver.addOptional("sodium-extra", selected);
         resolver.addOptional("modmenu", selected);
+        QStringList extrasSummary;
+        if (addLights) {
+            if (resolver.addOptional("lambdynamiclights", selected))
+                extrasSummary << tr("LambDynamicLights: добавлен");
+            else extrasSummary << tr("LambDynamicLights: нет совместимой версии, пропущен");
+        }
         const auto uid = loader == "fabric" ? QString("net.fabricmc.fabric-loader") : QString("net.neoforged");
         auto loaders = APPLICATION->metadataIndex()->get(uid);
         progress.setLabelText(tr("Проверка версии загрузчика…"));
@@ -316,18 +334,55 @@ void SodiumPresetDialog::prepare()
             const auto filename = file["filename"].toString();
             if (file.isEmpty() || names.contains(filename.toCaseFolded())) fail(tr("Некорректные или совпадающие имена JAR-файлов."));
             names.insert(filename.toCaseFolded());
-            files.append(QJsonObject{{"path", "mods/" + filename}, {"hashes", file["hashes"]},
-                {"downloads", QJsonArray{file["url"]}}, {"fileSize", file["size"]},
-                {"env", QJsonObject{{"client", "required"}, {"server", "unsupported"}}}});
+            files.append(packFile(file, "mods"));
             summary << mod["name"].toString() + " " + mod["version_number"].toString() + " [" + mod["version_type"].toString() + "]";
         }
+        if (addShaders) {
+            for (const auto& slug : shaderProjects()) {
+                // These are shader projects, not Fabric/NeoForge mods. Filter by Iris + MC.
+                const auto project = fetch("project/" + slug).object();
+                if (project["project_type"].toString() != "shader" || project["slug"].toString() != slug)
+                    fail(tr("Некорректный проект шейдеров: %1").arg(slug));
+                const auto title = project["title"].toString(slug);
+                QJsonObject chosenShader, chosenFile;
+                for (const auto& value : newestFirst(versions(slug))) {
+                    const auto candidate = value.toObject();
+                    if (candidate["project_id"].toString() != project["id"].toString()) continue;
+                    const auto file = shaderFile(candidate, game);
+                    if (file.isEmpty()) continue;
+                    bool compatibleDependencies = true;
+                    for (const auto& dependency : candidate["dependencies"].toArray()) {
+                        const auto dep = dependency.toObject();
+                        const auto type = dep["dependency_type"].toString();
+                        if (type != "required" && type != "incompatible") continue;
+                        auto id = dep["project_id"].toString();
+                        const auto pin = dep["version_id"].toString();
+                        if (id.isEmpty() && !pin.isEmpty()) id = version(pin)["project_id"].toString();
+                        const bool present = selected.contains(id) && (pin.isEmpty() || selected[id]["id"].toString() == pin);
+                        if ((type == "required" && !present) || (type == "incompatible" && present)) compatibleDependencies = false;
+                    }
+                    if (!compatibleDependencies) continue;
+                    chosenShader = candidate; chosenFile = file; break;
+                }
+                if (chosenFile.isEmpty()) {
+                    extrasSummary << tr("%1: нет совместимого ZIP для Minecraft %2 / Iris, пропущен").arg(title, game);
+                    continue;
+                }
+                const auto path = QString("shaderpacks/") + chosenFile["filename"].toString();
+                if (names.contains(path.toCaseFolded())) fail(tr("Совпадающие имена shaderpacks."));
+                names.insert(path.toCaseFolded());
+                files.append(packFile(chosenFile, "shaderpacks"));
+                extrasSummary << title + " " + chosenShader["version_number"].toString() + tr(" → shaderpacks (выбрать в Iris)");
+            }
+        }
+        summary.append(extrasSummary);
         m_name = QString("Sodium %1 · %2").arg(game, loader == "fabric" ? "Fabric" : "NeoForge");
         m_manifest = QJsonObject{{"formatVersion", 1}, {"game", "minecraft"}, {"name", m_name},
             {"versionId", QString::number(QDateTime::currentSecsSinceEpoch())}, {"files", files},
             {"dependencies", QJsonObject{{"minecraft", game}, {loader == "fabric" ? "fabric-loader" : "neoforge", chosen->descriptor()}}}};
         progress.hide();
         if (QMessageBox::question(this, tr("Создать отдельную сборку?"),
-            tr("%1\nЗагрузчик: %2\n\n%3\n\nМоды загружаются с Modrinth с проверкой SHA-512. Уже установленные сборки не изменяются. Совместимость по метаданным не гарантирует отсутствие ошибок в игре.").arg(m_name, chosen->descriptor(), summary.join('\n'))) == QMessageBox::Yes)
+            tr("%1\nЗагрузчик: %2\n\n%3\n\nМоды и выбранные шейдеры загружаются с Modrinth с проверкой SHA-512. Шейдеры не включаются автоматически. Уже установленные сборки не изменяются. Совместимость по метаданным не гарантирует отсутствие ошибок в игре.").arg(m_name, chosen->descriptor(), summary.join('\n'))) == QMessageBox::Yes)
             accept();
         else m_manifest = {};
     } catch (const std::exception& e) {

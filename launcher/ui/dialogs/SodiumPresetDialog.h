@@ -11,6 +11,7 @@ class QPushButton;
 class QLabel;
 class QProgressDialog;
 class QNetworkAccessManager;
+class QCheckBox;
 
 class SodiumPresetDialog : public QDialog {
 public:
@@ -28,6 +29,8 @@ private:
     QPushButton* m_install;
     QPushButton* m_reload;
     QLabel* m_status;
+    QCheckBox* m_dynamicLights;
+    QCheckBox* m_shaders;
     QProgressDialog* m_progress = nullptr;
     QMap<QString, QJsonDocument> m_cache;
     qint64 m_cacheBytes = 0;

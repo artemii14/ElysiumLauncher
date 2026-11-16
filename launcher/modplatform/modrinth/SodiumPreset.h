@@ -23,21 +23,41 @@ inline bool stableMinecraft(const QString& game)
     const auto match = QRegularExpression("^1\\.(\\d+)(?:\\.\\d+)?$").match(game);
     return (match.hasMatch() && match.captured(1).toInt() >= 14) || QRegularExpression("^[2-9][0-9]\\.\\d+(?:\\.\\d+)?$").match(game).hasMatch();
 }
-inline QJsonObject primaryFile(const QJsonObject& version)
+inline QJsonObject primaryArchiveFile(const QJsonObject& version, const QString& extension)
 {
+    if (extension != "jar" && extension != "zip") return {};
     QJsonObject fallback;
     for (const auto& value : version["files"].toArray()) {
         const auto file = value.toObject();
         const auto name = file["filename"].toString();
         const auto url = QUrl(file["url"].toString());
         const auto hash = file["hashes"].toObject()["sha512"].toString();
-        if (!QRegularExpression("^[A-Za-z0-9_.+ -]+\\.jar$").match(name).hasMatch() || name.contains("..") ||
+        if (!QRegularExpression("^[A-Za-z0-9_.+ -]+\\." + extension + "$").match(name).hasMatch() || name.contains("..") ||
             url.scheme() != "https" || url.host() != "cdn.modrinth.com" || !url.userInfo().isEmpty() ||
             url.port(443) != 443 || !QRegularExpression("^[a-fA-F0-9]{128}$").match(hash).hasMatch()) continue;
         if (file["primary"].toBool()) return file;
         if (fallback.isEmpty()) fallback = file;
     }
     return fallback;
+}
+inline QJsonObject primaryFile(const QJsonObject& version) { return primaryArchiveFile(version, "jar"); }
+inline QStringList shaderProjects() { return {"complementary-unbound", "complementary-reimagined"}; }
+inline QJsonObject shaderFile(const QJsonObject& version, const QString& game)
+{
+    if (!version["game_versions"].toArray().contains(game) || !version["loaders"].toArray().contains("iris")) return {};
+    const auto file = primaryArchiveFile(version, "zip");
+    const auto size = file["size"].toDouble();
+    if (size <= 0 || size > 128 * 1024 * 1024) return {};
+    return file;
+}
+inline QJsonObject packFile(const QJsonObject& file, const QString& directory)
+{
+    if (directory != "mods" && directory != "shaderpacks") return {};
+    const auto extension = directory == "mods" ? QString("jar") : QString("zip");
+    if (primaryArchiveFile(QJsonObject{{"files", QJsonArray{file}}}, extension).isEmpty()) return {};
+    return {{"path", directory + "/" + file["filename"].toString()}, {"hashes", file["hashes"]},
+        {"downloads", QJsonArray{file["url"]}}, {"fileSize", file["size"]},
+        {"env", QJsonObject{{"client", "required"}, {"server", "unsupported"}}}};
 }
 inline bool supports(const QJsonObject& version, const QString& game, const QString& loader)
 {

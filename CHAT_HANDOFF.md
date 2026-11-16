@@ -219,3 +219,17 @@ assets ElysiumLauncher-1.1-Windows-x64-portable.zip,
 ElysiumLauncher-1.1-Linux-x86_64.AppImage, SHA256SUMS.txt.
 Релиз: https://github.com/artemii14/ElysiumLauncher/releases/tag/v1.1
 Установщик 1.0 не переносился, source archive автогенерируется из проверенного кода.
+
+
+### После 1.1: вернуть LambDynamicLights + Complementary
+
+Пользователь снова попросил LambDynamicLights и автоустановку Complementary Unbound /
+Reimagined. Реализованы два checked по умолчанию checkbox в SodiumPresetDialog.
+Lamb — optional resolver.addOptional, не обязательный корень: отсутствие совместимости
+не блокирует NeoForge/основной рецепт, пропуск виден в подтверждении. Шейдеры берутся
+из точных Modrinth slug complementary-unbound / complementary-reimagined, проверяются
+project_type/id, MC и Iris, зависимости, ZIP-имя/CDN/SHA512/размер; packFile пишет
+shaderpacks/ в generated mrpack. Штатный importer скачивает с SHA512. Автовключения
+шейдера в игре нет, одновременно два пакета не активируются. Опции можно отключить.
+Существующие экземпляры и опубликованный 1.1 не менялись. Новые тесты безопасных ZIP,
+путей, фильтра Iris/MC и checkbox. CI текущей правки нужно проверить.

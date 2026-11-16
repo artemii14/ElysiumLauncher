@@ -17,11 +17,41 @@ class SodiumPresetTest : public QObject {
                 {"primary", true}, {"hashes", QJsonObject{{"sha512", QString(128, 'a')}}}}}}};
     }
 private slots:
-    void noLambDynamicLightsInRecipes()
+    void lambDynamicLightsDoesNotBlockCore()
     {
         QVERIFY(!projects().contains("lambdynamiclights"));
         QCOMPARE(coreProjects("fabric"), QStringList({"iris", "sodium", "fabric-api"}));
         QCOMPARE(coreProjects("neoforge"), QStringList({"iris", "sodium"}));
+    }
+    void shaderArchivesAreFilteredAndPlacedSafely()
+    {
+        auto shader = mod("shader", "shader-v1");
+        shader["loaders"] = QJsonArray{"iris", "optifine"};
+        shader["game_versions"] = QJsonArray{"26.3"};
+        auto file = primaryFile(shader);
+        file["filename"] = "ComplementaryUnbound_r5.zip";
+        file["size"] = 8 * 1024 * 1024;
+        shader["files"] = QJsonArray{file};
+        QVERIFY(primaryFile(shader).isEmpty()); // never put a shader ZIP in mods
+        QVERIFY(!shaderFile(shader, "26.3").isEmpty());
+        QVERIFY(shaderFile(shader, "26.2").isEmpty());
+        QCOMPARE(packFile(file, "shaderpacks")["path"].toString(), QString("shaderpacks/ComplementaryUnbound_r5.zip"));
+        QVERIFY(packFile(file, "mods").isEmpty());
+        QVERIFY(packFile(file, "../shaderpacks").isEmpty());
+        file["filename"] = "../escape.zip";
+        QVERIFY(packFile(file, "shaderpacks").isEmpty());
+        shader["loaders"] = QJsonArray{"optifine"};
+        QVERIFY(shaderFile(shader, "26.3").isEmpty());
+        shader["loaders"] = QJsonArray{"iris"};
+        file["filename"] = "Reimagined.zip";
+        file["size"] = 129 * 1024 * 1024;
+        shader["files"] = QJsonArray{file};
+        QVERIFY(shaderFile(shader, "26.3").isEmpty());
+        file["size"] = 1024;
+        file["url"] = "https://example.org/shader.zip";
+        shader["files"] = QJsonArray{file};
+        QVERIFY(shaderFile(shader, "26.3").isEmpty());
+        QCOMPARE(shaderProjects(), QStringList({"complementary-unbound", "complementary-reimagined"}));
     }
     void runtimeRanges()
     {

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 #include <QtTest>
 #include <QFile>
+#include <QCheckBox>
 #include <QPushButton>
 #include <QTableWidget>
 #include <QXmlStreamReader>
@@ -41,6 +42,12 @@ private slots:
     {
         // Deferred network reload is never entered in this synchronous test.
         SodiumPresetDialog dialog;
+        auto lights = dialog.findChild<QCheckBox*>(QStringLiteral("sodiumDynamicLights"));
+        auto shaders = dialog.findChild<QCheckBox*>(QStringLiteral("sodiumComplementaryShaders"));
+        QVERIFY(lights && lights->isChecked());
+        QVERIFY(shaders && shaders->isChecked());
+        lights->setChecked(false);
+        shaders->setChecked(false);
         auto table = dialog.findChild<QTableWidget*>(QStringLiteral("sodiumPresetTable"));
         auto install = dialog.findChild<QPushButton*>(QStringLiteral("sodiumPresetInstall"));
         QVERIFY(table);
