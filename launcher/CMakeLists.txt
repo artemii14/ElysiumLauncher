@@ -897,6 +897,7 @@ SET(LAUNCHER_SOURCES
     ui/themes/DarkTheme.cpp
     ui/themes/DarkTheme.h
     ui/themes/ElysiumTheme.h
+    ui/themes/HyprlandTheme.h
     ui/themes/ITheme.cpp
     ui/themes/ITheme.h
     ui/themes/HintOverrideProxyStyle.cpp
@@ -1249,6 +1250,7 @@ qt_add_resources(LAUNCHER_RESOURCES
     resources/OSX/OSX.qrc
     resources/iOS/iOS.qrc
     resources/midnight/midnight.qrc
+    resources/hyprland/hyprland.qrc
     resources/flat/flat.qrc
     resources/flat_white/flat_white.qrc
     resources/documents/documents.qrc

@@ -181,3 +181,16 @@ https://github.com/artemii14/ElysiumLauncher/pull/2. Релиз 1.0 не обн�
 26.2/26.3. Это могла быть причина блокировки всех рецептов; реальная ошибка
 пользователя пока не получена. Сеть теперь сообщает конкретный URL host/path,
 HTTP и errorString. Не выдавать это за проверенный игровой запуск; CI проверять.
+
+
+### Последняя задача: Hyprland-inspired тема + UI-исправления
+
+Добавлена отдельная `HyprlandTheme.h` (id hyprland) и пакет 71 собственных SVG
+`resources/hyprland`, генератор scripts/generate_hyprland_icons.py. Регистрация
+через ThemeManager, CMake и Q_INIT_RESOURCE; старые defaults не меняются.
+Выбрать оба пункта независимо в Appearance. Нет системного blur/Wayland-зависимости,
+это не официальный Hyprland. Палитра фиксированная teal/cyan, picker Midnight не
+перекрашивает новую тему. Исправлены canPrepare null-check и обновление состояния
+Sodium install при сбросе/частичном заполнении таблицы; динамические строки
+AppearanceWidget теперь retranslate. Новые тесты HyprlandTheme_test.cpp + smoke.
+CI этой правки нужно проверить перед утверждением о готовой сборке.

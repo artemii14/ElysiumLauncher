@@ -62,13 +62,13 @@ AppearanceWidget::AppearanceWidget(bool themesOnly, QWidget* parent)
     m_accent = new QPushButton(m_homeAppearance);
     m_resetOrder = new QPushButton(m_homeAppearance);
     homeLayout->addWidget(m_animation);
-    auto backgroundLabel = new QLabel(tr("Background preset"), m_homeAppearance);
+    m_backgroundLabel = new QLabel(tr("Background preset"), m_homeAppearance);
     m_backgroundStyle = new QComboBox(m_homeAppearance);
-    backgroundLabel->setBuddy(m_backgroundStyle);
+    m_backgroundLabel->setBuddy(m_backgroundStyle);
     m_backgroundStyle->addItem(tr("Aurora"), QStringLiteral("aurora"));
     m_backgroundStyle->addItem(tr("Starfield"), QStringLiteral("stars"));
     m_backgroundStyle->addItem(tr("Waves"), QStringLiteral("waves"));
-    homeLayout->addWidget(backgroundLabel);
+    homeLayout->addWidget(m_backgroundLabel);
     homeLayout->addWidget(m_backgroundStyle);
     m_backgroundStyle->setEnabled(m_animation->isChecked());
     connect(m_animation, &QCheckBox::toggled, m_backgroundStyle, &QWidget::setEnabled);
@@ -196,6 +196,16 @@ void AppearanceWidget::loadSettings()
 void AppearanceWidget::retranslateUi()
 {
     m_ui->retranslateUi(this);
+    m_backgroundLabel->setText(tr("Background preset"));
+    m_homeAppearance->setTitle(tr("Home screen"));
+    m_animation->setText(tr("Animated background"));
+    m_moveButtons->setText(tr("Allow moving buttons"));
+    m_moveButtons->setToolTip(tr("Drag panel headers to move whole blocks, or drag individual buttons. Turn this off to lock the layout."));
+    m_resetOrder->setText(tr("Reset button and panel order"));
+    m_accent->setText(tr("Accent color (Midnight): %1").arg(m_accentColor));
+    m_backgroundStyle->setItemText(0, tr("Aurora"));
+    m_backgroundStyle->setItemText(1, tr("Starfield"));
+    m_backgroundStyle->setItemText(2, tr("Waves"));
 }
 
 void AppearanceWidget::applyIconTheme(int index)

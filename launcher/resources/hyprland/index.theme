@@ -1,0 +1,11 @@
+[Icon Theme]
+Name=Elysium Hyprland
+Comment=Thin cyan outline icons, tiling and terminal-inspired controls
+Inherits=multimc
+Directories=scalable
+
+[scalable]
+Size=24
+Type=Scalable
+MinSize=16
+MaxSize=256

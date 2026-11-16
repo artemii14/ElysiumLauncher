@@ -45,6 +45,7 @@ SodiumPresetDialog::SodiumPresetDialog(QWidget* parent) : QDialog(parent), m_net
     m_status->setTextFormat(Qt::PlainText);
     layout->addWidget(m_status);
     m_table = new QTableWidget(0, 4, this);
+    m_table->setObjectName(QStringLiteral("sodiumPresetTable"));
     m_table->setHorizontalHeaderLabels({tr("Minecraft"), tr("Загрузчик"), tr("Мод на зум"), tr("Доступность")});
     m_table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     m_table->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -54,11 +55,17 @@ SodiumPresetDialog::SodiumPresetDialog(QWidget* parent) : QDialog(parent), m_net
     auto buttons = new QDialogButtonBox(QDialogButtonBox::Cancel, this);
     m_reload = buttons->addButton(tr("Обновить каталог"), QDialogButtonBox::ActionRole);
     m_install = buttons->addButton(tr("Подготовить установку…"), QDialogButtonBox::ActionRole);
+    m_install->setObjectName(QStringLiteral("sodiumPresetInstall"));
     m_install->setEnabled(false);
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
     connect(m_reload, &QPushButton::clicked, this, &SodiumPresetDialog::reload);
     connect(m_install, &QPushButton::clicked, this, &SodiumPresetDialog::prepare);
-    connect(m_table, &QTableWidget::itemSelectionChanged, this, [this] { m_install->setEnabled(!m_progress && m_table->currentRow() >= 0 && m_table->item(m_table->currentRow(), 3)->data(Qt::UserRole).toBool()); });
+    const auto refreshInstall = [this] { m_install->setEnabled(!m_progress && canPrepare()); };
+    connect(m_table, &QTableWidget::itemSelectionChanged, this, refreshInstall);
+    connect(m_table, &QTableWidget::currentCellChanged, this, refreshInstall);
+    connect(m_table, &QTableWidget::itemChanged, this, refreshInstall);
+    connect(m_table->model(), &QAbstractItemModel::rowsRemoved, this, refreshInstall);
+    connect(m_table->model(), &QAbstractItemModel::modelReset, this, refreshInstall);
     layout->addWidget(buttons);
     QTimer::singleShot(0, this, [this] { reload(); });
 }
@@ -107,6 +114,13 @@ QByteArray SodiumPresetDialog::fetchBytes(const QUrl& url, qint64 limit)
     if (m_progress && m_progress->wasCanceled()) fail(tr("Операция отменена."));
     if (!ok || bytes.size() > Limit) fail(tr("Ошибка загрузки %1%2 (HTTP %3): %4").arg(url.host(), url.path(), QString::number(status), networkError));
     return bytes;
+}
+
+bool SodiumPresetDialog::canPrepare() const
+{
+    const auto row = m_table->currentRow();
+    const auto status = row >= 0 && row < m_table->rowCount() ? m_table->item(row, 3) : nullptr;
+    return status && status->data(Qt::UserRole).toBool();
 }
 
 void SodiumPresetDialog::reload()
@@ -176,7 +190,7 @@ void SodiumPresetDialog::prepare()
 {
     if (m_progress) return;
     const auto row = m_table->currentRow();
-    if (row < 0 || !m_table->item(row, 3)->data(Qt::UserRole).toBool()) return;
+    if (!canPrepare()) return;
     const auto game = m_table->item(row, 0)->text();
     const auto loader = m_table->item(row, 1)->text();
     QProgressDialog progress(tr("Подбор зависимостей…"), tr("Отмена"), 0, 0, this);
@@ -323,5 +337,5 @@ void SodiumPresetDialog::prepare()
     m_progress = nullptr;
     m_table->setEnabled(true);
     m_reload->setEnabled(true);
-    m_install->setEnabled(m_table->currentRow() >= 0 && m_table->item(m_table->currentRow(), 3)->data(Qt::UserRole).toBool());
+    m_install->setEnabled(canPrepare());
 }

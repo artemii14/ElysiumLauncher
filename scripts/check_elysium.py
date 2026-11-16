@@ -162,6 +162,25 @@ class ElysiumPackagingTests(unittest.TestCase):
         settings = (ROOT / "launcher/ui/pages/global/LauncherPage.cpp").read_text(encoding="utf-8")
         self.assertIn('ui->interfaceModeCombo->currentIndex() == 1 ? "classic" : "modern"', settings)
 
+    def test_hyprland_theme_and_icon_resources(self):
+        resources = ROOT / "launcher/resources/hyprland"
+        qrc = ET.parse(resources / "hyprland.qrc")
+        for node in qrc.iter("file"):
+            path = resources / node.text
+            self.assertTrue(path.is_file(), node.text)
+            if path.suffix == ".svg":
+                ET.parse(path)
+        theme = (ROOT / "launcher/ui/themes/HyprlandTheme.h").read_text()
+        qss = theme.split('R"QSS(', 1)[1].split(')QSS"', 1)[0]
+        self.assertEqual(qss.count('{'), qss.count('}'))
+        self.assertIn('QPushButton#elysiumCreate:disabled', qss)
+        self.assertIn('HyprlandTheme', (ROOT / "launcher/ui/themes/ThemeManager.cpp").read_text())
+        self.assertIn('"hyprland"', (ROOT / "launcher/ui/themes/ThemeManager.h").read_text())
+        self.assertIn('Q_INIT_RESOURCE(hyprland)', (ROOT / "launcher/main.cpp").read_text())
+        cmake = (ROOT / "launcher/CMakeLists.txt").read_text()
+        self.assertIn('resources/hyprland/hyprland.qrc', cmake)
+        self.assertIn('ui/themes/HyprlandTheme.h', cmake)
+
     def test_midnight_icon_pack(self):
         import re
         pack = ROOT / "launcher/resources/midnight"

@@ -78,3 +78,6 @@ ecm_add_test(SodiumPreset_test.cpp LINK_LIBRARIES Launcher_logic Qt${QT_VERSION_
 
 ecm_add_test(HomeCustomization_test.cpp LINK_LIBRARIES Launcher_logic Qt${QT_VERSION_MAJOR}::Test
     TEST_NAME HomeCustomization)
+
+ecm_add_test(HyprlandTheme_test.cpp LINK_LIBRARIES Launcher_logic Qt${QT_VERSION_MAJOR}::Test
+    TEST_NAME HyprlandTheme)

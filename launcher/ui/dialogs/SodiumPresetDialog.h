@@ -20,6 +20,7 @@ public:
 private:
     QByteArray fetchBytes(const QUrl& url, qint64 limit);
     QJsonDocument fetch(const QString& path);
+    bool canPrepare() const;
     void reload();
     void prepare();
     QNetworkAccessManager* m_network;
