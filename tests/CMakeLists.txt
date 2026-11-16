@@ -84,3 +84,6 @@ ecm_add_test(HyprlandTheme_test.cpp LINK_LIBRARIES Launcher_logic Qt${QT_VERSION
 
 ecm_add_test(SharedGameOptions_test.cpp LINK_LIBRARIES Launcher_logic Qt${QT_VERSION_MAJOR}::Test
     TEST_NAME SharedGameOptions)
+
+ecm_add_test(BundledRussianTranslator_test.cpp LINK_LIBRARIES Launcher_logic Qt${QT_VERSION_MAJOR}::Test
+    TEST_NAME BundledRussianTranslator)

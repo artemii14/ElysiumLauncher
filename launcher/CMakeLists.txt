@@ -1251,6 +1251,7 @@ qt_add_resources(LAUNCHER_RESOURCES
     resources/iOS/iOS.qrc
     resources/midnight/midnight.qrc
     resources/hyprland/hyprland.qrc
+    resources/translations/russiantranslations.qrc
     resources/flat/flat.qrc
     resources/flat_white/flat_white.qrc
     resources/documents/documents.qrc

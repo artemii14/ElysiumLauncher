@@ -6,6 +6,7 @@
 #include <QVector>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QVersionNumber>
 
 namespace SharedGameOptions {
 // INI values are strings after restarting the launcher. Do not persist a raw
@@ -167,7 +168,7 @@ inline int value(const Option& option, const QVariantMap& saved)
     // QVariant(bool).toInt() and old numeric settings both migrate without loss.
     return qBound(option.minimum, saved.value(option.key, option.initial).toInt(), option.maximum);
 }
-inline QMap<QString, QString> serialize(const QVariantMap& saved)
+inline QMap<QString, QString> serialize(const QVariantMap& saved, const QString& minecraftVersion = QString())
 {
     QMap<QString, QString> result;
     for (const auto& option : schema()) {
@@ -181,6 +182,15 @@ inline QMap<QString, QString> serialize(const QVariantMap& saved)
         else if (option.maximum == 1 && option.choices.isEmpty()) text = v ? "true" : "false";
         else text = QString::number(v / option.divisor, 'g', 12);
         result.insert(option.key, text);
+    }
+    const auto version = QVersionNumber::fromString(minecraftVersion);
+    // Smooth lighting changed from an integer (0/1/2) to a boolean in 1.19.3.
+    // A wrong type can prevent Minecraft from reading its options correctly.
+    if (version.isNull() || QVersionNumber::compare(version, QVersionNumber(1, 19, 3)) >= 0)
+        result["ao"] = result.value("ao").toInt() > 0 ? "true" : "false";
+    if (!version.isNull() && QVersionNumber::compare(version, QVersionNumber(1, 16)) < 0) {
+        result["fancyGraphics"] = result.value("graphicsMode").toInt() > 0 ? "true" : "false";
+        result.remove("graphicsMode");
     }
     return result;
 }

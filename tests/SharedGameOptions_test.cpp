@@ -7,6 +7,15 @@
 class SharedGameOptionsTest : public QObject {
     Q_OBJECT
 private slots:
+    void smoothLightingUsesVersionSpecificType()
+    {
+        QCOMPARE(SharedGameOptions::serialize({}, "1.18.2").value("ao"), QString("2"));
+        QCOMPARE(SharedGameOptions::serialize({}, "1.19.3").value("ao"), QString("true"));
+        QCOMPARE(SharedGameOptions::serialize({{"ao", 0}}, "1.21.1").value("ao"), QString("false"));
+        QCOMPARE(SharedGameOptions::serialize({}, "26.3").value("ao"), QString("true"));
+        QCOMPARE(SharedGameOptions::serialize({}, "1.14.4").value("fancyGraphics"), QString("true"));
+        QVERIFY(!SharedGameOptions::serialize({}, "1.14.4").contains("graphicsMode"));
+    }
     void settingsSurviveRealLauncherRestart()
     {
         QTemporaryDir dir;

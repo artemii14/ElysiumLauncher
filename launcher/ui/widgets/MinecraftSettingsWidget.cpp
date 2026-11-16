@@ -220,6 +220,14 @@ MinecraftSettingsWidget::MinecraftSettingsWidget(MinecraftInstance* instance, QW
     connect(m_ui->useNativeGLFWCheck, &QAbstractButton::toggled, m_ui->lineEditGLFWPath, &QWidget::setEnabled);
 
     loadSettings();
+    // Connect only after loading: opening Settings must not enable syncing.
+    // An actual edit opts into applying the edited shared values automatically.
+    if (m_sharedEnabled) {
+        auto edited = [this] { m_sharedEnabled->setChecked(true); };
+        for (auto spin : m_sharedNumbers) connect(spin, &QSpinBox::valueChanged, this, edited);
+        for (auto check : m_sharedFlags) connect(check, &QCheckBox::toggled, this, edited);
+        for (auto combo : m_sharedChoices) connect(combo, &QComboBox::currentIndexChanged, this, edited);
+    }
 }
 
 MinecraftSettingsWidget::~MinecraftSettingsWidget()
