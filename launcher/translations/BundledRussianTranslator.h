@@ -29,7 +29,9 @@ public:
                     else if (xml.name() == QStringLiteral("comment")) comment = xml.readElementText();
                     else if (xml.name() == QStringLiteral("translation")) {
                         const auto type = xml.attributes().value(QStringLiteral("type"));
-                        valid = type != QStringLiteral("unfinished") && type != QStringLiteral("vanished") && type != QStringLiteral("obsolete");
+                        // Our ElyPrism base still uses some strings removed from current
+                        // Prism. Their historical translations remain useful exact matches.
+                        valid = type != QStringLiteral("unfinished");
                         QString single;
                         while (!xml.atEnd()) {
                             xml.readNext();
