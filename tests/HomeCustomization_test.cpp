@@ -49,6 +49,9 @@ private slots:
         auto target = new QPushButton(QStringLiteral("Play"));
         target->setAcceptDrops(true);
         second->addWidget(target);
+        // A saved library-first layout remains intact despite the new
+        // instance-first defaults. Dragging then persists the changed order.
+        settings.set("ElysiumHomePanelOrder", QStringLiteral("{\"modern\":[\"library\",\"instance\"]}"));
         order.restore();
         const auto token = first->parentWidget()->property("elysiumPanelDragToken").toString();
         // Locked by default; dropping onto a descendant must not move anything.
@@ -69,7 +72,7 @@ private slots:
         QCOMPARE(restoredLayout->itemAt(0)->widget(), restoredSecond->parentWidget());
         settings.set("ElysiumHomePanelOrder", QString());
         restored.restore();
-        QCOMPARE(restoredLayout->itemAt(0)->widget()->property("elysiumPanelId").toString(), QStringLiteral("library"));
+        QCOMPARE(restoredLayout->itemAt(0)->widget()->property("elysiumPanelId").toString(), QStringLiteral("instance"));
     }
     void emptyLibraryDoesNotHideBackground()
     {
