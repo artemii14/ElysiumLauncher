@@ -17,7 +17,7 @@
 // Binds only known static catalog strings. Never translates user input, instance
 // names, persisted IDs, combo data, key codes or mod/Minecraft version strings.
 class LiveTranslation final : public QObject {
-    struct Entry { QPointer<QObject> object; QByteArray property; QString source, prefix; QStringList args; int index = -1; };
+    struct Entry { QPointer<QObject> object; QByteArray property; QString source, prefix; QStringList args; int index = -1; QString lastText; };
     QList<Entry> m_entries;
     void add(QObject* object, const QByteArray& property, QString text, int index = -1)
     {
@@ -38,7 +38,7 @@ class LiveTranslation final : public QObject {
                 if (!source.isEmpty()) break;
             }
         }
-        if (!source.isEmpty()) m_entries.append({object, property, source, prefix, args, index});
+        if (!source.isEmpty()) m_entries.append({object, property, source, prefix, args, index, prefix + text});
     }
 public:
     explicit LiveTranslation(QWidget* root) : QObject(root)
@@ -68,11 +68,25 @@ public:
     }
     void refresh()
     {
-        for (const auto& entry : m_entries) {
+        for (auto& entry : m_entries) {
             if (!entry.object) continue;
+            if (entry.property == "text") {
+                auto current = entry.object->property("text").toString();
+                if (current != entry.lastText) {
+                    auto plain = current;
+                    if (plain.startsWith(QStringLiteral("≡  ")) || plain.startsWith(QStringLiteral("↕  "))) {
+                        entry.prefix = plain.left(3); plain.remove(0, 3);
+                    }
+                    const auto changedSource = CustomLanguage::canonical(plain);
+                    if (changedSource.isEmpty()) continue; // dynamic status/argument changed; never restore stale text
+                    entry.source = changedSource;
+                    entry.args.clear();
+                }
+            }
             auto text = CustomLanguage::text(entry.source);
             for (const auto& arg : entry.args) text = text.arg(arg);
             text.prepend(entry.prefix);
+            entry.lastText = text;
             QSignalBlocker block(entry.object);
             if (entry.property == "tab") static_cast<QTabWidget*>(entry.object.data())->setTabText(entry.index, text);
             else if (entry.property == "item") static_cast<QComboBox*>(entry.object.data())->setItemText(entry.index, text);

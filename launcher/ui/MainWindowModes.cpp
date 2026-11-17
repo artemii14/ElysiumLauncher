@@ -122,6 +122,7 @@ void MainWindow::setupLaunchModes()
     };
     // Selected pack identity: actual instance artwork, not a launcher glyph.
     m_sidebarInstanceIcon = new QToolButton(rail);
+    m_sidebarInstanceIcon->setProperty("elysiumUserContent", true);
     m_sidebarInstanceIcon->setObjectName(QStringLiteral("elysiumSelectedIcon"));
     m_sidebarInstanceIcon->setIconSize(QSize(80, 80));
     m_sidebarInstanceIcon->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
@@ -237,6 +238,7 @@ void MainWindow::setupLaunchModes()
     layout->addWidget(m_compactInstances);
     m_compactDetails = new QLabel(m_compactHome);
     m_compactDetails->setWordWrap(true);
+    m_compactDetails->setProperty("elysiumUserContent", true);
     m_compactDetails->setObjectName(QStringLiteral("elysiumSubtitle"));
     layout->addWidget(m_compactDetails);
 

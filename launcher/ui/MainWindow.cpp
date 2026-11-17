@@ -550,6 +550,7 @@ void MainWindow::retranslateUi()
         if (action->toolTip().contains("%1"))
             action->setToolTip(action->toolTip().arg(BuildConfig.LAUNCHER_DISPLAYNAME));
     }
+    if (m_compactHome) updateCompactControls();
 }
 
 MainWindow::~MainWindow() {}
