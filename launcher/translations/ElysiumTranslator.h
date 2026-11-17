@@ -52,6 +52,7 @@ public:
             {QStringLiteral("Выбери Minecraft — сборка будет создана автоматически"), QStringLiteral("Choose Minecraft — an instance will be created automatically")}
         };
         static const QHash<QString, QString> russian = {
+            {QStringLiteral("Tiled workspace, muted lavender borders and compact controls. No compositor required."), QStringLiteral("Плиточная компоновка, мягкие лиловые рамки и компактные элементы управления. Композитор не требуется.")},
             {QStringLiteral("Neon rain"), QStringLiteral("Неоновый дождь")},
             {QStringLiteral("Orbits"), QStringLiteral("Орбиты")},
             {QStringLiteral("Neon grid"), QStringLiteral("Неоновая сетка")},

@@ -78,8 +78,8 @@ void MainWindow::setupLaunchModes()
     m_modernHome = new MidnightSurface(this);
     m_modernHome->setObjectName(QStringLiteral("elysiumModernHome"));
     auto workspace = new QHBoxLayout(m_modernHome);
-    workspace->setContentsMargins(0, 0, 0, 0);
-    workspace->setSpacing(0);
+    workspace->setContentsMargins(12, 12, 12, 12);
+    workspace->setSpacing(12);
     auto rail = new MidnightSurface(m_modernHome);
     rail->setObjectName(QStringLiteral("elysiumRail"));
     rail->setAttribute(Qt::WA_StyledBackground, true);
@@ -97,9 +97,10 @@ void MainWindow::setupLaunchModes()
         button->setMinimumHeight(42);
         button->setCursor(Qt::PointingHandCursor);
     };
-    auto railAction = [rail, &navigation, decorate](QAction* action, const QString& title, const QString& glyph) {
+    auto railAction = [this, rail, &navigation, decorate](QAction* action, const QString& title, const QString& glyph) {
         auto button = new QPushButton(title, rail);
         decorate(button, glyph);
+        if (action == ui->actionLaunchInstance) button->setObjectName(QStringLiteral("elysiumPrimaryPlay"));
         connect(button, &QPushButton::clicked, action, &QAction::trigger);
         auto sync = [action, button] { button->setEnabled(action->isEnabled()); };
         connect(action, &QAction::changed, button, sync);
@@ -181,9 +182,24 @@ void MainWindow::setupLaunchModes()
     railScroll->setWidget(rail);
     // Navigation follows the library, on the right (see workspace order below).
     auto collection = new QWidget(m_modernHome);
+    collection->setObjectName(QStringLiteral("elysiumCollection"));
+    collection->setAttribute(Qt::WA_StyledBackground, true);
     auto collectionLayout = new QVBoxLayout(collection);
     collectionLayout->setContentsMargins(0, 0, 0, 0);
     collectionLayout->setSpacing(0);
+    auto workspaceBar = new QWidget(collection);
+    workspaceBar->setObjectName(QStringLiteral("elysiumWorkspaceBar"));
+    auto barLayout = new QHBoxLayout(workspaceBar);
+    barLayout->setContentsMargins(14, 8, 14, 8);
+    auto brand = new QLabel(QStringLiteral("ELYSIUM"), workspaceBar);
+    brand->setObjectName(QStringLiteral("elysiumWorkspaceBrand"));
+    auto hint = new QLabel(tr("Выберите сборку → Играть"), workspaceBar);
+    hint->setObjectName(QStringLiteral("elysiumWorkspaceHint"));
+    hint->setWordWrap(true);
+    barLayout->addWidget(brand);
+    barLayout->addStretch();
+    barLayout->addWidget(hint);
+    collectionLayout->addWidget(workspaceBar);
     for (QWidget* widget : {m_libraryHeader, static_cast<QWidget*>(view), static_cast<QWidget*>(m_libraryEmpty)}) {
         ui->horizontalLayout->removeWidget(widget);
         collectionLayout->addWidget(widget, widget == m_libraryHeader ? 0 : 1);

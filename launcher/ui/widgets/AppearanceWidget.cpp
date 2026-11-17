@@ -41,6 +41,7 @@
 #include <QCheckBox>
 #include <QComboBox>
 #include <QColorDialog>
+#include <QSignalBlocker>
 #include <QGroupBox>
 #include <QVBoxLayout>
 #include <QGraphicsOpacityEffect>
@@ -61,6 +62,9 @@ AppearanceWidget::AppearanceWidget(bool themesOnly, QWidget* parent)
     m_moveButtons = new QCheckBox(m_homeAppearance);
     m_accent = new QPushButton(m_homeAppearance);
     m_resetOrder = new QPushButton(m_homeAppearance);
+    m_resetColors = new QPushButton(tr("Сбросить цвета"), m_homeAppearance);
+    m_resetColors->setObjectName(QStringLiteral("elysiumResetColors"));
+    m_resetColors->setToolTip(tr("Вернуть исходный акцент темы, фона и иконок. Остальные настройки не изменятся. Нажмите «Применить» для сохранения."));
     homeLayout->addWidget(m_animation);
     m_backgroundLabel = new QLabel(tr("Background preset"), m_homeAppearance);
     m_backgroundStyle = new QComboBox(m_homeAppearance);
@@ -77,15 +81,20 @@ AppearanceWidget::AppearanceWidget(bool themesOnly, QWidget* parent)
     connect(m_animation, &QCheckBox::toggled, m_backgroundStyle, &QWidget::setEnabled);
     homeLayout->addWidget(m_moveButtons);
     homeLayout->addWidget(m_accent);
+    homeLayout->addWidget(m_resetColors);
     homeLayout->addWidget(m_resetOrder);
     m_ui->verticalLayout->insertWidget(1, m_homeAppearance);
     m_homeAppearance->setVisible(!themesOnly);
+    connect(m_resetColors, &QPushButton::clicked, this, [this] {
+        m_accentColor = QStringLiteral("#a997ff");
+        m_accent->setText(tr("Цвет акцента: %1").arg(m_accentColor));
+    });
     connect(m_accent, &QPushButton::clicked, this, [this] {
         const auto color = QColorDialog::getColor(QColor(m_accentColor), this, tr("Accent color"));
         if (color.isValid()) {
             m_accentColor = color.name();
             m_accent->setIcon(QIcon());
-            m_accent->setText(tr("Accent color (Midnight): %1").arg(m_accentColor));
+            m_accent->setText(tr("Цвет акцента: %1").arg(m_accentColor));
         }
     });
     connect(m_resetOrder, &QPushButton::clicked, this, [this] {
@@ -171,7 +180,7 @@ void AppearanceWidget::loadSettings()
 {
     SettingsObject* settings = APPLICATION->settings();
     m_accentColor = settings->get("ElysiumAccentColor").toString();
-    m_accent->setText(tr("Accent color (Midnight): %1").arg(m_accentColor));
+    m_accent->setText(tr("Цвет акцента: %1").arg(m_accentColor));
     const int backgroundIndex = m_backgroundStyle->findData(settings->get("ElysiumBackgroundStyle").toString());
     m_backgroundStyle->setCurrentIndex(backgroundIndex < 0 ? 0 : backgroundIndex);
     m_animation->setChecked(settings->get("ElysiumAnimatedBackground").toBool());
@@ -199,13 +208,14 @@ void AppearanceWidget::loadSettings()
 void AppearanceWidget::retranslateUi()
 {
     m_ui->retranslateUi(this);
+    m_resetColors->setText(tr("Сбросить цвета"));
     m_backgroundLabel->setText(tr("Background preset"));
     m_homeAppearance->setTitle(tr("Home screen"));
     m_animation->setText(tr("Animated background"));
     m_moveButtons->setText(tr("Allow moving buttons"));
     m_moveButtons->setToolTip(tr("Drag panel headers to move whole blocks, or drag individual buttons. Turn this off to lock the layout."));
     m_resetOrder->setText(tr("Reset button and panel order"));
-    m_accent->setText(tr("Accent color (Midnight): %1").arg(m_accentColor));
+    m_accent->setText(tr("Цвет акцента: %1").arg(m_accentColor));
     m_backgroundStyle->setItemText(0, tr("Aurora"));
     m_backgroundStyle->setItemText(1, tr("Starfield"));
     m_backgroundStyle->setItemText(2, tr("Waves"));
@@ -232,6 +242,13 @@ void AppearanceWidget::applyWidgetTheme(int index)
     auto newAppTheme = m_ui->widgetStyleComboBox->itemData(index).toString();
     if (originalAppTheme != newAppTheme) {
         settings->set("ApplicationTheme", newAppTheme);
+        const auto icons = settings->get("IconTheme").toString();
+        if ((icons == "midnight" || icons == "hyprland") && (newAppTheme == "hyprland" || newAppTheme == "elysium")) {
+            const QString matching = newAppTheme == "hyprland" ? "hyprland" : "midnight";
+            settings->set("IconTheme", matching);
+            QSignalBlocker block(m_ui->iconsComboBox);
+            m_ui->iconsComboBox->setCurrentIndex(m_ui->iconsComboBox->findData(matching));
+        }
         APPLICATION->themeManager()->applyCurrentlySelectedTheme();
     }
 

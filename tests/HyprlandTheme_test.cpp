@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 #include <QtTest>
 #include <QFile>
+#include <QTemporaryDir>
+#include "ui/themes/AccentIcons.h"
 #include <QCheckBox>
 #include <QPushButton>
 #include <QTableWidget>
@@ -17,13 +19,51 @@ private slots:
         HyprlandTheme theme;
         QCOMPARE(theme.id(), QStringLiteral("hyprland"));
         const auto palette = theme.colorScheme();
-        QCOMPARE(palette.color(QPalette::Window), QColor("#0c111b"));
-        QCOMPARE(palette.color(QPalette::Highlight), QColor("#4ee6d5"));
+        QCOMPARE(palette.color(QPalette::Window), QColor("#171722"));
+        QCOMPARE(palette.color(QPalette::Highlight), QColor("#a997ff"));
         QVERIFY(palette.color(QPalette::Disabled, QPalette::Text) != palette.color(QPalette::Text));
         const auto qss = theme.appStyleSheet();
         QCOMPARE(qss.count('{'), qss.count('}'));
         QVERIFY(qss.contains("QPushButton#elysiumCreate:disabled"));
         QVERIFY(qss.contains("QWidget#elysiumModernHome"));
+    }
+    void customAccentReachesPaletteAndPanels()
+    {
+        HyprlandTheme theme;
+        theme.setAccent(QColor("#ed9bc4"));
+        QCOMPARE(theme.colorScheme().color(QPalette::Highlight), QColor("#ed9bc4"));
+        QVERIFY(theme.appStyleSheet().contains("#ed9bc4"));
+        QVERIFY(theme.appStyleSheet().contains("elysiumCollection"));
+        QVERIFY(theme.appStyleSheet().contains("elysiumWorkspaceBar"));
+        theme.setAccent(QColor());
+        QCOMPARE(theme.colorScheme().color(QPalette::Highlight), QColor("#a997ff"));
+    }
+    void iconsFollowAccentWithoutRecoloringStatus()
+    {
+        QTemporaryDir dir;
+        const auto pink = AccentIcons::build(dir.path(), "hyprland", QColor("#ed9bc4"));
+        const auto green = AccentIcons::build(dir.path(), "hyprland", QColor("#88ddaa"));
+        QVERIFY(!pink.isEmpty());
+        QVERIFY(pink != green);
+        QFile icon(dir.filePath(pink + "/scalable/settings.svg"));
+        QVERIFY(icon.open(QIODevice::ReadOnly));
+        QVERIFY(icon.readAll().contains("#ed9bc4"));
+        QFile status(dir.filePath(pink + "/scalable/status-bad.svg"));
+        QVERIFY(status.open(QIODevice::ReadOnly));
+        QVERIFY(status.readAll().contains("#fb7185"));
+        QVERIFY(AccentIcons::build(dir.path(), "external-theme", QColor("red")).isEmpty());
+        const auto oldPaths = QIcon::themeSearchPaths();
+        const auto oldName = QIcon::themeName();
+        QIcon::setThemeSearchPaths(QStringList{dir.path()} + oldPaths);
+        QIcon::setThemeName(pink);
+        auto liveIcon = QIcon::fromTheme("settings");
+        QVERIFY(!liveIcon.isNull());
+        const auto before = liveIcon.pixmap(24, 24).toImage();
+        QIcon::setThemeName(green);
+        const auto after = liveIcon.pixmap(24, 24).toImage();
+        QVERIFY(before != after); // existing widgets must update too, not only new icons
+        QIcon::setThemeName(oldName);
+        QIcon::setThemeSearchPaths(oldPaths);
     }
     void embeddedIcons()
     {

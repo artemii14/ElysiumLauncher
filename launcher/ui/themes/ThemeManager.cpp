@@ -17,6 +17,7 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 #include "ThemeManager.h"
+#include "AccentIcons.h"
 
 #include <QApplication>
 #include <QDir>
@@ -252,6 +253,16 @@ void ThemeManager::setIconTheme(const QString& name)
         return;
     }
 
+    if ((name == "hyprland" || name == "midnight") && m_accentIconFolder.isValid()) {
+        const auto generated = AccentIcons::build(m_accentIconFolder.path(), name, ElysiumTheme::accent());
+        if (!generated.isEmpty()) {
+            auto paths = QIcon::themeSearchPaths();
+            if (!paths.contains(m_accentIconFolder.path())) paths.prepend(m_accentIconFolder.path());
+            QIcon::setThemeSearchPaths(paths);
+            QIcon::setThemeName(generated);
+            return;
+        }
+    }
     QIcon::setThemeName(name);
 }
 
@@ -262,6 +273,7 @@ void ThemeManager::setApplicationTheme(const QString& name, bool initial)
     if (themeIter != m_themes.end()) {
         auto& theme = themeIter->second;
         themeDebugLog() << "applying theme" << theme->name();
+        if (auto hyprland = dynamic_cast<HyprlandTheme*>(theme.get())) hyprland->setAccent(ElysiumTheme::accent());
         theme->apply(initial);
         setTitlebarColorOfAllWindowsOnMac(qApp->palette().window().color());
 

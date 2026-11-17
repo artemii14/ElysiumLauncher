@@ -21,6 +21,7 @@
 #include <QDir>
 #include <QLoggingCategory>
 #include <QString>
+#include <QTemporaryDir>
 #include <memory>
 
 #include "IconTheme.h"
@@ -63,6 +64,7 @@ class ThemeManager {
    private:
     std::map<QString, std::unique_ptr<ITheme>> m_themes;
     std::map<QString, IconTheme> m_icons;
+    QTemporaryDir m_accentIconFolder;
     QDir m_iconThemeFolder{"iconthemes"};
     QDir m_applicationThemeFolder{"themes"};
     QDir m_catPacksFolder{"catpacks"};

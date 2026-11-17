@@ -66,6 +66,7 @@ class AppearanceWidget : public QWidget {
     QCheckBox* m_moveButtons;
     QPushButton* m_accent;
     QPushButton* m_resetOrder;
+    QPushButton* m_resetColors;
     QGroupBox* m_homeAppearance;
     QString m_accentColor;
     bool m_resetHomeOrder = false;

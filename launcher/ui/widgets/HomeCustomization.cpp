@@ -15,6 +15,8 @@
 #include <QMimeData>
 #include <QMouseEvent>
 #include <QPainter>
+#include <QStyle>
+#include <QStyleOption>
 #include <QRadialGradient>
 #include <QUuid>
 #include <cmath>
@@ -65,6 +67,12 @@ void MidnightSurface::paintEvent(QPaintEvent*)
 {
     QPainter painter(this);
     paintBackground(painter, rect(), palette(), this, m_settings);
+    // Our custom scene paint must not erase the stylesheet's panel frame.
+    if (objectName() == QStringLiteral("elysiumRail")) {
+        QStyleOption option;
+        option.initFrom(this);
+        style()->drawPrimitive(QStyle::PE_Widget, &option, &painter, this);
+    }
 }
 void MidnightSurface::paintBackground(QPainter& painter, const QRect& area, const QPalette& palette, const QWidget* target, SettingsObject* settings)
 {
@@ -348,7 +356,7 @@ void HomePanelOrder::restore()
     if (ids.isEmpty()) {
         // Explicit semantic defaults, not translated text or current visual order.
         ids = m_key == QStringLiteral("modern")
-            ? QStringList{QStringLiteral("library"), QStringLiteral("instance"), QStringLiteral("launcher")}
+            ? QStringList{QStringLiteral("instance"), QStringLiteral("library"), QStringLiteral("launcher")}
             : QStringList{QStringLiteral("play"), QStringLiteral("install"), QStringLiteral("extras")};
     }
     arrange(ids);
