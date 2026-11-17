@@ -34,6 +34,7 @@
  *      limitations under the License.
  */
 
+#include "translations/LiveTranslation.h"
 #include "AppearanceWidget.h"
 #include "ui_AppearanceWidget.h"
 
@@ -64,7 +65,7 @@ AppearanceWidget::AppearanceWidget(bool themesOnly, QWidget* parent)
     m_resetOrder = new QPushButton(m_homeAppearance);
     m_resetColors = new QPushButton(tr("Сбросить цвета"), m_homeAppearance);
     m_resetColors->setObjectName(QStringLiteral("elysiumResetColors"));
-    m_resetColors->setToolTip(tr("Вернуть исходный акцент темы, фона и иконок. Остальные настройки не изменятся. Нажмите «Применить» для сохранения."));
+    m_resetColors->setToolTip(tr("Возвращает исходный акцент. Нажмите «Применить»."));
     homeLayout->addWidget(m_animation);
     m_backgroundLabel = new QLabel(tr("Background preset"), m_homeAppearance);
     m_backgroundStyle = new QComboBox(m_homeAppearance);
@@ -104,7 +105,7 @@ AppearanceWidget::AppearanceWidget(bool themesOnly, QWidget* parent)
     m_homeAppearance->setTitle(tr("Home screen"));
     m_animation->setText(tr("Animated background"));
     m_moveButtons->setText(tr("Allow moving buttons"));
-    m_moveButtons->setToolTip(tr("Drag panel headers to move whole blocks, or drag individual buttons. Turn this off to lock the layout."));
+    m_moveButtons->setToolTip(tr("Перетаскивайте кнопки и заголовки блоков. Выключите для блокировки."));
     m_resetOrder->setText(tr("Reset button and panel order"));
 
 
@@ -136,6 +137,7 @@ AppearanceWidget::AppearanceWidget(bool themesOnly, QWidget* parent)
     connect(m_ui->catPackComboBox, &QComboBox::currentIndexChanged, this, &AppearanceWidget::applyCatTheme);
     connect(m_ui->catOpacitySlider, &QAbstractSlider::valueChanged, this, &AppearanceWidget::updateCatPreview);
 
+    new LiveTranslation(m_homeAppearance);
     connect(m_ui->iconsFolder, &QPushButton::clicked, this,
             [] { DesktopServices::openPath(APPLICATION->themeManager()->getIconThemesFolder().path()); });
     connect(m_ui->widgetStyleFolder, &QPushButton::clicked, this,
@@ -213,7 +215,7 @@ void AppearanceWidget::retranslateUi()
     m_homeAppearance->setTitle(tr("Home screen"));
     m_animation->setText(tr("Animated background"));
     m_moveButtons->setText(tr("Allow moving buttons"));
-    m_moveButtons->setToolTip(tr("Drag panel headers to move whole blocks, or drag individual buttons. Turn this off to lock the layout."));
+    m_moveButtons->setToolTip(tr("Перетаскивайте кнопки и заголовки блоков. Выключите для блокировки."));
     m_resetOrder->setText(tr("Reset button and panel order"));
     m_accent->setText(tr("Цвет акцента: %1").arg(m_accentColor));
     m_backgroundStyle->setItemText(0, tr("Aurora"));

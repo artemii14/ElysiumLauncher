@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+#include "translations/LiveTranslation.h"
 #include "ZeroTierDialog.h"
 #include "DesktopServices.h"
 #include <QInputDialog>
@@ -122,6 +123,7 @@ ZeroTierDialog::ZeroTierDialog(QWidget* parent) : QDialog(parent), m_network(new
         request("/network/" + id, "DELETE", {}, [this](QJsonDocument) { refresh(); });
     });
     updateButtons();
+    new LiveTranslation(this);
     QTimer::singleShot(0, this, [this] { refresh(); });
 }
 

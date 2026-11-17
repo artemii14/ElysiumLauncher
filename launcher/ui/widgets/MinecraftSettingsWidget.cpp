@@ -35,6 +35,7 @@
  *      limitations under the License.
  */
 
+#include "translations/LiveTranslation.h"
 #include "MinecraftSettingsWidget.h"
 #include "modplatform/ModIndex.h"
 #include "ui_MinecraftSettingsWidget.h"
@@ -70,12 +71,12 @@ MinecraftSettingsWidget::MinecraftSettingsWidget(MinecraftInstance* instance, QW
         outer->addWidget(status);
         auto updateStatus = [status](bool enabled) {
             status->setText(enabled
-                ? tr("Включено. Нажмите «Применить» или «ОК», затем запустите Minecraft заново.")
-                : tr("Выключено: параметры ниже можно редактировать, но игра их не получит. Для применения включите переключатель выше и сохраните настройки."));
+                ? tr("Включено. Сохраните настройки и перезапустите Minecraft.")
+                : tr("Выключено. Изменение параметра включит применение ко всем сборкам."));
         };
         connect(m_sharedEnabled, &QCheckBox::toggled, this, updateStatus);
         updateStatus(false);
-        auto hint = new QLabel(tr("Общие параметры применяются перед каждым запуском. Настройки, изменённые в игре, будут заменены. Исходный options.txt сохраняется в options.txt.before-elysium. Параметры, которых нет в вашей версии Minecraft, могут игнорироваться игрой. Модовые конфиги не меняются."));
+        auto hint = new QLabel(tr("Параметры применяются при следующем запуске игры. Модовые конфиги не меняются. Резервная копия: options.txt.before-elysium."));
         hint->setWordWrap(true);
         outer->addWidget(hint);
         auto tabs = new QTabWidget(m_sharedOptions);
@@ -90,17 +91,17 @@ MinecraftSettingsWidget::MinecraftSettingsWidget(MinecraftInstance* instance, QW
                 auto scroll = new QScrollArea(tabs);
                 scroll->setWidgetResizable(true);
                 scroll->setWidget(content);
-                tabs->addTab(scroll, option.group);
+                tabs->addTab(scroll, CustomLanguage::text(option.group));
                 groups.insert(option.group, form);
             }
             if (!option.choices.isEmpty()) {
                 auto combo = new QComboBox;
-                combo->addItems(option.choices);
+                for (const auto& choice : option.choices) combo->addItem(CustomLanguage::text(choice));
                 combo->setCurrentIndex(option.initial);
                 m_sharedChoices.insert(option.key, combo);
-                form->addRow(option.title, combo);
+                form->addRow(CustomLanguage::text(option.title), combo);
             } else if (option.maximum == 1) {
-                auto check = new QCheckBox(option.title);
+                auto check = new QCheckBox(CustomLanguage::text(option.title));
                 check->setChecked(option.initial);
                 m_sharedFlags.insert(option.key, check);
                 form->addRow(check);
@@ -109,14 +110,14 @@ MinecraftSettingsWidget::MinecraftSettingsWidget(MinecraftInstance* instance, QW
                 spin->setRange(option.minimum, option.maximum);
                 spin->setValue(option.initial);
                 m_sharedNumbers.insert(option.key, spin);
-                form->addRow(option.title, spin);
+                form->addRow(CustomLanguage::text(option.title), spin);
             }
         }
         auto reset = new QPushButton(tr("Сбросить общие параметры"), m_sharedOptions);
         outer->addWidget(reset);
         connect(reset, &QPushButton::clicked, this, [this] {
             if (QMessageBox::question(this, tr("Сбросить параметры?"),
-                    tr("Вернуть базовые значения общих настроек? Изменения применятся после сохранения настроек.")) != QMessageBox::Yes)
+                    tr("Вернуть базовые значения? Сохраните настройки для применения.")) != QMessageBox::Yes)
                 return;
             for (const auto& option : SharedGameOptions::schema()) {
                 if (auto spin = m_sharedNumbers.value(option.key)) spin->setValue(option.initial);
@@ -219,6 +220,7 @@ MinecraftSettingsWidget::MinecraftSettingsWidget(MinecraftInstance* instance, QW
     connect(m_ui->useNativeOpenALCheck, &QAbstractButton::toggled, m_ui->lineEditOpenALPath, &QWidget::setEnabled);
     connect(m_ui->useNativeGLFWCheck, &QAbstractButton::toggled, m_ui->lineEditGLFWPath, &QWidget::setEnabled);
 
+    if (m_sharedOptions) new LiveTranslation(m_sharedOptions);
     loadSettings();
     // Connect only after loading: opening Settings must not enable syncing.
     // An actual edit opts into applying the edited shared values automatically.

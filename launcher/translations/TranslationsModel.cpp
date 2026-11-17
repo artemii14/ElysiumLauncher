@@ -268,7 +268,8 @@ void TranslationsModel::reloadLocalFiles()
 {
     QMap<QString, Language> languages = { { g_defaultLangCode, Language(g_defaultLangCode) } };
 
-    languages.insert("ru", Language("ru")); // embedded offline catalog
+    for (const auto& code : {"ru", "de", "fr", "es", "pt_BR", "uk", "zh"})
+        languages.insert(code, Language(code)); // embedded offline catalogs
 
     const auto indexPath = d->m_dir.absoluteFilePath("index_v2.json");
     if (!QFileInfo::exists(indexPath)) {
@@ -453,7 +454,8 @@ void TranslationsModel::setUseSystemLocale(const bool useSystemLocale) const
 bool TranslationsModel::selectLanguage(QString key) const
 {
     QString& langCode = key;
-    if (key.startsWith("ru", Qt::CaseInsensitive)) key = "ru";
+    if (key == "zh_CN" || key == "zh_Hans") key = "zh";
+    if (key != "pt_BR" && !findLanguageAsOptional(key).has_value()) key = key.section('_', 0, 0);
     auto langPtr = findLanguageAsOptional(key);
 
     if (langCode.isEmpty()) {
@@ -467,14 +469,16 @@ bool TranslationsModel::selectLanguage(QString key) const
         langCode = langPtr->key;
     }
 
-    static auto bundledRussian = new BundledRussianTranslator(QCoreApplication::instance());
-    QCoreApplication::removeTranslator(bundledRussian);
-    if (langCode.startsWith("ru")) QCoreApplication::installTranslator(bundledRussian);
+    static std::unique_ptr<BundledTranslator> bundled;
+    if (bundled) QCoreApplication::removeTranslator(bundled.get());
+    bundled = std::make_unique<BundledTranslator>(nullptr, langCode);
+    if (!bundled->isEmpty()) QCoreApplication::installTranslator(bundled.get());
 
     // Install before the upstream translator so complete upstream catalogs win.
     static auto supplement = new ElysiumTranslator(QCoreApplication::instance());
     QCoreApplication::removeTranslator(supplement);
     supplement->language = langCode;
+    CustomLanguage::language = langCode;
     QCoreApplication::installTranslator(supplement);
 
     // uninstall existing translators if there are any
@@ -502,7 +506,7 @@ bool TranslationsModel::selectLanguage(QString key) const
     }
 
     // otherwise install new translations
-    bool successful = langCode.startsWith("ru") && !bundledRussian->isEmpty();
+    bool successful = !bundled->isEmpty();
     // FIXME: this is likely never present. FIX IT.
     d->m_qtTranslator = std::make_unique<QTranslator>();
     if (d->m_qtTranslator->load("qt_" + langCode, QLibraryInfo::path(QLibraryInfo::TranslationsPath))) {

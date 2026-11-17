@@ -1,3 +1,4 @@
+#include "translations/LiveTranslation.h"
 #include "ui/widgets/HomeCustomization.h"
 // SPDX-License-Identifier: GPL-3.0-only
 // Independent native UI, inspired by the workflows of XMCL and Legacy Launcher.
@@ -222,6 +223,7 @@ void MainWindow::setupLaunchModes()
     description->setWordWrap(true);
     layout->addWidget(description);
     m_compactInstances = new QComboBox(m_compactHome);
+    m_compactInstances->setProperty("elysiumUserContent", true);
     m_compactInstances->setAccessibleName(tr("Готовая сборка Minecraft"));
     m_compactInstances->setPlaceholderText(tr("Выбери сборку…"));
     m_compactInstances->setMinimumHeight(44);
@@ -315,6 +317,8 @@ void MainWindow::setupLaunchModes()
     new HomeButtonOrder(m_compactHome, QStringLiteral("legacy-v2"));
     applyLaunchMode(APPLICATION->settings()->get("ElysiumInterfaceMode").toString() == "classic");
     updateCompactControls();
+    new LiveTranslation(m_modernHome);
+    new LiveTranslation(m_compactHome);
 }
 
 void MainWindow::applyLaunchMode(bool compact)

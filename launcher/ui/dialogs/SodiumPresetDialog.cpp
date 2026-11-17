@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+#include "translations/LiveTranslation.h"
 #include "SodiumPresetDialog.h"
 #include "Application.h"
 #include "meta/Index.h"
@@ -41,10 +42,10 @@ SodiumPresetDialog::SodiumPresetDialog(QWidget* parent) : QDialog(parent), m_net
     auto info = new QLabel(tr("Sodium + Iris + Zoomify (или Ok Zoomer). Fabric API обязателен для Fabric. LambDynamicLights и Mod Menu добавляются автоматически при совместимости. Уже установленные сборки не изменяются."), this);
     info->setWordWrap(true);
     layout->addWidget(info);
-    m_shaders = new QCheckBox(tr("Установить Complementary Unbound и Reimagined для Iris"), this);
+    m_shaders = new QCheckBox(tr("Добавить Complementary Unbound и Reimagined"), this);
     m_shaders->setObjectName(QStringLiteral("sodiumComplementaryShaders"));
     m_shaders->setChecked(true);
-    m_shaders->setToolTip(tr("ZIP-файлы будут помещены в shaderpacks. Выберите один пакет в настройках Iris внутри игры."));
+    m_shaders->setToolTip(tr("Выберите шейдерный пакет в Iris внутри игры."));
     layout->addWidget(m_shaders);
     m_status = new QLabel(tr("Загрузка актуального каталога Modrinth…"), this);
     m_status->setWordWrap(true);
@@ -52,7 +53,7 @@ SodiumPresetDialog::SodiumPresetDialog(QWidget* parent) : QDialog(parent), m_net
     layout->addWidget(m_status);
     m_table = new QTableWidget(0, 4, this);
     m_table->setObjectName(QStringLiteral("sodiumPresetTable"));
-    m_table->setHorizontalHeaderLabels({tr("Minecraft"), tr("Загрузчик"), tr("Мод на зум"), tr("Доступность")});
+    m_table->setHorizontalHeaderLabels({tr("Minecraft"), tr("Загрузчик"), tr("Мод на зум"), tr("Совместимость")});
     m_table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     m_table->setSelectionMode(QAbstractItemView::SingleSelection);
     m_table->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -73,6 +74,7 @@ SodiumPresetDialog::SodiumPresetDialog(QWidget* parent) : QDialog(parent), m_net
     connect(m_table->model(), &QAbstractItemModel::rowsRemoved, this, refreshInstall);
     connect(m_table->model(), &QAbstractItemModel::modelReset, this, refreshInstall);
     layout->addWidget(buttons);
+    new LiveTranslation(this);
     QTimer::singleShot(0, this, [this] { reload(); });
 }
 

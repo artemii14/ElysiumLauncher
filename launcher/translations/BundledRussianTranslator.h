@@ -6,12 +6,12 @@
 #include <QXmlStreamReader>
 
 // Offline fallback. Downloaded catalogs take precedence; no network or writable
-// translation directory is needed for the bundled Russian UI.
-class BundledRussianTranslator final : public QTranslator {
+// translation directory is needed for the bundled language catalogs.
+class BundledTranslator final : public QTranslator {
 public:
-    explicit BundledRussianTranslator(QObject* parent = nullptr) : QTranslator(parent)
+    explicit BundledTranslator(QObject* parent = nullptr, const QString& language = QStringLiteral("ru")) : QTranslator(parent), m_language(language)
     {
-        QFile file(":/translations/ru.ts");
+        QFile file(":/translations/" + language + ".ts");
         if (!file.open(QIODevice::ReadOnly)) return;
         QXmlStreamReader xml(&file);
         QString context;
@@ -59,11 +59,17 @@ public:
         const auto& forms = found.value();
         int form = 0;
         if (n >= 0 && forms.size() > 1) {
-            form = n % 10 == 1 && n % 100 != 11 ? 0
-                 : n % 10 >= 2 && n % 10 <= 4 && !(n % 100 >= 12 && n % 100 <= 14) ? 1 : 2;
+            if (m_language == "ru" || m_language == "uk")
+                form = n % 10 == 1 && n % 100 != 11 ? 0
+                     : n % 10 >= 2 && n % 10 <= 4 && !(n % 100 >= 12 && n % 100 <= 14) ? 1 : 2;
+            else if (m_language == "fr" || m_language == "pt_BR") form = n > 1 ? 1 : 0;
+            else form = n == 1 ? 0 : 1;
         }
         return forms.at(qMin(form, int(forms.size()) - 1));
     }
 private:
+    QString m_language;
     QHash<QString, QStringList> m_messages;
 };
+
+using BundledRussianTranslator = BundledTranslator;

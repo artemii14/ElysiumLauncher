@@ -3,6 +3,7 @@
 #include <QHash>
 #include <QStringList>
 #include <QTranslator>
+#include "CustomLanguage.h"
 
 // A small offline supplement to the downloaded upstream catalogs. Returning a
 // null QString preserves Qt's normal fallback for strings outside this catalog.
@@ -15,6 +16,8 @@ public:
     {
         const auto text = QString::fromUtf8(source);
         const auto lang = language.left(2);
+        const auto custom = CustomLanguage::translate(text);
+        if (!custom.isNull()) return custom;
         static const QHash<QString, QString> english = {
             {QStringLiteral("Изменить иконку сборки"), QStringLiteral("Change instance icon")},
             {QStringLiteral("БИБЛИОТЕКА"), QStringLiteral("LIBRARY")},

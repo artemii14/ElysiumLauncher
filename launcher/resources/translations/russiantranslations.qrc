@@ -1,5 +1,12 @@
 <RCC>
  <qresource prefix="/translations">
   <file>ru.ts</file>
+  <file>elysium.tsv</file>
+  <file>de.ts</file>
+  <file>fr.ts</file>
+  <file>es.ts</file>
+  <file>pt_BR.ts</file>
+  <file>uk.ts</file>
+  <file>zh.ts</file>
  </qresource>
 </RCC>

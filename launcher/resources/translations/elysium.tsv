@@ -1,0 +1,220 @@
+ru	en	de	fr	es	pt_BR	uk	zh
+БИБЛИОТЕКА	LIBRARY	BIBLIOTHEK	BIBLIOTHÈQUE	BIBLIOTECA	BIBLIOTECA	БІБЛІОТЕКА	游戏库
+ВЫБРАННАЯ СБОРКА	SELECTED INSTANCE	AUSGEWÄHLTE INSTANZ	INSTANCE SÉLECTIONNÉE	INSTANCIA SELECCIONADA	INSTÂNCIA SELECIONADA	ВИБРАНА ЗБІРКА	所选实例
+ЛАУНЧЕР	LAUNCHER	LAUNCHER	LANCEUR	LANZADOR	LAUNCHER	ЛАУНЧЕР	启动器
+Лаунчер	Launcher	Launcher	Lanceur	Lanzador	Launcher	Лаунчер	启动器
+Играть	Play	Spielen	Jouer	Jugar	Jogar	Грати	开始游戏
+Настройки	Settings	Einstellungen	Paramètres	Ajustes	Configurações	Налаштування	设置
+Создать сборку…	Create instance…	Instanz erstellen…	Créer une instance…	Crear instancia…	Criar instância…	Створити збірку…	创建实例…
+Установить vanilla…	Install vanilla…	Vanilla installieren…	Installer vanilla…	Instalar vanilla…	Instalar vanilla…	Встановити vanilla…	安装原版…
+Установить Sodium…	Install Sodium…	Sodium installieren…	Installer Sodium…	Instalar Sodium…	Instalar Sodium…	Встановити Sodium…	安装 Sodium…
+Настроить сборку…	Edit instance…	Instanz bearbeiten…	Modifier l’instance…	Editar instancia…	Editar instância…	Налаштувати збірку…	编辑实例…
+Настроить сборку	Edit instance	Instanz bearbeiten	Modifier l’instance	Editar instancia	Editar instância	Налаштувати збірку	编辑实例
+Импорт OptiFine…	Import OptiFine…	OptiFine importieren…	Importer OptiFine…	Importar OptiFine…	Importar OptiFine…	Імпорт OptiFine…	导入 OptiFine…
+Учётные записи	Accounts	Konten	Comptes	Cuentas	Contas	Облікові записи	账户
+Папки	Folders	Ordner	Dossiers	Carpetas	Pastas	Теки	文件夹
+Справка	Help	Hilfe	Aide	Ayuda	Ajuda	Довідка	帮助
+Эмулятор локальной сети	Virtual LAN	Virtuelles LAN	Réseau local virtuel	LAN virtual	LAN virtual	Віртуальна мережа	虚拟局域网
+Эмулятор локальной сети…	Virtual LAN…	Virtuelles LAN…	Réseau local virtuel…	LAN virtual…	LAN virtual…	Віртуальна мережа…	虚拟局域网…
+Изменить иконку сборки	Change instance icon	Instanzsymbol ändern	Changer l’icône	Cambiar icono	Alterar ícone	Змінити іконку збірки	更改实例图标
+Запуск Minecraft	Launch Minecraft	Minecraft starten	Lancer Minecraft	Iniciar Minecraft	Iniciar Minecraft	Запуск Minecraft	启动 Minecraft
+Выберите сборку для запуска или установите новую версию Minecraft.	Choose an instance or install a new Minecraft version.	Instanz auswählen oder neue Minecraft-Version installieren.	Choisissez une instance ou installez une version de Minecraft.	Elige una instancia o instala una versión de Minecraft.	Escolha uma instância ou instale uma versão do Minecraft.	Виберіть збірку або встановіть нову версію Minecraft.	选择实例或安装新的 Minecraft 版本。
+Выберите сборку → Играть	Choose an instance → Play	Instanz wählen → Spielen	Choisir une instance → Jouer	Elige instancia → Jugar	Escolha a instância → Jogar	Виберіть збірку → Грати	选择实例 → 开始游戏
+Готовая сборка Minecraft	Minecraft instance	Minecraft-Instanz	Instance Minecraft	Instancia de Minecraft	Instância do Minecraft	Збірка Minecraft	Minecraft 实例
+Выбери сборку…	Choose an instance…	Instanz auswählen…	Choisir une instance…	Elige una instancia…	Escolha uma instância…	Виберіть збірку…	选择实例…
+Остановить	Stop	Stoppen	Arrêter	Detener	Parar	Зупинити	停止
++ Vanilla автоматически	+ Automatic vanilla	+ Vanilla automatisch	+ Vanilla automatique	+ Vanilla automático	+ Vanilla automático	+ Vanilla автоматично	+ 自动安装原版
+Sodium-сборка…	Sodium instance…	Sodium-Instanz…	Instance Sodium…	Instancia Sodium…	Instância Sodium…	Збірка Sodium…	Sodium 实例…
+Модпаки / Forge / Fabric…	Modpacks / Forge / Fabric…	Modpacks / Forge / Fabric…	Modpacks / Forge / Fabric…	Modpacks / Forge / Fabric…	Modpacks / Forge / Fabric…	Модпаки / Forge / Fabric…	整合包 / Forge / Fabric…
+Сбросить цвета	Reset colors	Farben zurücksetzen	Réinitialiser les couleurs	Restablecer colores	Redefinir cores	Скинути кольори	重置颜色
+Цвет акцента: %1	Accent color: %1	Akzentfarbe: %1	Couleur d’accent : %1	Color de acento: %1	Cor de destaque: %1	Колір акценту: %1	强调色：%1
+Общие настройки игры	Shared game settings	Gemeinsame Spieleinstellungen	Paramètres de jeu communs	Ajustes de juego compartidos	Configurações de jogo compartilhadas	Спільні налаштування гри	通用游戏设置
+Настройки игры	Game settings	Spieleinstellungen	Paramètres du jeu	Ajustes del juego	Configurações do jogo	Налаштування гри	游戏设置
+Применять ко всем сборкам перед запуском	Apply to all instances before launch	Vor dem Start auf alle Instanzen anwenden	Appliquer à toutes les instances avant le lancement	Aplicar a todas las instancias antes de iniciar	Aplicar a todas as instâncias antes de iniciar	Застосовувати до всіх збірок перед запуском	启动前应用到所有实例
+Сбросить общие параметры	Reset shared settings	Gemeinsame Einstellungen zurücksetzen	Réinitialiser les paramètres communs	Restablecer ajustes compartidos	Redefinir configurações compartilhadas	Скинути спільні параметри	重置通用设置
+Сбросить параметры?	Reset settings?	Einstellungen zurücksetzen?	Réinitialiser les paramètres ?	¿Restablecer ajustes?	Redefinir configurações?	Скинути параметри?	重置设置？
+Графика	Graphics	Grafik	Graphismes	Gráficos	Gráficos	Графіка	图形
+Звук	Sound	Ton	Son	Sonido	Som	Звук	声音
+Управление	Controls	Steuerung	Commandes	Controles	Controles	Керування	控制
+Чат и интерфейс	Chat and interface	Chat und Oberfläche	Chat et interface	Chat e interfaz	Chat e interface	Чат та інтерфейс	聊天与界面
+Доступность	Accessibility	Barrierefreiheit	Accessibilité	Accesibilidad	Acessibilidade	Доступність	辅助功能
+Клавиши	Key bindings	Tastenbelegung	Touches	Teclas	Teclas	Клавіші	按键绑定
+Внешний вид	Appearance	Aussehen	Apparence	Apariencia	Aparência	Зовнішній вигляд	外观
+Дальность прорисовки (чанки)	Render distance (chunks)	Sichtweite (Chunks)	Distance d’affichage (chunks)	Distancia de renderizado (chunks)	Distância de renderização (chunks)	Дальність промальовування (чанки)	渲染距离（区块）
+Дальность симуляции (чанки)	Simulation distance (chunks)	Simulationsdistanz (Chunks)	Distance de simulation (chunks)	Distancia de simulación (chunks)	Distância de simulação (chunks)	Дальність симуляції (чанки)	模拟距离（区块）
+Лимит FPS (260 — без ограничения)	FPS limit (260 — unlimited)	FPS-Limit (260 — unbegrenzt)	Limite d’IPS (260 — illimitée)	Límite de FPS (260 — ilimitados)	Limite de FPS (260 — ilimitado)	Ліміт FPS (260 — без обмежень)	帧率上限（260 为无限制）
+Поле зрения (градусы)	Field of view (degrees)	Sichtfeld (Grad)	Champ de vision (degrés)	Campo de visión (grados)	Campo de visão (graus)	Поле зору (градуси)	视野（度）
+Яркость (%)	Brightness (%)	Helligkeit (%)	Luminosité (%)	Brillo (%)	Brilho (%)	Яскравість (%)	亮度（%）
+Масштаб интерфейса (0 — авто)	GUI scale (0 — auto)	GUI-Größe (0 — automatisch)	Échelle d’interface (0 — auto)	Escala de interfaz (0 — auto)	Escala da interface (0 — auto)	Масштаб інтерфейсу (0 — авто)	界面缩放（0 为自动）
+Дальность сущностей (%)	Entity distance (%)	Objektdistanz (%)	Distance des entités (%)	Distancia de entidades (%)	Distância de entidades (%)	Дальність сутностей (%)	实体距离（%）
+Мягкое освещение	Smooth lighting	Weiche Beleuchtung	Éclairage lissé	Iluminación suave	Iluminação suave	М’яке освітлення	平滑光照
+Частицы	Particles	Partikel	Particules	Partículas	Partículas	Частинки	粒子
+Облака	Clouds	Wolken	Nuages	Nubes	Nuvens	Хмари	云
+Уровни MIP-текстур	Mipmap levels	Mipmap-Stufen	Niveaux de mipmap	Niveles de mipmap	Níveis de mipmap	Рівні MIP-текстур	Mipmap 级别
+Вертикальная синхронизация	VSync	VSync	Synchronisation verticale	Sincronización vertical	Sincronização vertical	Вертикальна синхронізація	垂直同步
+Полноэкранный режим	Fullscreen	Vollbild	Plein écran	Pantalla completa	Tela cheia	Повноекранний режим	全屏
+Тени сущностей	Entity shadows	Objektschatten	Ombres des entités	Sombras de entidades	Sombras de entidades	Тіні сутностей	实体阴影
+Покачивание камеры	View bobbing	Kamerawackeln	Balancement de caméra	Balanceo de cámara	Balanço da câmera	Похитування камери	视角摇晃
+Смешивание биомов	Biome blend	Biomübergang	Mélange des biomes	Mezcla de biomas	Mistura de biomas	Змішування біомів	生物群系过渡
+Общая громкость	Master volume	Gesamtlautstärke	Volume général	Volumen general	Volume geral	Загальна гучність	主音量
+Музыка	Music	Musik	Musique	Música	Música	Музика	音乐
+Пластинки	Jukebox	Schallplatten	Disques	Discos	Discos	Платівки	唱片
+Погода	Weather	Wetter	Météo	Clima	Clima	Погода	天气
+Блоки	Blocks	Blöcke	Blocs	Bloques	Blocos	Блоки	方块
+Враждебные существа	Hostile creatures	Feindliche Kreaturen	Créatures hostiles	Criaturas hostiles	Criaturas hostis	Ворожі істоти	敌对生物
+Мирные существа	Friendly creatures	Friedliche Kreaturen	Créatures amicales	Criaturas amistosas	Criaturas amigáveis	Мирні істоти	友善生物
+Игроки	Players	Spieler	Joueurs	Jugadores	Jogadores	Гравці	玩家
+Окружение	Ambient	Umgebung	Ambiance	Ambiente	Ambiente	Оточення	环境
+Голос	Voice	Stimme	Voix	Voz	Voz	Голос	语音
+Субтитры	Subtitles	Untertitel	Sous-titres	Subtítulos	Legendas	Субтитри	字幕
+Чувствительность мыши (%)	Mouse sensitivity (%)	Mausempfindlichkeit (%)	Sensibilité de la souris (%)	Sensibilidad del ratón (%)	Sensibilidade do mouse (%)	Чутливість миші (%)	鼠标灵敏度（%）
+Скорость прокрутки (%)	Scroll sensitivity (%)	Scroll-Empfindlichkeit (%)	Sensibilité du défilement (%)	Sensibilidad de desplazamiento (%)	Sensibilidade de rolagem (%)	Чутливість прокручування (%)	滚轮灵敏度（%）
+Инверсия мыши по Y	Invert mouse Y	Maus-Y umkehren	Inverser l’axe Y	Invertir eje Y	Inverter eixo Y	Інверсія миші по Y	反转鼠标 Y 轴
+Прямой ввод мыши	Raw mouse input	Rohe Mauseingabe	Entrée brute de la souris	Entrada directa del ratón	Entrada bruta do mouse	Пряме введення миші	原始鼠标输入
+Дискретная прокрутка	Discrete scrolling	Diskretes Scrollen	Défilement discret	Desplazamiento discreto	Rolagem discreta	Дискретне прокручування	离散滚动
+Сенсорное управление	Touchscreen mode	Touchscreen-Modus	Écran tactile	Pantalla táctil	Tela sensível ao toque	Сенсорне керування	触屏模式
+Автопрыжок	Auto-jump	Automatisches Springen	Saut automatique	Salto automático	Salto automático	Автострибок	自动跳跃
+Приседание переключателем	Toggle crouch	Schleichen umschalten	Accroupissement à bascule	Alternar agacharse	Alternar agachar	Перемикати присідання	切换潜行
+Бег переключателем	Toggle sprint	Sprinten umschalten	Sprint à bascule	Alternar carrera	Alternar corrida	Перемикати біг	切换疾跑
+Выкл.	Off	Aus	Désactivé	Desactivado	Desativado	Вимк.	关闭
+Быстро	Fast	Schnell	Rapide	Rápidos	Rápido	Швидко	流畅
+Красиво	Fancy	Schön	Détaillé	Detallados	Detalhado	Красиво	精美
+Потрясающе	Fabulous	Fantastisch	Fabuleux	Fabulosos	Fabuloso	Дивовижно	极佳
+Минимум	Minimal	Minimal	Minimal	Mínimo	Mínimo	Мінімум	最少
+Максимум	Maximum	Maximum	Maximum	Máximo	Máximo	Максимум	最多
+Все	All	Alle	Tout	Todos	Todos	Усі	全部
+Уменьшено	Decreased	Verringert	Réduites	Reducidas	Reduzidas	Зменшено	较少
+Чат	Chat	Chat	Chat	Chat	Chat	Чат	聊天
+Показывать	Show	Anzeigen	Afficher	Mostrar	Mostrar	Показувати	显示
+Только команды	Commands only	Nur Befehle	Commandes seules	Solo comandos	Apenas comandos	Лише команди	仅命令
+Скрыть	Hide	Ausblenden	Masquer	Ocultar	Ocultar	Приховати	隐藏
+Цвета чата	Chat colors	Chatfarben	Couleurs du chat	Colores del chat	Cores do chat	Кольори чату	聊天颜色
+Ссылки в чате	Chat links	Chatlinks	Liens du chat	Enlaces del chat	Links do chat	Посилання в чаті	聊天链接
+Подтверждать открытие ссылок	Confirm opening links	Links bestätigen	Confirmer les liens	Confirmar enlaces	Confirmar links	Підтверджувати відкриття посилань	打开链接前确认
+Подсказки команд	Command suggestions	Befehlsvorschläge	Suggestions de commandes	Sugerencias de comandos	Sugestões de comandos	Підказки команд	命令建议
+Непрозрачность чата (%)	Chat opacity (%)	Chat-Deckkraft (%)	Opacité du chat (%)	Opacidad del chat (%)	Opacidade do chat (%)	Непрозорість чату (%)	聊天不透明度（%）
+Непрозрачность фона текста (%)	Text background opacity (%)	Text-Hintergrunddeckkraft (%)	Opacité du fond du texte (%)	Opacidad del fondo de texto (%)	Opacidade do fundo do texto (%)	Непрозорість тла тексту (%)	文字背景不透明度（%）
+Масштаб чата (%)	Chat scale (%)	Chatgröße (%)	Échelle du chat (%)	Escala del chat (%)	Escala do chat (%)	Масштаб чату (%)	聊天缩放（%）
+Ширина чата (%)	Chat width (%)	Chatbreite (%)	Largeur du chat (%)	Ancho del chat (%)	Largura do chat (%)	Ширина чату (%)	聊天宽度（%）
+Высота открытого чата (%)	Focused chat height (%)	Geöffnete Chathöhe (%)	Hauteur du chat ouvert (%)	Altura del chat abierto (%)	Altura do chat aberto (%)	Висота відкритого чату (%)	聊天展开高度（%）
+Высота закрытого чата (%)	Unfocused chat height (%)	Geschlossene Chathöhe (%)	Hauteur du chat fermé (%)	Altura del chat cerrado (%)	Altura do chat fechado (%)	Висота закритого чату (%)	聊天收起高度（%）
+Интервал строк чата (%)	Chat line spacing (%)	Chat-Zeilenabstand (%)	Interligne du chat (%)	Espaciado del chat (%)	Espaçamento do chat (%)	Інтервал рядків чату (%)	聊天行距（%）
+Задержка сообщений (сек.)	Chat delay (seconds)	Chatverzögerung (Sekunden)	Délai du chat (secondes)	Retraso del chat (segundos)	Atraso do chat (segundos)	Затримка повідомлень (сек.)	聊天延迟（秒）
+Расширенные подсказки предметов	Advanced item tooltips	Erweiterte Gegenstandsinfos	Infobulles avancées	Descripciones avanzadas	Descrições avançadas	Розширені підказки предметів	高级物品提示
+Название предмета над панелью	Held item tooltips	Gehaltenen Gegenstand anzeigen	Nom de l’objet tenu	Nombre del objeto equipado	Nome do item equipado	Назва предмета над панеллю	显示手持物品名称
+Сокращённый экран отладки	Reduced debug info	Reduzierte Debug-Infos	Débogage réduit	Depuración reducida	Depuração reduzida	Скорочена інформація налагодження	简化调试信息
+Индикатор атаки	Attack indicator	Angriffsanzeige	Indicateur d’attaque	Indicador de ataque	Indicador de ataque	Індикатор атаки	攻击指示器
+У прицела	Crosshair	Fadenkreuz	Réticule	Mira	Mira	Біля прицілу	准星
+У панели	Hotbar	Schnellleiste	Barre rapide	Barra rápida	Barra rápida	Біля панелі	快捷栏
+Эффекты экрана (%)	Screen effects (%)	Bildschirmeffekte (%)	Effets d’écran (%)	Efectos de pantalla (%)	Efeitos de tela (%)	Ефекти екрана (%)	屏幕效果（%）
+Изменение FOV при движении (%)	FOV effects (%)	Sichtfeldeffekte (%)	Effets de champ de vision (%)	Efectos de campo de visión (%)	Efeitos de campo de visão (%)	Зміна FOV під час руху (%)	视野变化效果（%）
+Эффект темноты (%)	Darkness effect (%)	Dunkelheitseffekt (%)	Effet d’obscurité (%)	Efecto de oscuridad (%)	Efeito de escuridão (%)	Ефект темряви (%)	黑暗效果（%）
+Наклон камеры при уроне (%)	Damage tilt (%)	Schadensneigung (%)	Inclinaison lors des dégâts (%)	Inclinación por daño (%)	Inclinação por dano (%)	Нахил камери при шкоді (%)	受伤倾斜（%）
+Интенсивность блеска (%)	Glint strength (%)	Glanzstärke (%)	Intensité du reflet (%)	Intensidad del brillo (%)	Intensidade do brilho (%)	Інтенсивність блиску (%)	附魔光效强度（%）
+Скорость блеска (%)	Glint speed (%)	Glanzgeschwindigkeit (%)	Vitesse du reflet (%)	Velocidad del brillo (%)	Velocidade do brilho (%)	Швидкість блиску (%)	附魔光效速度（%）
+Скрывать вспышки молний	Hide lightning flashes	Blitze ausblenden	Masquer les éclairs	Ocultar relámpagos	Ocultar relâmpagos	Приховувати спалахи блискавок	隐藏闪电闪光
+Тёмный экран загрузки	Dark loading screen	Dunkler Ladebildschirm	Écran de chargement sombre	Pantalla de carga oscura	Tela de carregamento escura	Темний екран завантаження	深色加载界面
+Скрывать сплэши	Hide splash texts	Splash-Texte ausblenden	Masquer les textes d’accueil	Ocultar textos de inicio	Ocultar textos de abertura	Приховувати сплеші	隐藏闪烁标语
+Пауза при потере фокуса	Pause on lost focus	Bei Fokusverlust pausieren	Pause en arrière-plan	Pausa al perder el foco	Pausar ao perder o foco	Пауза при втраті фокуса	失去焦点时暂停
+Шрифт Unicode	Unicode font	Unicode-Schrift	Police Unicode	Fuente Unicode	Fonte Unicode	Шрифт Unicode	Unicode 字体
+Диктор	Narrator	Sprecher	Narrateur	Narrador	Narrador	Диктор	旁白
+Всё	All	Alles	Tout	Todo	Tudo	Усе	全部
+Система	System	System	Système	Sistema	Sistema	Система	系统
+Язык игры	Game language	Spielsprache	Langue du jeu	Idioma del juego	Idioma do jogo	Мова гри	游戏语言
+Не назначено	Unbound	Nicht belegt	Non attribué	Sin asignar	Não atribuído	Не призначено	未绑定
+Мышь: %1	Mouse: %1	Maus: %1	Souris : %1	Ratón: %1	Mouse: %1	Миша: %1	鼠标：%1
+Вперёд	Forward	Vorwärts	Avancer	Avanzar	Avançar	Вперед	前进
+Назад	Back	Rückwärts	Reculer	Retroceder	Recuar	Назад	后退
+Влево	Left	Links	Gauche	Izquierda	Esquerda	Ліворуч	向左
+Вправо	Right	Rechts	Droite	Derecha	Direita	Праворуч	向右
+Прыжок	Jump	Springen	Sauter	Saltar	Pular	Стрибок	跳跃
+Приседание	Crouch	Schleichen	S’accroupir	Agacharse	Agachar	Присідання	潜行
+Бег	Sprint	Sprinten	Courir	Correr	Correr	Біг	疾跑
+Атаковать / разрушить	Attack / destroy	Angreifen / abbauen	Attaquer / détruire	Atacar / destruir	Atacar / destruir	Атакувати / зруйнувати	攻击 / 破坏
+Использовать / поставить	Use / place	Benutzen / platzieren	Utiliser / placer	Usar / colocar	Usar / colocar	Використати / поставити	使用 / 放置
+Выбрать блок	Pick block	Block auswählen	Choisir un bloc	Elegir bloque	Escolher bloco	Вибрати блок	选取方块
+Инвентарь	Inventory	Inventar	Inventaire	Inventario	Inventário	Інвентар	物品栏
+Выбросить предмет	Drop item	Gegenstand fallen lassen	Jeter l’objet	Soltar objeto	Largar item	Викинути предмет	丢弃物品
+Сменить руку	Swap hands	Hände wechseln	Changer de main	Cambiar de mano	Trocar de mão	Змінити руку	交换双手物品
+Открыть чат	Open chat	Chat öffnen	Ouvrir le chat	Abrir chat	Abrir chat	Відкрити чат	打开聊天
+Ввести команду	Enter command	Befehl eingeben	Saisir une commande	Introducir comando	Inserir comando	Ввести команду	输入命令
+Список игроков	Player list	Spielerliste	Liste des joueurs	Lista de jugadores	Lista de jogadores	Список гравців	玩家列表
+Сменить камеру	Toggle perspective	Perspektive wechseln	Changer de vue	Cambiar perspectiva	Mudar perspectiva	Змінити камеру	切换视角
+Снимок экрана	Screenshot	Bildschirmfoto	Capture d’écran	Captura de pantalla	Captura de tela	Знімок екрана	截图
+Достижения	Advancements	Fortschritte	Progrès	Progresos	Progresso	Досягнення	进度
+Слот %1	Slot %1	Platz %1	Emplacement %1	Ranura %1	Espaço %1	Слот %1	快捷栏 %1
+Основная рука	Main hand	Haupthand	Main principale	Mano principal	Mão principal	Основна рука	惯用手
+Левая	Left	Links	Gauche	Izquierda	Esquerda	Ліва	左
+Правая	Right	Rechts	Droite	Derecha	Direita	Права	右
+Плащ	Cape	Umhang	Cape	Capa	Capa	Плащ	披风
+Куртка	Jacket	Jacke	Veste	Chaqueta	Jaqueta	Куртка	上衣
+Левый рукав	Left sleeve	Linker Ärmel	Manche gauche	Manga izquierda	Manga esquerda	Лівий рукав	左袖
+Правый рукав	Right sleeve	Rechter Ärmel	Manche droite	Manga derecha	Manga direita	Правий рукав	右袖
+Левая штанина	Left pants leg	Linkes Hosenbein	Jambe gauche	Pierna izquierda	Perna esquerda	Ліва штанина	左裤腿
+Правая штанина	Right pants leg	Rechtes Hosenbein	Jambe droite	Pierna derecha	Perna direita	Права штанина	右裤腿
+Головной убор	Hat	Hut	Chapeau	Sombrero	Chapéu	Головний убір	帽子
+Главный экран	Home screen	Startseite	Écran d’accueil	Pantalla de inicio	Tela inicial	Головний екран	主界面
+Анимированный фон	Animated background	Animierter Hintergrund	Fond animé	Fondo animado	Fundo animado	Анімоване тло	动态背景
+Разрешить перемещение	Allow moving buttons	Verschieben erlauben	Autoriser le déplacement	Permitir mover botones	Permitir mover botões	Дозволити переміщення кнопок	允许移动按钮
+Сбросить порядок кнопок и блоков	Reset button and panel order	Reihenfolge zurücksetzen	Réinitialiser l’ordre	Restablecer orden	Redefinir ordem	Скинути порядок кнопок і блоків	重置按钮与面板顺序
+Готовый анимированный фон	Background preset	Hintergrundvorlage	Fond prédéfini	Fondo predefinido	Fundo predefinido	Шаблон тла	背景预设
+Северное сияние	Aurora	Polarlicht	Aurore boréale	Aurora	Aurora	Північне сяйво	极光
+Звёздное небо	Starfield	Sternenhimmel	Ciel étoilé	Cielo estrellado	Céu estrelado	Зоряне небо	星空
+Волны	Waves	Wellen	Vagues	Olas	Ondas	Хвилі	波浪
+Неоновый дождь	Neon rain	Neonregen	Pluie néon	Lluvia neón	Chuva neon	Неоновий дощ	霓虹雨
+Орбиты	Orbits	Umlaufbahnen	Orbites	Órbitas	Órbitas	Орбіти	轨道
+Неоновая сетка	Neon grid	Neonraster	Grille néon	Cuadrícula neón	Grade neon	Неонова сітка	霓虹网格
+Цвет акцента	Accent color	Akzentfarbe	Couleur d’accent	Color de acento	Cor de destaque	Колір акценту	强调色
+Minecraft	Minecraft	Minecraft	Minecraft	Minecraft	Minecraft	Minecraft	Minecraft
+Fabric API	Fabric API	Fabric API	Fabric API	Fabric API	Fabric API	Fabric API	Fabric API
+Установить	Install	Installieren	Installer	Instalar	Instalar	Встановити	安装
+Обновить	Refresh	Aktualisieren	Actualiser	Actualizar	Atualizar	Оновити	刷新
+Отмена	Cancel	Abbrechen	Annuler	Cancelar	Cancelar	Скасувати	取消
+Готово к запуску	Ready to play	Startbereit	Prêt à jouer	Listo para jugar	Pronto para jogar	Готово до запуску	准备就绪
+Игра запущена	Game running	Spiel läuft	Jeu en cours	Juego en ejecución	Jogo em execução	Гру запущено	游戏运行中
+версия не указана	version unknown	Version unbekannt	version inconnue	versión desconocida	versão desconhecida	версію не вказано	版本未知
+Нет выбранной сборки. Установите Minecraft или добавьте сборку.	No instance selected. Install Minecraft or add an instance.	Keine Instanz ausgewählt. Minecraft installieren oder Instanz hinzufügen.	Aucune instance sélectionnée. Installez Minecraft ou ajoutez une instance.	No hay instancia seleccionada. Instala Minecraft o añade una instancia.	Nenhuma instância selecionada. Instale Minecraft ou adicione uma instância.	Збірку не вибрано. Встановіть Minecraft або додайте збірку.	未选择实例。请安装 Minecraft 或添加实例。
+Иконка сборки %1	Icon for %1	Symbol für %1	Icône de %1	Icono de %1	Ícone de %1	Іконка збірки %1	%1 的图标
+Загрузчик	Loader	Modloader	Chargeur	Cargador	Carregador	Завантажувач	加载器
+Мод на зум	Zoom mod	Zoom-Mod	Mod de zoom	Mod de zoom	Mod de zoom	Мод масштабування	缩放模组
+Совместимость	Availability	Verfügbarkeit	Disponibilité	Disponibilidad	Disponibilidade	Доступність	可用性
+Обновить каталог	Refresh catalog	Katalog aktualisieren	Actualiser le catalogue	Actualizar catálogo	Atualizar catálogo	Оновити каталог	刷新目录
+Подготовить установку…	Prepare installation…	Installation vorbereiten…	Préparer l’installation…	Preparar instalación…	Preparar instalação…	Підготувати встановлення…	准备安装…
+Загрузка актуального каталога Modrinth…	Loading the Modrinth catalog…	Modrinth-Katalog wird geladen…	Chargement du catalogue Modrinth…	Cargando catálogo de Modrinth…	Carregando catálogo Modrinth…	Завантаження каталогу Modrinth…	正在加载 Modrinth 目录…
+Операция отменена.	Operation canceled.	Vorgang abgebrochen.	Opération annulée.	Operación cancelada.	Operação cancelada.	Операцію скасовано.	操作已取消。
+Поиск сборок или групп…  Ctrl+K	Search instances or groups…  Ctrl+K	Instanzen oder Gruppen suchen…  Ctrl+K	Rechercher des instances ou groupes…  Ctrl+K	Buscar instancias o grupos…  Ctrl+K	Buscar instâncias ou grupos…  Ctrl+K	Пошук збірок або груп…  Ctrl+K	搜索实例或分组…  Ctrl+K
+Поиск сборок или групп	Search instances or groups	Instanzen oder Gruppen suchen	Rechercher des instances ou groupes	Buscar instancias o grupos	Buscar instâncias ou grupos	Пошук збірок або груп	搜索实例或分组
+Сортировка сборок	Sort instances	Instanzen sortieren	Trier les instances	Ordenar instancias	Ordenar instâncias	Сортувати збірки	排序实例
+Название	Name	Name	Nom	Nombre	Nome	Назва	名称
+Недавние	Recently played	Zuletzt gespielt	Jouées récemment	Jugadas recientemente	Jogadas recentemente	Нещодавні	最近游玩
+Часто запускаемые	Most played	Meistgespielt	Les plus jouées	Más jugadas	Mais jogadas	Найбільше часу гри	游玩最多
+Общая громкость (%)	Master volume (%)	Gesamtlautstärke (%)	Volume général (%)	Volumen general (%)	Volume geral (%)	Загальна гучність (%)	主音量 (%)
+Музыка (%)	Music (%)	Musik (%)	Musique (%)	Música (%)	Música (%)	Музика (%)	音乐 (%)
+Пластинки (%)	Jukebox (%)	Schallplatten (%)	Disques (%)	Discos (%)	Discos (%)	Платівки (%)	唱片 (%)
+Погода (%)	Weather (%)	Wetter (%)	Météo (%)	Clima (%)	Clima (%)	Погода (%)	天气 (%)
+Блоки (%)	Blocks (%)	Blöcke (%)	Blocs (%)	Bloques (%)	Blocos (%)	Блоки (%)	方块 (%)
+Враждебные существа (%)	Hostile creatures (%)	Feindliche Kreaturen (%)	Créatures hostiles (%)	Criaturas hostiles (%)	Criaturas hostis (%)	Ворожі істоти (%)	敌对生物 (%)
+Мирные существа (%)	Friendly creatures (%)	Friedliche Kreaturen (%)	Créatures amicales (%)	Criaturas amistosas (%)	Criaturas amigáveis (%)	Мирні істоти (%)	友善生物 (%)
+Игроки (%)	Players (%)	Spieler (%)	Joueurs (%)	Jugadores (%)	Jogadores (%)	Гравці (%)	玩家 (%)
+Окружение (%)	Ambient (%)	Umgebung (%)	Ambiance (%)	Ambiente (%)	Ambiente (%)	Оточення (%)	环境 (%)
+Голос (%)	Voice (%)	Stimme (%)	Voix (%)	Voz (%)	Voz (%)	Голос (%)	语音 (%)
+Подключиться	Connect	Verbinden	Connecter	Conectar	Conectar	Підключитися	连接
+Копировать IP	Copy IP	IP kopieren	Copier l’IP	Copiar IP	Copiar IP	Копіювати IP	复制 IP
+Отключиться от сети	Leave network	Netzwerk verlassen	Quitter le réseau	Salir de la red	Sair da rede	Від’єднатися від мережі	离开网络
+Установить ZeroTier…	Install ZeroTier…	ZeroTier installieren…	Installer ZeroTier…	Instalar ZeroTier…	Instalar ZeroTier…	Встановити ZeroTier…	安装 ZeroTier…
+Управление сетью…	Manage network…	Netzwerk verwalten…	Gérer le réseau…	Administrar red…	Gerenciar rede…	Керування мережею…	管理网络…
+Выбрать файл доступа…	Select access file…	Zugriffsdatei auswählen…	Choisir le fichier d’accès…	Elegir archivo de acceso…	Selecionar arquivo de acesso…	Вибрати файл доступу…	选择访问文件…
+Применить	Apply	Anwenden	Appliquer	Aplicar	Aplicar	Застосувати	应用
+Закрыть	Close	Schließen	Fermer	Cerrar	Fechar	Закрити	关闭
+Да	Yes	Ja	Oui	Sí	Sim	Так	是
+Нет	No	Nein	Non	No	Não	Ні	否
+Включено. Сохраните настройки и перезапустите Minecraft.	Enabled. Save settings and restart Minecraft.	Aktiviert. Einstellungen speichern und Minecraft neu starten.	Activé. Enregistrez les paramètres et redémarrez Minecraft.	Activado. Guarda los ajustes y reinicia Minecraft.	Ativado. Salve as configurações e reinicie o Minecraft.	Увімкнено. Збережіть налаштування та перезапустіть Minecraft.	已启用。请保存设置并重启 Minecraft。
+Выключено. Изменение параметра включит применение ко всем сборкам.	Disabled. Editing a setting enables applying it to all instances.	Deaktiviert. Eine Änderung aktiviert die Anwendung auf alle Instanzen.	Désactivé. Modifier un paramètre active son application à toutes les instances.	Desactivado. Cambiar un ajuste activa su aplicación a todas las instancias.	Desativado. Alterar um parâmetro ativa sua aplicação a todas as instâncias.	Вимкнено. Зміна параметра ввімкне застосування до всіх збірок.	已禁用。修改选项将启用向所有实例应用设置。
+Параметры применяются при следующем запуске игры. Модовые конфиги не меняются. Резервная копия: options.txt.before-elysium.	Settings apply at the next game launch. Mod configs are unchanged. Backup: options.txt.before-elysium.	Einstellungen gelten ab dem nächsten Spielstart. Mod-Konfigurationen bleiben unverändert. Sicherung: options.txt.before-elysium.	Les paramètres s’appliquent au prochain lancement. Les configurations des mods restent intactes. Sauvegarde : options.txt.before-elysium.	Los ajustes se aplican al próximo inicio. No se modifican los ajustes de mods. Copia: options.txt.before-elysium.	As configurações são aplicadas na próxima inicialização. Configurações de mods não mudam. Backup: options.txt.before-elysium.	Параметри застосовуються під час наступного запуску гри. Конфігурації модів не змінюються. Копія: options.txt.before-elysium.	设置将在下次启动游戏时应用。模组配置不会更改。备份：options.txt.before-elysium。
+Вернуть базовые значения? Сохраните настройки для применения.	Restore defaults? Save settings to apply.	Standardwerte wiederherstellen? Zum Anwenden speichern.	Rétablir les valeurs par défaut ? Enregistrez pour appliquer.	¿Restaurar valores predeterminados? Guarda para aplicar.	Restaurar padrões? Salve para aplicar.	Відновити початкові значення? Збережіть налаштування.	恢复默认值？保存设置后生效。
+Возвращает исходный акцент. Нажмите «Применить».	Restore the default accent. Click Apply.	Standardakzent wiederherstellen. Auf Anwenden klicken.	Rétablir l’accent par défaut. Cliquez sur Appliquer.	Restaurar acento predeterminado. Pulsa Aplicar.	Restaurar destaque padrão. Clique em Aplicar.	Відновлює початковий акцент. Натисніть «Застосувати».	恢复默认强调色。请点击应用。
+Перетаскивайте кнопки и заголовки блоков. Выключите для блокировки.	Drag buttons and panel headers. Disable to lock the layout.	Schaltflächen und Paneltitel ziehen. Zum Sperren deaktivieren.	Déplacez les boutons et titres des panneaux. Désactivez pour verrouiller.	Arrastra botones y títulos de paneles. Desactiva para bloquear.	Arraste botões e títulos de painéis. Desative para bloquear.	Перетягуйте кнопки й заголовки блоків. Вимкніть для блокування.	拖动按钮和面板标题。关闭以锁定布局。
+Добавить Complementary Unbound и Reimagined	Add Complementary Unbound and Reimagined	Complementary Unbound und Reimagined hinzufügen	Ajouter Complementary Unbound et Reimagined	Añadir Complementary Unbound y Reimagined	Adicionar Complementary Unbound e Reimagined	Додати Complementary Unbound і Reimagined	添加 Complementary Unbound 和 Reimagined
+Выберите шейдерный пакет в Iris внутри игры.	Select a shader pack in Iris in-game.	Shaderpaket im Spiel in Iris auswählen.	Choisissez un pack de shaders dans Iris en jeu.	Elige un paquete de shaders en Iris dentro del juego.	Escolha um pacote de shaders no Iris dentro do jogo.	Виберіть пакет шейдерів в Iris у грі.	请在游戏内的 Iris 设置中选择光影包。
+Установить Sodium-сборку	Install a Sodium instance	Sodium-Instanz installieren	Installer une instance Sodium	Instalar una instancia Sodium	Instalar uma instância Sodium	Встановити збірку Sodium	安装 Sodium 实例
+Эмулятор локальной сети · ZeroTier	Virtual LAN · ZeroTier	Virtuelles LAN · ZeroTier	Réseau local virtuel · ZeroTier	LAN virtual · ZeroTier	LAN virtual · ZeroTier	Віртуальна мережа · ZeroTier	虚拟局域网 · ZeroTier

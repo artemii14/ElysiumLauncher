@@ -126,7 +126,7 @@ inline const QVector<Option>& schema()
         QStringList labels;
         for (const auto& key : bindings) {
             if (key == "key.keyboard.unknown") labels << "Не назначено";
-            else if (key.startsWith("key.mouse.")) labels << "Мышь: " + key.mid(10);
+            else if (key.startsWith("key.mouse.")) labels << QString("Мышь: %1").arg(key.mid(10));
             else labels << key.mid(13).toUpper();
         }
         auto binding = [&](QString key, QString title, QString initial) {
@@ -152,7 +152,7 @@ inline const QVector<Option>& schema()
         binding("screenshot", "Снимок экрана", "key.keyboard.f2");
         binding("advancements", "Достижения", "key.keyboard.l");
         for (int slot = 1; slot <= 9; ++slot)
-            binding("hotbar." + QString::number(slot), "Слот " + QString::number(slot), "key.keyboard." + QString::number(slot));
+            binding("hotbar." + QString::number(slot), QString("Слот %1").arg(slot), "key.keyboard." + QString::number(slot));
         group = QStringLiteral("Внешний вид");
         c("mainHand", "Основная рука", {"Левая", "Правая"}, 1);
         for (const auto& part : QVector<QPair<QString, QString>>{{"cape", "Плащ"}, {"jacket", "Куртка"},
