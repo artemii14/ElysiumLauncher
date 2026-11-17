@@ -101,7 +101,7 @@ private slots:
         registerSettings(settings);
         QPalette palette;
         palette.setColor(QPalette::Window, QColor("#11131d"));
-        for (const auto& preset : QStringList{"aurora", "stars", "waves", "rain", "orbit", "grid"}) {
+        for (const auto& preset : QStringList{"aurora", "stars", "waves", "rain", "orbit", "grid", "fireflies", "ribbons"}) {
             settings.set("ElysiumBackgroundStyle", preset);
             QImage image(QSize(320, 240), QImage::Format_ARGB32_Premultiplied);
             { QPainter painter(&image); MidnightSurface::paintBackground(painter, image.rect(), palette, nullptr, &settings); }

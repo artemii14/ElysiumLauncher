@@ -43,7 +43,8 @@ MidnightSurface::MidnightSurface(QWidget* parent, SettingsObject* settings)
 }
 void MidnightSurface::syncTimer()
 {
-    const bool active = isVisible() && !window()->isMinimized() &&
+    const bool active = objectName() != QStringLiteral("elysiumRail") &&
+        !qApp->activeModalWidget() && isVisible() && !window()->isMinimized() &&
         qApp->applicationState() == Qt::ApplicationActive &&
         m_settings->get("ElysiumAnimatedBackground").toBool();
     if (active && !m_timer.isActive()) m_timer.start();
@@ -58,6 +59,8 @@ void MidnightSurface::hideEvent(QHideEvent* event) { m_timer.stop(); QWidget::hi
 bool MidnightSurface::eventFilter(QObject* object, QEvent* event)
 {
     if (object == this && event->type() == QEvent::Hide) m_timer.stop();
+    if (event->type() == QEvent::WindowActivate || event->type() == QEvent::WindowDeactivate)
+        QTimer::singleShot(0, this, [this] { syncTimer(); });
     if ((object == window() && event->type() == QEvent::WindowStateChange) ||
         (object == this && (event->type() == QEvent::Show || event->type() == QEvent::ParentChange)))
         QTimer::singleShot(0, this, [this] { syncTimer(); update(); });
@@ -66,7 +69,8 @@ bool MidnightSurface::eventFilter(QObject* object, QEvent* event)
 void MidnightSurface::paintEvent(QPaintEvent*)
 {
     QPainter painter(this);
-    paintBackground(painter, rect(), palette(), this, m_settings);
+    if (objectName() != QStringLiteral("elysiumRail"))
+        paintBackground(painter, rect(), palette(), this, m_settings);
     // Our custom scene paint must not erase the stylesheet's panel frame.
     if (objectName() == QStringLiteral("elysiumRail")) {
         QStyleOption option;
@@ -147,6 +151,28 @@ void MidnightSurface::paintBackground(QPainter& painter, const QRect& area, cons
         const double scan = (0.5 + 0.5 * std::sin(time * 0.4)) * height;
         line.setAlpha(125); painter.setPen(QPen(line, 2));
         painter.drawLine(QPointF(0, scan), QPointF(width, scan));
+    } else if (style == QStringLiteral("fireflies")) {
+        painter.setPen(Qt::NoPen);
+        for (int i = 0; i < 36; ++i) {
+            const double x = (0.5 + 0.44 * std::sin(i * 2.39996 + time * (0.045 + i % 4 * 0.008))) * width;
+            const double y = (0.5 + 0.44 * std::cos(i * 1.618 + time * 0.07)) * height;
+            auto glow = color; glow.setAlpha(25 + int(50 * (0.5 + 0.5 * std::sin(time + i))));
+            painter.setBrush(glow); painter.drawEllipse(QPointF(x, y), 6, 6);
+            glow.setAlpha(170); painter.setBrush(glow); painter.drawEllipse(QPointF(x, y), 1.8, 1.8);
+        }
+    } else if (style == QStringLiteral("ribbons")) {
+        painter.setBrush(Qt::NoBrush);
+        for (int i = 0; i < 5; ++i) {
+            const double y = height * (0.2 + 0.15 * i);
+            QPainterPath path;
+            path.moveTo(-20, y);
+            path.cubicTo(width * 0.3, y + std::sin(time * 0.25 + i) * height * 0.35,
+                         width * 0.7, y + std::cos(time * 0.22 + i) * height * 0.35, width + 20, y);
+            auto line = color; line.setAlpha(20 + i * 7);
+            painter.setPen(QPen(line, 12 + i * 3, Qt::SolidLine, Qt::RoundCap));
+            painter.drawPath(path);
+            line.setAlpha(90); painter.setPen(QPen(line, 1.2)); painter.drawPath(path);
+        }
     } else if (style == QStringLiteral("waves")) {
         painter.setPen(Qt::NoPen);
         for (int layer = 0; layer < 4; ++layer) {

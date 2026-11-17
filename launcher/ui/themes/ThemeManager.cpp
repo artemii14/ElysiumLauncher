@@ -268,6 +268,8 @@ void ThemeManager::setIconTheme(const QString& name)
 
 void ThemeManager::setApplicationTheme(const QString& name, bool initial)
 {
+    const auto key = name + ':' + ElysiumTheme::accent().name();
+    if (!initial && m_appliedThemeKey == key) return;
     auto systemPalette = qApp->palette();
     auto themeIter = m_themes.find(name);
     if (themeIter != m_themes.end()) {
@@ -275,6 +277,7 @@ void ThemeManager::setApplicationTheme(const QString& name, bool initial)
         themeDebugLog() << "applying theme" << theme->name();
         if (auto hyprland = dynamic_cast<HyprlandTheme*>(theme.get())) hyprland->setAccent(ElysiumTheme::accent());
         theme->apply(initial);
+        m_appliedThemeKey = key;
         setTitlebarColorOfAllWindowsOnMac(qApp->palette().window().color());
 
         m_logColors = theme->logColorScheme();
@@ -370,6 +373,7 @@ void ThemeManager::initializeCatPacks()
 
 void ThemeManager::refresh()
 {
+    m_appliedThemeKey.clear();
     m_themes.clear();
     m_icons.clear();
     m_catPacks.clear();

@@ -24,16 +24,26 @@ inline const QHash<QString, QStringList>& catalog()
 }
 inline QString canonical(const QString& text)
 {
-    if (catalog().contains(text)) return text;
-    for (auto it = catalog().cbegin(); it != catalog().cend(); ++it)
-        if (it.value().contains(text)) return it.key();
-    return {};
+    if (text.isEmpty()) return {};
+    static const auto reverse = [] {
+        QHash<QString, QString> index;
+        // Sort keys for deterministic handling of shared translated labels.
+        auto keys = catalog().keys();
+        keys.sort();
+        for (const auto& key : keys)
+            for (const auto& value : catalog().value(key))
+                if (!index.contains(value)) index.insert(value, key);
+        // Canonical source keys always take priority over ambiguous translations.
+        for (const auto& key : keys) index.insert(key, key);
+        return index;
+    }();
+    return reverse.value(text);
 }
 inline QString translate(const QString& source)
 {
     const auto found = catalog().constFind(canonical(source));
     if (found == catalog().cend()) return {};
-    const auto codes = QStringList{"ru", "en", "de", "fr", "es", "pt_BR", "uk", "zh"};
+    static const auto codes = QStringList{"ru", "en", "de", "fr", "es", "pt_BR", "uk", "zh"};
     int index = codes.indexOf(language);
     if (index < 0) index = codes.indexOf(language.section('_', 0, 0));
     return found.value().at(index < 0 ? 1 : index);

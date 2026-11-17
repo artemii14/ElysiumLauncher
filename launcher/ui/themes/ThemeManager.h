@@ -64,6 +64,7 @@ class ThemeManager {
    private:
     std::map<QString, std::unique_ptr<ITheme>> m_themes;
     std::map<QString, IconTheme> m_icons;
+    QString m_appliedThemeKey;
     QTemporaryDir m_accentIconFolder;
     QDir m_iconThemeFolder{"iconthemes"};
     QDir m_applicationThemeFolder{"themes"};

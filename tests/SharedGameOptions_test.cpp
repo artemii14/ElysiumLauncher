@@ -89,6 +89,13 @@ private slots:
         QVERIFY(file.open(QIODevice::ReadOnly));
         QCOMPARE(options(file.readAll()).value("version"), QString("9999"));
     }
+    void guiScaleIsSavedAndAppliedToMinecraft263()
+    {
+        const auto values = SharedGameOptions::serialize({{"guiScale", 4}}, "26.3");
+        QCOMPARE(values.value("guiScale"), QString("4"));
+        QCOMPARE(options(SharedGameOptions::merge("guiScale:0\nversion:5023\n", values)).value("guiScale"), QString("4"));
+        QCOMPARE(SharedGameOptions::serialize({{"guiScale", -1}}, "26.3").value("guiScale"), QString("0"));
+    }
     void smoothLightingUsesVersionSpecificType()
     {
         QCOMPARE(SharedGameOptions::serialize({}, "1.18.2").value("ao"), QString("2"));

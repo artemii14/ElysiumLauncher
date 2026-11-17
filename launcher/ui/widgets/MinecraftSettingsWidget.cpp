@@ -36,6 +36,7 @@
  */
 
 #include "translations/LiveTranslation.h"
+#include "translations/LocalizedChoiceModel.h"
 #include "MinecraftSettingsWidget.h"
 #include "modplatform/ModIndex.h"
 #include "ui_MinecraftSettingsWidget.h"
@@ -81,6 +82,8 @@ MinecraftSettingsWidget::MinecraftSettingsWidget(MinecraftInstance* instance, QW
         outer->addWidget(hint);
         auto tabs = new QTabWidget(m_sharedOptions);
         outer->addWidget(tabs);
+        auto essentials = new QFormLayout;
+        outer->insertLayout(2, essentials);
         QMap<QString, QFormLayout*> groups;
         for (const auto& option : SharedGameOptions::schema()) {
             auto form = groups.value(option.group, nullptr);
@@ -95,8 +98,7 @@ MinecraftSettingsWidget::MinecraftSettingsWidget(MinecraftInstance* instance, QW
                 groups.insert(option.group, form);
             }
             if (!option.choices.isEmpty()) {
-                auto combo = new QComboBox;
-                for (const auto& choice : option.choices) combo->addItem(CustomLanguage::text(choice));
+                auto combo = new LocalizedChoiceBox(option.choices);
                 combo->setCurrentIndex(option.initial);
                 m_sharedChoices.insert(option.key, combo);
                 form->addRow(CustomLanguage::text(option.title), combo);
@@ -109,8 +111,13 @@ MinecraftSettingsWidget::MinecraftSettingsWidget(MinecraftInstance* instance, QW
                 auto spin = new QSpinBox;
                 spin->setRange(option.minimum, option.maximum);
                 spin->setValue(option.initial);
+                if (option.key == "guiScale") {
+                    spin->setObjectName(QStringLiteral("minecraftGuiScale"));
+                    spin->setSpecialValueText(tr("Auto"));
+                    spin->setAccessibleName(CustomLanguage::text(option.title));
+                }
                 m_sharedNumbers.insert(option.key, spin);
-                form->addRow(CustomLanguage::text(option.title), spin);
+                (option.key == "guiScale" ? essentials : form)->addRow(CustomLanguage::text(option.title), spin);
             }
         }
         auto reset = new QPushButton(tr("Сбросить общие параметры"), m_sharedOptions);
@@ -128,8 +135,9 @@ MinecraftSettingsWidget::MinecraftSettingsWidget(MinecraftInstance* instance, QW
         auto page = new QWidget(this);
         auto layout = new QVBoxLayout(page);
         layout->addWidget(m_sharedOptions);
-        m_ui->settingsTabs->addTab(page, tr("Настройки игры"));
-        m_ui->settingsTabs->removeTab(1);
+        m_ui->settingsTabs->removeTab(1); // remove Java before inserting the game tab
+        m_ui->settingsTabs->insertTab(0, page, tr("Настройки игры"));
+        m_ui->settingsTabs->setCurrentIndex(0);
 
         m_ui->openGlobalSettingsButton->setVisible(false);
         m_ui->instanceAccountGroupBox->hide();

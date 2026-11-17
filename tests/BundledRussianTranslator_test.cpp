@@ -3,6 +3,7 @@
 #include "translations/BundledRussianTranslator.h"
 #include "translations/ElysiumTranslator.h"
 #include "translations/LiveTranslation.h"
+#include "translations/LocalizedChoiceModel.h"
 #include "minecraft/SharedGameOptionsSchema.h"
 #include <QVBoxLayout>
 #include <QPushButton>
@@ -56,6 +57,26 @@ private slots:
             QCOMPARE(user->text(), QString::fromUtf8("Играть"));
             QCOMPARE(changed.count(), 0);
         }
+    }
+    void lightweightChoiceModelPreservesSelectionWhenTranslating()
+    {
+        CustomLanguage::language = "ru";
+        LocalizedChoiceBox choice({QString::fromUtf8("Выкл."), QString::fromUtf8("Красиво")});
+        choice.setCurrentIndex(1);
+        QSignalSpy changed(&choice, &QComboBox::currentIndexChanged);
+        CustomLanguage::language = "de";
+        QEvent event(QEvent::LanguageChange);
+        QCoreApplication::sendEvent(&choice, &event);
+        QCOMPARE(choice.currentIndex(), 1);
+        QCOMPARE(choice.currentText(), QString("Schön"));
+        QCOMPARE(changed.count(), 0);
+        CustomLanguage::language = "ru";
+    }
+    void benchmarkCachedTranslationLookup()
+    {
+        QString result;
+        QBENCHMARK { result = CustomLanguage::canonical(QString::fromUtf8("Играть")); }
+        QCOMPARE(result, QString::fromUtf8("Играть"));
     }
     void offlineCatalogWorks()
     {

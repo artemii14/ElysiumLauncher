@@ -17,6 +17,7 @@ inline QString build(const QString& root, const QString& source, const QColor& a
     if ((source != "hyprland" && source != "midnight") || !accent.isValid()) return {};
     const auto id = "elysium-" + source + "-" + accent.name().mid(1);
     const QDir target(root + '/' + id);
+    if (QFile::exists(target.filePath("index.theme"))) return id;
     if (!target.mkpath("scalable")) return {};
     QDir originals(":/icons/" + source + "/scalable");
     const auto files = originals.entryList({"*.svg"}, QDir::Files);

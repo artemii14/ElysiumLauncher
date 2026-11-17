@@ -21,21 +21,29 @@ class LiveTranslation final : public QObject {
     QList<Entry> m_entries;
     void add(QObject* object, const QByteArray& property, QString text, int index = -1)
     {
+        if (text.isEmpty()) return;
         QString prefix;
         for (const auto& p : {QStringLiteral("≡  "), QStringLiteral("↕  ")})
             if (text.startsWith(p)) { prefix = p; text.remove(0, p.size()); break; }
         auto source = CustomLanguage::canonical(text);
         QStringList args;
         if (source.isEmpty()) {
-            for (auto it = CustomLanguage::catalog().cbegin(); it != CustomLanguage::catalog().cend(); ++it) {
-                if (!it.key().contains("%1")) continue;
-                for (const auto& form : it.value()) {
-                    auto pattern = QRegularExpression::escape(form);
-                    pattern.replace("%1", "(.+)");
-                    const auto match = QRegularExpression("^" + pattern + "$").match(text);
-                    if (match.hasMatch()) { source = it.key(); args << match.captured(1); break; }
+            struct Pattern { QString source; QRegularExpression expression; };
+            static const auto patterns = [] {
+                QList<Pattern> result;
+                for (auto it = CustomLanguage::catalog().cbegin(); it != CustomLanguage::catalog().cend(); ++it) {
+                    if (!it.key().contains("%1")) continue;
+                    for (const auto& form : it.value()) {
+                        auto expression = QRegularExpression::escape(form);
+                        expression.replace("%1", "(.+)");
+                        result.append({it.key(), QRegularExpression("^" + expression + "$")});
+                    }
                 }
-                if (!source.isEmpty()) break;
+                return result;
+            }();
+            for (const auto& pattern : patterns) {
+                const auto match = pattern.expression.match(text);
+                if (match.hasMatch()) { source = pattern.source; args << match.captured(1); break; }
             }
         }
         if (!source.isEmpty()) m_entries.append({object, property, source, prefix, args, index, prefix + text});
