@@ -192,6 +192,17 @@ inline QMap<QString, QString> serialize(const QVariantMap& saved, const QString&
         result["fancyGraphics"] = result.value("graphicsMode").toInt() > 0 ? "true" : "false";
         result.remove("graphicsMode");
     }
+    // New graphics presets and JSON string codecs (confirmed against the
+    // supplied 26.3 options file). Keep CUSTOM so a built-in preset cannot
+    // replace the individual values selected in the launcher.
+    if (!version.isNull() && QVersionNumber::compare(version, QVersionNumber(1, 21, 11)) >= 0) {
+        const auto graphics = result.take("graphicsMode").toInt();
+        result["graphicsPreset"] = QStringLiteral("\"custom\"");
+        result["cutoutLeaves"] = graphics > 0 ? "true" : "false";
+        result["improvedTransparency"] = graphics == 2 ? "true" : "false";
+        result["renderClouds"] = '"' + result.value("renderClouds") + '"';
+        result["mainHand"] = '"' + result.value("mainHand") + '"';
+    }
     return result;
 }
 }

@@ -1,12 +1,94 @@
 // SPDX-License-Identifier: GPL-3.0-only
 #include <QtTest>
 #include <QTemporaryDir>
+#include <QJsonDocument>
+#include <QJsonArray>
 #include "settings/INISettingsObject.h"
 #include "minecraft/SharedGameOptions.h"
 #include "minecraft/SharedGameOptionsSchema.h"
 class SharedGameOptionsTest : public QObject {
     Q_OBJECT
+private:
+    static QMap<QString, QString> options(const QByteArray& bytes)
+    {
+        QMap<QString, QString> result;
+        for (auto line : bytes.split('\n')) {
+            if (line.endsWith('\r')) line.chop(1);
+            const auto colon = line.indexOf(':');
+            if (colon >= 0) result.insert(QString::fromUtf8(line.left(colon)), QString::fromUtf8(line.mid(colon + 1)));
+        }
+        return result;
+    }
 private slots:
+    void minecraft263FixturePreservesUnmanagedAndUsesCorrectCodecs()
+    {
+        QFile fixture(QFINDTESTDATA("data/options-26.3.txt"));
+        QVERIFY(fixture.open(QIODevice::ReadOnly));
+        const auto original = fixture.readAll();
+        const auto before = options(original);
+        QCOMPARE(before.value("version"), QString("5023"));
+        const auto values = SharedGameOptions::serialize({{"renderDistance", 24}, {"maxFps", 180},
+            {"fov", 90}, {"mainHand", 0}, {"renderClouds", 0}, {"graphicsMode", 2},
+            {"soundCategory_music", 25}}, "26.3");
+        const auto merged = SharedGameOptions::merge(original, values);
+        const auto after = options(merged);
+        QCOMPARE(after.value("graphicsPreset"), QString("\"custom\""));
+        QCOMPARE(after.value("cutoutLeaves"), QString("true"));
+        QCOMPARE(after.value("improvedTransparency"), QString("true"));
+        QCOMPARE(after.value("renderClouds"), QString("\"false\""));
+        QCOMPARE(after.value("mainHand"), QString("\"left\""));
+        QCOMPARE(after.value("renderDistance"), QString("24"));
+        QCOMPARE(after.value("fov"), QString("0.5"));
+        QCOMPARE(after.value("soundCategory_music"), QString("0.25"));
+        QVERIFY(!values.contains("graphicsMode"));
+        QCOMPARE(after.value("version"), QString("5023"));
+        // Every unowned option from the real file, including pack choices and
+        // new 26.3 key bindings, must remain unchanged.
+        for (auto it = before.cbegin(); it != before.cend(); ++it) {
+            if (!values.contains(it.key())) QCOMPARE(after.value(it.key()), it.value());
+        }
+        // OptionInstance codecs parse JSON; compare JSON types with the actual
+        // file instead of only checking that a line was written successfully.
+        for (auto it = values.cbegin(); it != values.cend(); ++it) {
+            if (!before.contains(it.key())) continue;
+            auto parse = [](const QString& value) {
+                return QJsonDocument::fromJson(("[" + value + "]").toUtf8()).array();
+            };
+            const auto expected = parse(before.value(it.key()));
+            if (expected.isEmpty()) continue; // plain string/key-binding codec
+            const auto written = parse(after.value(it.key()));
+            QVERIFY2(!written.isEmpty(), qPrintable(it.key()));
+            QCOMPARE(written.first().type(), expected.first().type());
+        }
+        QTemporaryDir dir;
+        const auto path = dir.filePath("options.txt");
+        QVERIFY(QFile::copy(fixture.fileName(), path));
+        QString error;
+        QVERIFY2(SharedGameOptions::apply(path, values, error, "26.3"), qPrintable(error));
+        QFile saved(path);
+        QVERIFY(saved.open(QIODevice::ReadOnly));
+        QCOMPARE(saved.readAll(), merged);
+        QFile backup(path + ".before-elysium");
+        QVERIFY(backup.open(QIODevice::ReadOnly));
+        QCOMPARE(backup.readAll(), original);
+    }
+    void minecraft263NewFileGetsVersionButExistingVersionIsNeverReplaced()
+    {
+        QTemporaryDir dir;
+        QString error;
+        const auto path = dir.filePath("options.txt");
+        const auto values = SharedGameOptions::serialize({}, "26.3");
+        QVERIFY2(SharedGameOptions::apply(path, values, error, "26.3"), qPrintable(error));
+        QFile file(path);
+        QVERIFY(file.open(QIODevice::ReadOnly));
+        QCOMPARE(options(file.readAll()).value("version"), QString("5023"));
+        file.close();
+        QVERIFY(file.open(QIODevice::WriteOnly | QIODevice::Truncate));
+        file.write("version:9999\nrenderDistance:16\n"); file.close();
+        QVERIFY2(SharedGameOptions::apply(path, values, error, "26.3"), qPrintable(error));
+        QVERIFY(file.open(QIODevice::ReadOnly));
+        QCOMPARE(options(file.readAll()).value("version"), QString("9999"));
+    }
     void smoothLightingUsesVersionSpecificType()
     {
         QCOMPARE(SharedGameOptions::serialize({}, "1.18.2").value("ao"), QString("2"));

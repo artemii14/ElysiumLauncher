@@ -4,6 +4,7 @@
 #include <QSaveFile>
 #include <QMap>
 #include <QStringList>
+#include <QVersionNumber>
 
 namespace SharedGameOptions {
 // Replace only managed keys; preserve mod options, key bindings and version markers.
@@ -18,7 +19,7 @@ inline QByteArray merge(const QByteArray& original, const QMap<QString, QString>
         output << it.key() + ':' + it.value();
     return (output.join('\n') + '\n').toUtf8();
 }
-inline bool apply(const QString& path, const QMap<QString, QString>& values, QString& error)
+inline bool apply(const QString& path, const QMap<QString, QString>& values, QString& error, const QString& minecraftVersion = QString())
 {
     QFile input(path);
     QByteArray original;
@@ -33,9 +34,24 @@ inline bool apply(const QString& path, const QMap<QString, QString>& values, QSt
         }
     }
     QSaveFile output(path);
-    const auto data = merge(original, values);
+    auto managed = values;
+    // Without a version marker a fresh options file is treated as legacy input
+    // by Minecraft's data fixer. Use the supplied 26.3 marker only for that exact
+    // release; never overwrite an existing marker or guess other data versions.
+    if (minecraftVersion == QStringLiteral("26.3")) {
+        bool hasVersion = false;
+        for (const auto& line : original.split('\n'))
+            if (line.startsWith("version:")) { hasVersion = true; break; }
+        if (!hasVersion) managed.insert("version", "5023");
+    }
+    const auto data = merge(original, managed);
     if (!output.open(QIODevice::WriteOnly) || output.write(data) != data.size() || !output.commit()) {
         error = output.errorString(); return false;
+    }
+    QFile written(path);
+    if (!written.open(QIODevice::ReadOnly) || written.readAll() != data) {
+        error = QStringLiteral("Minecraft options verification failed: ") + path;
+        return false;
     }
     return true;
 }

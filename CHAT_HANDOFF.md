@@ -247,3 +247,14 @@ Fabric, другие проекты, pinneddeps не затронуты, JAR/TOM
 Добавлены регрессии resolver, сохранения зависимостей Fabric/pinned, отсутствие UI
 переключателя. Реальная причина на Fabric без лога не установлена. Подробные
 источники и условия docs/SODIUM-PRESETS.md. 1.1 не обновлялся, код только в PR #2.
+
+## Minecraft 26.3 user options regression
+
+User supplied /tmp/arena-coding-uploads/options.txt; sanitized compatibility
+fixture tracked as tests/data/options-26.3.txt (version5023, no personal data).
+Version-aware serializer now emits quoted string codecs/mainHand/clouds and
+CUSTOM graphicsPreset + cutoutLeaves/improvedTransparency for1.21.11+.
+New-file26.3 marker5023 avoids legacy DataFixer conversion; existing marker kept.
+Writes are read back and checked. tests/SharedGameOptions_test.cpp compares
+managed JSON types against fixture and preserves all unmanaged keys + backup.
+Native CI pending for this change; no in-game verification claimed.

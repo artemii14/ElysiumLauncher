@@ -85,9 +85,10 @@ void LauncherPartLaunch::executeTask()
     auto instance = m_parent->instance();
     if (APPLICATION->settings()->get("SharedGameOptionsEnabled").toBool()) {
         const auto saved = SharedGameOptions::decode(APPLICATION->settings()->get("SharedGameOptions"));
-        const auto values = SharedGameOptions::serialize(saved, instance->getPackProfile()->getComponentVersion("net.minecraft"));
+        const auto minecraftVersion = instance->getPackProfile()->getComponentVersion("net.minecraft");
+        const auto values = SharedGameOptions::serialize(saved, minecraftVersion);
         QString error;
-        if (!SharedGameOptions::apply(FS::PathCombine(instance->gameRoot(), "options.txt"), values, error)) {
+        if (!SharedGameOptions::apply(FS::PathCombine(instance->gameRoot(), "options.txt"), values, error, minecraftVersion)) {
             emitFailed(tr("Не удалось применить общие настройки Minecraft: %1").arg(error));
             return;
         }
